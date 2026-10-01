@@ -1,0 +1,42 @@
+channel: factloop
+kicker: the octopus
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: "+6%"
+pronounce: {}
+scenes:
+  - say: This animal has three hearts, and it still gets tired from swimming.
+    highlight: [three, hearts]
+    visual: {type: hook, emoji: "🐙", text: "3 hearts"}
+
+  - say: Two hearts push blood through the gills. The third pumps it to the whole body.
+    highlight: [gills, whole]
+    visual:
+      type: flow
+      steps:
+        - {emoji: "🫁", label: "2 gill hearts"}
+        - {emoji: "❤️", label: "main heart"}
+        - {emoji: "🐙", label: "whole body"}
+
+  - say: And its blood isn't red. It's blue.
+    highlight: [blue]
+    visual:
+      type: versus
+      left: {emoji: "🩸", label: "iron - us"}
+      right: {emoji: "💙", label: "copper - octopus"}
+
+  - say: Copper carries oxygen well in cold water, but it's less efficient than our iron.
+    highlight: [copper, cold]
+    visual: {type: hero, emoji: "🥶", orbit: ["🌊", "🫧", "💙"], label: "built for the cold"}
+
+  - say: Here's the twist. When an octopus swims, its main heart stops beating.
+    highlight: [stops]
+    visual: {type: stat, value: 0, suffix: " bpm", label: "main heart while swimming", emoji: "💔"}
+
+  - say: So it crawls instead. And two thirds of its neurons are in its arms.
+    highlight: [crawls, arms]
+    visual: {type: pictogram, emoji: "🧠", total: 3, highlight: 2, label: "2/3 in the arms"}
+
+  - say: Three hearts, blue blood, and arms that think. Nature really said, why not?
+    highlight: [think]
+    visual: {type: hero, emoji: "🐙", orbit: ["❤️", "❤️", "❤️", "💙"]}

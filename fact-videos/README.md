@@ -1,41 +1,60 @@
 # Fact videos
 
-Makes vertical 1080×1920 "interesting fact" videos with:
-- **Motion graphics** (titles, count-up stats, animated charts, lists, a motion-trail animation, your own images) over a grid background with film grain
-- **Word-by-word captions** that light up as each word is spoken, with key words in a coloured box
-- **Voice-over** with natural Edge voices (free) and word timings that match the captions. If Edge isn't reachable, it switches to Piper, an offline voice
+Makes 30-40 second vertical (1080×1920) "interesting fact" videos, and can post one to you every day
+based on what India is searching for.
 
-## From your phone
-1. One-time setup: add a free Gemini key as a repo secret named `GOOGLE_API_KEY`.
-   Get the key at https://aistudio.google.com/apikey, then add it under Settings → Secrets and variables → Actions.
-2. **Actions → Make Fact Video → Run workflow**, type a topic (e.g. `why octopuses have 3 hearts`).
-3. When it finishes (~3 min), open the run. There's a **Download** link in the summary.
-   Every video is also saved under **Releases → videos**.
+**Every video has**
+- A **strong hook**. Scripts are written by AI with hook rules (a curiosity gap, a specific number, no "Did you know"), then improved in a second pass.
+- **Motion graphics with lots of visuals**: 3D emoji (Microsoft Fluent Emoji, MIT licence), versus battles, bar races, pictograms ("3 in 10"),
+  count-up stats, timelines, size comparisons, cause → effect flows, animated charts. Plus camera zooms, an impact shake on the hook,
+  and moving colour glows.
+- **Natural voice** with captions timed word by word to the speech, and key words popping in a box.
+- **Sound design**: an impact on the hook, a whoosh on each transition, pops, a riser, and soft background music that gets quieter under the voice.
 
-To keep using a script you like, edit or add a `.yaml` file in `scripts/` from the GitHub app,
-then run the workflow with the topic left empty and `script` set to `scripts/your-file.yaml`.
+## Voice quality (best first; it picks the best one you have keys for)
+| Engine | Quality | Needs |
+|---|---|---|
+| ElevenLabs | most human | `ELEVENLABS_API_KEY` secret (free ~10k chars/month ≈ 1 video/day) |
+| Gemini TTS | very expressive, Indian-English accent | `GOOGLE_API_KEY` (same key as the script writer) |
+| Edge | good, free, no key | nothing |
+| Piper | offline backup | nothing |
+
+## Setup (phone is fine)
+In the repo on GitHub, go to **Settings → Secrets and variables → Actions** and add:
+- `GOOGLE_API_KEY`: free at https://aistudio.google.com/apikey. This is the only one you need.
+- Optional: `ELEVENLABS_API_KEY` for the best voice.
+- Optional, to get the video straight in Telegram: `TELEGRAM_BOT_TOKEN` (make a bot with @BotFather) and `TELEGRAM_CHAT_ID`
+  (message your bot, then open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `chat.id`).
+- Optional **Variables** (same page, Variables tab): `CHANNEL` (your channel name), `VOICE`, `TTS_ENGINE`.
+
+## Daily video
+**Daily Trending Video** runs every morning (~7:15 IST). It reads Google Trends for India, picks the trend with the best
+fact angle (it skips tragedies, politics and gossip), checks facts with web search, writes the script and renders the video.
+You get it as a **GitHub issue** assigned to you, which the GitHub app sends to your phone as a notification. The issue has the download link, a preview, a caption,
+hashtags and sources. You also get it on **Telegram** if you set that up.
+You can also start it any time from **Actions → Daily Trending Video → Run workflow**.
+
+## Video on any topic
+**Actions → Make Fact Video → Run workflow**: type a topic, or leave it empty to render a script file.
 
 ## Script format
 ```yaml
-channel: factloop          # your channel name, shown top-left
-kicker: pigeon, walking    # italic topic label
-tagline: why does the head bob?
-theme: ink                 # ink | paper | night
-voice: en-US-AndrewNeural  # en-IN-PrabhatNeural, en-IN-NeerjaNeural, en-GB-RyanNeural, ...
-rate: "+0%"                # speaking speed
-pronounce: {Necker: Nekker}  # fix how words are said; captions keep the original spelling
-music: music/bed.mp3       # optional background track (kept quiet under the voice)
+channel: factloop
+kicker: the octopus
+theme: ink                 # ink | night | paper
+voice: en-US-AndrewMultilingualNeural   # optional
+pronounce: {ISRO: Isro}    # fix how words are said; captions keep the original spelling
+music: auto                # auto (soft synth bed), a file path, or false
 scenes:
-  - say: Pigeons don't really bob their heads.
-    highlight: [don't]
-    visual: {type: title, lines: ["Pigeons don't", "bob their heads"], sub: "...not the way you think"}
+  - say: This animal has three hearts, and it still gets tired from swimming.
+    highlight: [three, hearts]
+    visual: {type: hook, emoji: "🐙", text: "3 hearts"}
 ```
-Visual types: `title`, `stat`, `chart` (series shapes: line, steps, curve, wave, or your own `points`),
-`list`, `trail` (motion: hold or smooth), `image` (`path:` to a picture in this folder).
+The visual types and their fields are listed in `write_script.py` (`VISUAL_GUIDE`). See `scripts/octopus-three-hearts.yaml` for a full example.
 
 ## On a computer
 ```
 pip install -r requirements.txt     # Linux also needs: apt install ffmpeg libegl1
-python write_script.py "why cats purr"          # optional, needs an API key
-python make_video.py scripts/pigeon-head-bob.yaml --preview
+python write_script.py --trending   # or: python write_script.py "why cats purr"
+python make_video.py scripts/octopus-three-hearts.yaml --preview
 ```

@@ -1,15 +1,22 @@
 """Text-to-speech with per-word timings.
 
-Two engines:
-  edge  - Microsoft Edge neural voices (free, needs internet, very natural, exact word timings)
-  piper - offline neural voice (runs anywhere, word timings estimated per phrase)
+The whole narration is spoken in one go (so intonation flows naturally between
+scenes), then every script word is matched to a time in the audio.
 
-Both return (samples: np.int16 mono @ SAMPLE_RATE, words: [(display_word, start_s, end_s)]).
+Engines (TTS_ENGINE / --engine), best first; "auto" picks the first that works:
+  elevenlabs - most human, needs ELEVENLABS_API_KEY (free tier ~10k chars/month)
+  gemini     - very expressive, uses GOOGLE_API_KEY (free tier, limited requests/day)
+  edge       - Microsoft neural voices, free, no key, exact word timings
+  piper      - offline fallback, always works
 """
 
 import asyncio
+import base64
+import difflib
+import json
 import os
 import re
+import ssl
 import subprocess
 import tempfile
 import urllib.request
@@ -18,142 +25,227 @@ import wave
 import numpy as np
 
 SAMPLE_RATE = 24000
+HERE = os.path.dirname(os.path.abspath(__file__))
+CACHE = os.path.join(HERE, '.cache')
 PIPER_VOICE_URL = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high/en_US-ryan-high.onnx'
 
+STYLE = (
+	'Read this like a gripping short-video storyteller: warm, curious and confident, '
+	'natural pace with small dramatic pauses, never robotic. Speak with a natural Indian English accent.'
+)
 
-def _decode(path: str) -> np.ndarray:
-	"""Decode any audio file to mono int16 at SAMPLE_RATE using ffmpeg."""
-	raw = subprocess.run(
-		['ffmpeg', '-v', 'error', '-i', path, '-f', 's16le', '-ac', '1', '-ar', str(SAMPLE_RATE), '-'],
-		check=True,
-		capture_output=True,
-	).stdout
+
+def _decode(path_or_bytes, fmt=None) -> np.ndarray:
+	args = ['ffmpeg', '-v', 'error']
+	if fmt:
+		args += ['-f', fmt, '-ar', '24000', '-ac', '1']
+	if isinstance(path_or_bytes, bytes):
+		args += ['-i', '-']
+		inp = path_or_bytes
+	else:
+		args += ['-i', path_or_bytes]
+		inp = None
+	raw = subprocess.run(args + ['-f', 's16le', '-ac', '1', '-ar', str(SAMPLE_RATE), '-'], input=inp, check=True, capture_output=True).stdout
 	return np.frombuffer(raw, dtype=np.int16)
 
 
-def spoken_form(word: str, pronounce: dict[str, str]) -> str:
-	"""Swap a display word for how it should be said (keeps surrounding punctuation)."""
-	m = re.match(r'^(\W*)(.*?)(\W*)$', word)
-	pre, core, post = m.groups()
+def norm(w):
+	return re.sub(r"[^\w]", '', w.lower().replace('’', "'"))
+
+
+def spoken_form(word: str, pronounce: dict) -> str:
+	pre, core, post = re.match(r'^(\W*)(.*?)(\W*)$', word).groups()
 	for k, v in pronounce.items():
 		if core.lower() == k.lower():
 			return pre + v + post
 	return word
 
 
-def _spread(words: list[str], start: float, end: float) -> list[tuple[str, float, float]]:
-	"""Estimate word timings inside a span, weighting by word length."""
-	weights = [len(re.sub(r'\W', '', w)) + 1.5 for w in words]
-	total = sum(weights)
-	out, t = [], start
-	for w, wt in zip(words, weights):
-		d = (end - start) * wt / total
-		out.append((w, t, t + d))
-		t += d
-	return out
+def _post(url, body, headers):
+	req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json', **headers})
+	with urllib.request.urlopen(req, timeout=180) as r:
+		return json.load(r)
 
 
-def _trim_silence(a: np.ndarray, thresh: int = 300) -> tuple[np.ndarray, int]:
-	"""Trim leading/trailing near-silence; returns (trimmed, samples_cut_from_start)."""
-	idx = np.where(np.abs(a.astype(np.int32)) > thresh)[0]
-	if len(idx) == 0:
-		return a, 0
-	pad = int(0.03 * SAMPLE_RATE)
-	s, e = max(0, idx[0] - pad), min(len(a), idx[-1] + pad)
-	return a[s:e], s
+# ---------- engines: each returns (samples, [(token, start, end)]) ----------
 
 
-# ---------- Edge ----------
+def _elevenlabs(text, voice):
+	key = os.environ['ELEVENLABS_API_KEY']
+	voice_id = voice if voice and '-' not in voice and len(voice) > 15 else os.environ.get('ELEVENLABS_VOICE', 'JBFqnCBsd6RMkjVDRZzb')
+	r = _post(
+		f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps?output_format=mp3_44100_128',
+		{'text': text, 'model_id': os.environ.get('ELEVENLABS_MODEL', 'eleven_multilingual_v2'), 'voice_settings': {'stability': 0.4, 'similarity_boost': 0.8, 'style': 0.35}},
+		{'xi-api-key': key},
+	)
+	samples = _decode(base64.b64decode(r['audio_base64']))
+	a = r['alignment']
+	tokens, cur, start = [], '', None
+	for ch, s, e in zip(a['characters'], a['character_start_times_seconds'], a['character_end_times_seconds']):
+		if ch.isspace():
+			if cur:
+				tokens.append((cur, start, last))
+			cur, start = '', None
+		else:
+			if start is None:
+				start = s
+			cur += ch
+			last = e
+	if cur:
+		tokens.append((cur, start, last))
+	return samples, tokens
 
 
-async def _edge_async(text: str, voice: str, rate: str):
+def _gemini(text, voice):
+	model = os.environ.get('GEMINI_TTS_MODEL', 'gemini-2.5-flash-preview-tts')
+	r = _post(
+		f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+		{
+			'contents': [{'parts': [{'text': f'{STYLE}\n\n{text}'}]}],
+			'generationConfig': {
+				'responseModalities': ['AUDIO'],
+				'speechConfig': {'voiceConfig': {'prebuiltVoiceConfig': {'voiceName': voice if voice and '-' not in voice else os.environ.get('GEMINI_VOICE', 'Charon')}}},
+			},
+		},
+		{'x-goog-api-key': os.environ['GOOGLE_API_KEY']},
+	)
+	pcm = base64.b64decode(r['candidates'][0]['content']['parts'][0]['inlineData']['data'])
+	samples = np.frombuffer(pcm, dtype=np.int16)  # 24 kHz mono s16le
+	return samples, _whisper_tokens(samples)
+
+
+async def _edge_async(text, voice, rate):
 	import edge_tts
+	import edge_tts.communicate as comm_mod
 
+	if os.environ.get('SSL_CERT_FILE'):  # behind a corporate / sandbox proxy
+		comm_mod._SSL_CTX = ssl.create_default_context(cafile=os.environ['SSL_CERT_FILE'])
 	comm = edge_tts.Communicate(text, voice, rate=rate, boundary='WordBoundary')
-	audio, bounds = bytearray(), []
+	audio, tokens = bytearray(), []
 	async for chunk in comm.stream():
 		if chunk['type'] == 'audio':
 			audio.extend(chunk['data'])
 		elif chunk['type'] == 'WordBoundary':
-			bounds.append((chunk['offset'] / 1e7, (chunk['offset'] + chunk['duration']) / 1e7))
-	return bytes(audio), bounds
+			tokens.append((chunk['text'], chunk['offset'] / 1e7, (chunk['offset'] + chunk['duration']) / 1e7))
+	return bytes(audio), tokens
 
 
-def edge_tts(display_words: list[str], pronounce: dict, voice: str, rate: str):
-	spoken = ' '.join(spoken_form(w, pronounce) for w in display_words)
-	audio, bounds = asyncio.run(_edge_async(spoken, voice, rate))
-	with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as f:
-		f.write(audio)
-	samples = _decode(f.name)
-	os.unlink(f.name)
-	if len(bounds) == len(display_words):
-		words = [(w, s, e) for w, (s, e) in zip(display_words, bounds)]
-	elif bounds:
-		words = _spread(display_words, bounds[0][0], bounds[-1][1])
-	else:
-		words = _spread(display_words, 0.05, len(samples) / SAMPLE_RATE - 0.05)
-	return samples, words
+def _edge(text, voice, rate):
+	audio, tokens = asyncio.run(_edge_async(text, voice if voice and '-' in voice else 'en-US-AndrewMultilingualNeural', rate))
+	return _decode(audio), tokens
 
 
-# ---------- Piper ----------
-
-_piper_voice = None
+_piper = None
 
 
-def _load_piper():
-	global _piper_voice
-	if _piper_voice is None:
-		from piper import PiperVoice
+def _piper_tts(text, rate):
+	global _piper
+	from piper import PiperVoice, SynthesisConfig
 
-		cache = os.path.join(os.path.dirname(__file__), '.cache')
-		os.makedirs(cache, exist_ok=True)
-		model = os.path.join(cache, 'voice.onnx')
+	if _piper is None:
+		model = os.path.join(CACHE, 'voice.onnx')
 		if not os.path.exists(model):
+			os.makedirs(CACHE, exist_ok=True)
 			print('Downloading Piper voice (one time)...')
 			urllib.request.urlretrieve(PIPER_VOICE_URL, model)
 			urllib.request.urlretrieve(PIPER_VOICE_URL + '.json', model + '.json')
-		_piper_voice = PiperVoice.load(model)
-	return _piper_voice
+		_piper = PiperVoice.load(model)
+	pct = int((rate or '+0%').strip('%+') or 0)
+	with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
+		path = f.name
+	with wave.open(path, 'wb') as wf:
+		_piper.synthesize_wav(text, wf, syn_config=SynthesisConfig(length_scale=1 / (1 + pct / 100)))
+	samples = _decode(path)
+	os.unlink(path)
+	try:
+		return samples, _whisper_tokens(samples)
+	except ImportError:
+		return samples, []
 
 
-def piper_tts(display_words: list[str], pronounce: dict, speed: float):
-	from piper import SynthesisConfig
-
-	voice = _load_piper()
-	cfg = SynthesisConfig(length_scale=1.0 / speed)
-	# Split into phrases at punctuation so pauses land in the right place and timing stays tight.
-	phrases, cur = [], []
-	for w in display_words:
-		cur.append(w)
-		if re.search(r'[,.;:!?—]$', w):
-			phrases.append(cur)
-			cur = []
-	if cur:
-		phrases.append(cur)
-
-	pieces, words, t = [], [], 0.0
-	for ph in phrases:
-		text = ' '.join(spoken_form(w, pronounce) for w in ph)
-		with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
-			path = f.name
-		with wave.open(path, 'wb') as wf:
-			voice.synthesize_wav(text, wf, syn_config=cfg)
-		a, _ = _trim_silence(_decode(path))
-		os.unlink(path)
-		dur = len(a) / SAMPLE_RATE
-		words += _spread(ph, t, t + dur)
-		gap = 0.22 if re.search(r'[.!?]$', ph[-1]) else 0.12
-		pieces += [a, np.zeros(int(gap * SAMPLE_RATE), dtype=np.int16)]
-		t += dur + gap
-	return np.concatenate(pieces), words
+_whisper = None
 
 
-def speak(text: str, engine: str, voice: str, rate: str, pronounce: dict):
-	display_words = text.split()
-	if engine == 'edge':
+def _whisper_tokens(samples):
+	"""Find when each word is spoken using a small speech-recognition model."""
+	global _whisper
+	from faster_whisper import WhisperModel
+
+	if _whisper is None:
+		_whisper = WhisperModel(os.environ.get('WHISPER_MODEL', 'base.en'), device='cpu', compute_type='int8', download_root=os.path.join(CACHE, 'whisper'))
+	audio = samples.astype(np.float32) / 32768.0
+	audio16 = np.interp(np.arange(0, len(audio), SAMPLE_RATE / 16000), np.arange(len(audio)), audio).astype(np.float32)
+	segs, _ = _whisper.transcribe(audio16, word_timestamps=True, beam_size=1, language='en')
+	return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
+
+
+# ---------- alignment ----------
+
+
+def align(script_words, tokens, total):
+	"""Give every script word a (start, end) using the engine's/recogniser's timed tokens."""
+	n = len(script_words)
+	times = [None] * n
+	if tokens:
+		a = [norm(w) for w in script_words]
+		b = [norm(t[0]) for t in tokens]
+		for blk in difflib.SequenceMatcher(None, a, b, autojunk=False).get_matching_blocks():
+			for k in range(blk.size):
+				times[blk.a + k] = (tokens[blk.b + k][1], tokens[blk.b + k][2])
+	# fill gaps by interpolation between known neighbours
+	known = [i for i, t in enumerate(times) if t]
+	if not known:
+		step = total / max(n, 1)
+		return [(i * step, (i + 1) * step) for i in range(n)]
+	for i in range(n):
+		if times[i]:
+			continue
+		prev = max((k for k in known if k < i), default=None)
+		nxt = min((k for k in known if k > i), default=None)
+		t0 = times[prev][1] if prev is not None else 0.0
+		t1 = times[nxt][0] if nxt is not None else total
+		lo = prev if prev is not None else -1
+		hi = nxt if nxt is not None else n
+		span = (t1 - t0) / (hi - lo - 1)
+		s = t0 + (i - lo - 1) * span
+		times[i] = (s, s + span)
+	return times
+
+
+def speak(scene_texts, engine='auto', voice=None, rate='+0%', pronounce=None):
+	"""Returns (samples, [[(word, start, end), ...] per scene])."""
+	pronounce = pronounce or {}
+	display = [t.split() for t in scene_texts]
+	spoken = '\n\n'.join(' '.join(spoken_form(w, pronounce) for w in ws) for ws in display)
+	flat = [spoken_form(w, pronounce) for ws in display for w in ws]
+
+	order = {'auto': ['elevenlabs', 'gemini', 'edge', 'piper']}.get(engine, [engine, 'edge', 'piper'])
+	for eng in order:
+		if eng == 'elevenlabs' and not os.environ.get('ELEVENLABS_API_KEY'):
+			continue
+		if eng == 'gemini' and not os.environ.get('GOOGLE_API_KEY'):
+			continue
 		try:
-			return edge_tts(display_words, pronounce, voice, rate)
-		except Exception as e:  # network blocked, service down, etc.
-			print(f'Edge TTS failed ({e.__class__.__name__}: {e}); falling back to Piper.')
-	pct = int(rate.strip('%+') or 0) if rate else 0
-	return piper_tts(display_words, pronounce, speed=1 + pct / 100)
+			print(f'  voice engine: {eng}')
+			if eng == 'elevenlabs':
+				samples, tokens = _elevenlabs(spoken, voice)
+			elif eng == 'gemini':
+				samples, tokens = _gemini(spoken, voice)
+			elif eng == 'edge':
+				samples, tokens = _edge(spoken, voice, rate)
+			else:
+				samples, tokens = _piper_tts(spoken, rate)
+			break
+		except Exception as e:
+			print(f'  {eng} failed: {e.__class__.__name__}: {str(e)[:200]}')
+	else:
+		raise RuntimeError('All voice engines failed')
+
+	total = len(samples) / SAMPLE_RATE
+	# Match against what was actually said (pronounce swaps), then map back to display words.
+	times = align(flat, tokens, total)
+	out, i = [], 0
+	for ws in display:
+		out.append([(w, *times[i + k]) for k, w in enumerate(ws)])
+		i += len(ws)
+	return samples, out

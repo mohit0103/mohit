@@ -3,3 +3,4 @@ numpy
 pyyaml
 edge-tts
 piper-tts
+faster-whisper
