@@ -1,0 +1,42 @@
+# Example script. Every scene has a line to SAY and a VISUAL to show.
+channel: factloop
+kicker: pigeon, walking
+tagline: why does the head bob?
+theme: ink            # ink | paper | night
+voice: en-US-AndrewNeural   # any Edge voice, e.g. en-IN-PrabhatNeural, en-GB-RyanNeural
+rate: "+0%"
+
+# Fix how tricky words are pronounced: display word -> how to say it
+pronounce:
+  Frost: Frawst
+
+scenes:
+  - say: Pigeons don't really bob their heads.
+    highlight: [don't]
+    visual: {type: title, lines: ["Pigeons don't", "bob their heads"], sub: "...not the way you think"}
+
+  - say: Watch the head. It locks in place, while the body keeps walking underneath it.
+    highlight: [locks, place]
+    visual: {type: trail, motion: hold, exposures: 5}
+
+  - say: Then it snaps forward, and locks again. Hold, snap, hold, snap.
+    highlight: [snaps, hold, snap]
+    visual:
+      type: chart
+      x_label: time
+      y_label: position
+      series:
+        - {shape: steps, label: head}
+        - {shape: line,  label: body}
+
+  - say: Holding still keeps the world sharp, so the bird can spot food and danger.
+    highlight: [sharp]
+    visual: {type: list, items: ["Steady image on the eye", "Easier to spot movement", "Better depth cues"]}
+
+  - say: Put a pigeon on a treadmill, and the bobbing simply stops.
+    highlight: [treadmill, stops]
+    visual: {type: stat, value: 0, suffix: " bobs", label: "on a treadmill, nothing around it moves", ring: 1}
+
+  - say: The head was never bobbing. It was holding still the whole time.
+    highlight: [holding, still]
+    visual: {type: title, lines: ["Still", "the whole time"]}

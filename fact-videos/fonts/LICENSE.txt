@@ -1,0 +1,1 @@
+Fonts: Anton, Inter and Playfair Display, all under the SIL Open Font License 1.1 (https://openfontlicense.org).

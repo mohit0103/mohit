@@ -1,0 +1,87 @@
+name: Make Fact Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic for a new video (AI writes the script). Leave empty to use a script file below.'
+        required: false
+        default: ''
+      script:
+        description: 'Or: path of an existing script in fact-videos/scripts/'
+        required: false
+        default: 'scripts/pigeon-head-bob.yaml'
+      voice:
+        description: 'Voice (e.g. en-US-AndrewNeural, en-IN-PrabhatNeural, en-IN-NeerjaNeural, en-GB-RyanNeural)'
+        required: false
+        default: 'en-US-AndrewNeural'
+      theme:
+        description: 'Look: ink, paper or night'
+        required: false
+        default: 'ink'
+
+permissions:
+  contents: write
+
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: fact-videos
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: fact-videos/requirements.txt
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg libegl1 libgl1
+          pip install -r requirements.txt
+
+      - name: Write script from topic
+        if: inputs.topic != ''
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TOPIC: ${{ inputs.topic }}
+          THEME: ${{ inputs.theme }}
+        run: |
+          path=$(python write_script.py "$TOPIC" --theme "$THEME")
+          echo "SCRIPT=$path" >> "$GITHUB_ENV"
+          { echo '## Script'; echo '```yaml'; cat "$path"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Render video
+        env:
+          SCRIPT_IN: ${{ inputs.script }}
+          VOICE: ${{ inputs.voice }}
+        run: |
+          script="${SCRIPT:-$SCRIPT_IN}"
+          name=$(basename "$script" .yaml)
+          python make_video.py "$script" --voice "$VOICE" -o "output/$name.mp4"
+          echo "VIDEO=fact-videos/output/$name.mp4" >> "$GITHUB_ENV"
+          echo "NAME=$name" >> "$GITHUB_ENV"
+          cp "$script" output/ 2>/dev/null || true
+
+      - name: Publish video to the "videos" release (direct download link)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: .
+        run: |
+          gh release view videos >/dev/null 2>&1 || gh release create videos --title "Fact videos" --notes "Rendered fact videos."
+          gh release upload videos "$VIDEO" --clobber
+          url="https://github.com/${{ github.repository }}/releases/download/videos/$NAME.mp4"
+          echo "## Video" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download $NAME.mp4]($url)" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fact-video
+          path: fact-videos/output/
+          if-no-files-found: ignore
