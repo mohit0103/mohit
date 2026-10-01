@@ -1,0 +1,54 @@
+name: Browser Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'What should the browser agent do?'
+        required: true
+        default: 'Go to news.ycombinator.com and tell me the top 3 stories'
+      max_steps:
+        description: 'Maximum agent steps'
+        required: false
+        default: '25'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: browser-agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: browser-agent/requirements.txt
+
+      - name: Install browser-use
+        run: pip install -r requirements.txt
+
+      - name: Run agent
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MAX_STEPS: ${{ inputs.max_steps }}
+          ANONYMIZED_TELEMETRY: 'false'
+          TASK: ${{ inputs.task }}
+        run: python run_agent.py "$TASK"
+
+      - name: Show result on the run page
+        if: always()
+        run: cat output/result.md >> "$GITHUB_STEP_SUMMARY" || echo "No result produced." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload recording
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-agent-output
+          path: browser-agent/output/
+          if-no-files-found: ignore
