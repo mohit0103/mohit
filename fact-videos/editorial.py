@@ -313,7 +313,7 @@ def render(script, samples, lead, scenes, total, out_path, preview=False):
 	wav = out_path + '.mix.wav'
 	mix(samples, lead, scenes, total, script, wav)
 	cmd = ['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', '-i', wav,
-	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out_path]
+	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '24', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out_path]
 	ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 	main = skia.Surface(W, H)
 	sa, sb = skia.Surface(W, H), skia.Surface(W, H)
