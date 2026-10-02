@@ -87,3 +87,95 @@ def place(track, clip, at, gain=1.0):
 		return
 	e = min(len(track), s + len(clip))
 	track[s:e] += clip[: e - s] * gain
+
+
+# ---- subtle cues for the editorial style ----
+
+
+def swish(d=0.32):
+	"""Soft air swish, gentler than whoosh."""
+	n = int(d * SR)
+	noise = rng.standard_normal(n)
+	sweep = 0.02 + 0.12 * np.sin(np.linspace(0, np.pi, n))
+	x = _lowpass(noise, sweep) - _lowpass(noise, sweep * 0.2)
+	return x * np.sin(np.linspace(0, np.pi, n)) ** 2 * 1.2
+
+
+def thud():
+	"""Rubber-stamp hit: short low knock + paper slap."""
+	n = int(0.35 * SR)
+	t = np.arange(n) / SR
+	knock = np.sin(2 * np.pi * np.cumsum(140 * np.exp(-t * 25) + 55) / SR) * np.exp(-t * 18)
+	slap = _lowpass(rng.standard_normal(n), 0.35) * np.exp(-t * 70)
+	return knock * 0.9 + slap * 0.6
+
+
+def click(f=2400, d=0.025):
+	n = int(d * SR)
+	t = np.arange(n) / SR
+	return (np.sin(2 * np.pi * f * t) * 0.5 + rng.standard_normal(n) * 0.25) * np.exp(-t * 260)
+
+
+def ticks(d=1.4, start_rate=22, end_rate=4):
+	"""Odometer ticking that slows down as the number settles."""
+	out = np.zeros(int(d * SR) + SR // 10)
+	tt = 0.0
+	while tt < d:
+		k = tt / d
+		place(out, click(2000 + 600 * rng.random()), tt, 0.7)
+		tt += 1 / (start_rate + (end_rate - start_rate) * k)
+	return out
+
+
+def chiptick():
+	a = click(1500, 0.04)
+	b = click(3000, 0.02)
+	a[: len(b)] += b * 0.4
+	return a
+
+
+def typewriter(d=1.2, rate=11):
+	out = np.zeros(int(d * SR) + SR // 10)
+	tt = 0.0
+	while tt < d:
+		place(out, click(1100 + 500 * rng.random(), 0.035), tt, 0.8)
+		tt += (1 / rate) * (0.7 + 0.6 * rng.random())
+	return out
+
+
+def marker(d=0.35):
+	"""Felt-pen stroke."""
+	n = int(d * SR)
+	x = _lowpass(rng.standard_normal(n), 0.5) - _lowpass(rng.standard_normal(n), 0.08)
+	return x * np.sin(np.linspace(0, np.pi, n)) * 0.6
+
+
+def glitch(d=0.18):
+	n = int(d * SR)
+	x = np.sign(np.sin(2 * np.pi * np.cumsum(rng.uniform(200, 2000, n)) / SR)) * 0.3
+	x *= (rng.random(n) > 0.3)
+	return x * np.linspace(1, 0.2, n)
+
+
+CUES = {
+	'swish': swish, 'thud': thud, 'ticks': ticks, 'chiptick': chiptick, 'type': typewriter,
+	'pop': lambda: pop(700), 'marker': marker, 'whoosh': lambda: whoosh(0.4), 'glitch': glitch,
+}
+
+
+def ambient_bed(seconds):
+	"""Minimal, modern bed: soft sub pulse + airy pad; stays out of the voice's way."""
+	n = int(seconds * SR)
+	t = np.arange(n) / SR
+	bpm = 100
+	beat = 60 / bpm
+	pad = np.zeros(n)
+	notes = [110.0, 130.81, 164.81, 196.0]  # A minor 7 colour
+	for i, f in enumerate(notes):
+		lfo = 0.5 + 0.5 * np.sin(2 * np.pi * t / (7 + i * 2) + i)
+		pad += np.sin(2 * np.pi * f * t) * 0.025 * lfo + np.sin(2 * np.pi * f * 2.003 * t) * 0.01 * lfo
+	sub = np.sin(2 * np.pi * 55 * (t % beat)) * np.exp(-(t % beat) * 9) * 0.22
+	hat_env = np.exp(-((t + beat / 2) % beat) * 80)
+	hat = _lowpass(rng.standard_normal(n), 0.95) * hat_env * 0.02
+	fade = np.clip(np.minimum(t / 1.5, (seconds - t) / 2.0), 0, 1)
+	return (pad + sub + hat) * fade

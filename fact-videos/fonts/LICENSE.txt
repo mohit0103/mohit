@@ -1,1 +1,1 @@
-Fonts: Anton, Inter and Playfair Display, all under the SIL Open Font License 1.1 (https://openfontlicense.org).
+Fonts: Anton, Bebas Neue, IBM Plex Mono, Inter and Playfair Display, all under the SIL Open Font License 1.1 (https://openfontlicense.org).

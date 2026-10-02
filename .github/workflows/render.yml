@@ -86,12 +86,13 @@ jobs:
           git diff --cached --quiet || (git commit -m "Add script: $NAME" && git push) || echo "Could not save script (non-fatal)"
 
       - name: Hand over (GitHub issue + optional Telegram)
+        working-directory: .
         env:
           GH_TOKEN: ${{ github.token }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python - <<'PY' > post.md
+          cd fact-videos && python - <<'PY' > ../post.md && cd ..
           import os, yaml
           s = yaml.safe_load(open(os.environ['SCRIPT']))
           print(f"## 🎬 {s.get('topic') or os.environ['NAME']}\n")
@@ -107,11 +108,16 @@ jobs:
               print("\n### Sources (check before posting)")
               for src in s['sources']:
                   print(f"- {src}")
+          cred = f"output/{os.environ['NAME']}-credits.txt"
+          if os.path.exists(cred):
+              print("\n### Photo credits (add to your caption for CC BY photos)")
+              for line in open(cred):
+                  print(f"- {line.strip()}")
           PY
           gh issue create --title "🎬 $(date +%d-%b) · $NAME" --body-file post.md --assignee "${{ github.repository_owner }}" \
             || gh issue create --title "🎬 $(date +%d-%b) · $NAME" --body-file post.md
           if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-            caption=$(python -c "import os,yaml;s=yaml.safe_load(open(os.environ['SCRIPT']));print((s.get('post_caption','')+'\n\n'+' '.join(s.get('hashtags',[])))[:1000])")
+            caption=$(cd fact-videos && python -c "import os,yaml;s=yaml.safe_load(open(os.environ['SCRIPT']));print((s.get('post_caption','')+'\n\n'+' '.join(s.get('hashtags',[])))[:1000])")
             curl -sS -F chat_id="$TELEGRAM_CHAT_ID" -F video=@"fact-videos/output/$NAME.mp4" -F supports_streaming=true \
               -F caption="$caption" "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendVideo" > /dev/null && echo "Sent to Telegram"
           fi

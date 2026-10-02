@@ -231,6 +231,10 @@ def render(script_path, out_path, engine='auto', voice=None, rate=None, preview=
 	th = THEMES[script.get('theme', 'ink')]
 	samples, lead, scenes, total = build(script, engine, voice or script.get('voice'), rate or script.get('rate', '+5%'))
 	os.makedirs(os.path.dirname(out_path) or '.', exist_ok=True)
+	if any(s.get('layers') for s in scenes):  # editorial motion-design style
+		import editorial
+
+		return editorial.render(script, samples, lead, scenes, total, out_path, preview)
 	wav = out_path + '.mix.wav'
 	mix_audio(samples, lead, scenes, total, script, wav)
 

@@ -22,30 +22,44 @@ import yaml
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 VISUAL_GUIDE = """
-VISUAL TYPES (pick the one that SHOWS the idea; vary them; never the same type twice in a row):
-  hook:      {"type":"hook","emoji":"🤯","text":"1-3 WORDS or a number"}        <- scene 1 ONLY, always
-  hero:      {"type":"hero","emoji":"🐙","orbit":["❤️","💙","🌊"],"label":"2-4 words"}   main subject with related emojis orbiting
-  versus:    {"type":"versus","left":{"emoji":"🇮🇳","label":"India","value":140},"right":{"emoji":"🇨🇳","label":"China","value":141},"unit":" cr"}  comparisons (values optional)
-  bars:      {"type":"bars","items":[{"emoji":"🍚","label":"rice","value":120},...],"unit":" Mt"}   2-5 ranked quantities
-  pictogram: {"type":"pictogram","emoji":"🧍","total":10,"highlight":3,"label":"3 in 10"}   proportions / "1 in N"
-  stat:      {"type":"stat","value":2500,"prefix":"₹","suffix":"","label":"2-5 words","emoji":"💰"}  one big number (counts up)
-  timeline:  {"type":"timeline","events":[{"year":"1983","emoji":"🏆","label":"3-5 words"},...]}  2-5 dated events
-  scale:     {"type":"scale","items":[{"emoji":"🐜","label":"ant","size":1},{"emoji":"🐘","label":"elephant","size":40}]}  size comparisons
-  flow:      {"type":"flow","steps":[{"emoji":"☀️","label":"heat"},{"emoji":"💧","label":"evaporation"},{"emoji":"🌧️","label":"rain"}]}  cause -> effect, 2-4 steps
-  chart:     {"type":"chart","x_label":"time","y_label":"price","series":[{"shape":"curve|line|steps|drop|wave","label":"...","emoji":"📈"}]}  trends
-  list:      {"type":"list","items":[{"emoji":"✅","label":"2-5 words"},...]}  2-4 items, use rarely
-Emojis must be standard single Unicode emoji characters (they render as 3D art). On-screen labels: max 5 words.
-Numbers in visuals must match what is said.
+VISUALS - editorial motion design. Every scene has "bg" ("ink" | "paper" | "red"; alternate them, use "red" once for the twist)
+and "layers": 1-3 layers that SHOW the idea. Each layer may have "at": a word from that scene's "say" (it appears exactly when
+that word is spoken) and "y" (vertical centre in px, screen is 1080x1920; keep content between y=450 and y=1350; captions sit at 1640).
+Layer types:
+  {"type":"headline","text":"2-5 WORDS","font":"display|serif","size":140,"y":800,"accent":["word"],"marker":"word"}   kinetic type
+  {"type":"kicker","text":"PLACE · YEAR","y":560}                                     small label above a headline
+  {"type":"stamp","text":"1 WORD","at":"word","y":1080,"rotate":-8}                   rubber stamp slam, for the shock word
+  {"type":"counter","value":390,"suffix":" km","label":"2-4 words","plain":false}      rolling odometer number (plain:true for years)
+  {"type":"chips","items":["1937","1938"],"cross":true}                                pills; cross:true strikes them out
+  {"type":"quote","text":"max 8 words","by":"source, year","highlight":["word"]}      only for real, documented quotes or official wording
+  {"type":"photo","query":"specific search words","frame":"print|strip|circle|full","treatment":"duotone|bw|color"}
+        real openly-licensed photo. Use for real people, places, objects. query must be very specific (e.g. "Mahatma Gandhi portrait 1940s").
+  {"type":"icon","name":"tabler-icon-name","label":"2-3 words","size":300}           vector line icon that draws itself on
+        names: world, award, trophy, gavel, scale, file-text, alert-triangle, shield, calendar, clock, coin, currency-rupee,
+        building-bank, flag, map-pin, rocket, brain, heart, bolt, flame, droplet, leaf, plant-2, sun, moon, cloud-rain, wind,
+        car, plane, train, ship, phone, device-mobile, wifi, cpu, robot, camera, movie, music, ball-football, cricket, trophy,
+        school, book, flask, atom, dna, virus, pill, stethoscope, users, user, crown, lock, key, eye, search, chart-line,
+        chart-bar, trending-up, trending-down, check, x, question-mark, bulb, target, hourglass, skull, ghost, cat, dog, fish
+  {"type":"split","left":{"icon":"check","label":"YES"},"right":{"icon":"x","label":"NO","accent":true}}   two sides / VS
+  {"type":"bars","items":[{"label":"India","value":140},{"label":"China","value":141}],"unit":" cr"}   comparisons
+  {"type":"lower_third","name":"Full Name","role":"what they are"}                   name tag under a photo
+  {"type":"redact","text":"a sentence","hide":["word"]}                                classified / hidden-truth feel
+  {"type":"ghost","text":"1948","y":1180}                                              huge faint background word/number
+Good combos: ghost+kicker+headline+stamp (hook); photo(print)+kicker; photo(strip)+lower_third+chips; counter+stamp; quote; split (final question).
+Never put two big elements at the same y. Numbers on screen must match the narration.
 """
 
 SCRIPT_RULES = """
 You write scripts for viral 25-40 second vertical fact videos (Instagram Reels / YouTube Shorts) for an Indian audience.
 
-THE HOOK (scene 1) DECIDES EVERYTHING. It must, in under 12 spoken words:
+THE HOOK (scene 1) DECIDES EVERYTHING. Lead with the most surprising, debated or "that can't be true" angle of the topic
+(a controversy, an injustice, a broken record, a hidden cost, a myth everyone believes). It must, in under 12 spoken words:
 - create a curiosity gap or pattern-interrupt: a surprising claim, a "wait, what?" contradiction, a specific shocking number, or a direct "you" challenge
 - NEVER start with "Did you know", "Today we", "In this video", "Hey guys", or the topic name as a label
 - good shapes: "This ___ has ___, and it still ___."  "You've been ___ wrong your whole life."  "₹1 coin costs more than ₹1 to make."  "There's a village in India where ___."
-STRUCTURE: hook -> quick context -> 2-3 escalating reveals (each a new surprise, "but here's the twist") -> payoff line that loops back to the hook so the video rewatches well.
+STRUCTURE: hook -> quick context -> 2-3 escalating reveals (each a new surprise, "but here's the twist") -> end with a
+debate question that splits viewers ("Should...? Yes or no?") so people comment. The controversy must be a real, documented debate:
+never invent outrage, never attack a religion, caste, community or private person, never take sides in party politics.
 STYLE: spoken, punchy, simple English (a 14-year-old understands). Max 16 words per scene, 6-8 scenes, total 70-110 words.
 Use Indian context and units where natural (₹, lakh, crore, km). No hashtags or emojis in "say".
 ACCURACY: only well-established facts. If unsure of a number, say it approximately ("almost", "about") or drop it. No invented studies or quotes.
@@ -55,8 +69,8 @@ ACCURACY: only well-established facts. If unsure of a number, say it approximate
 
 OUTPUT_SPEC = """
 Return ONLY a JSON object (no prose) like:
-{"topic":"...","kicker":"2-3 word lowercase label","pronounce":{},
- "scenes":[{"say":"...","highlight":["..."],"visual":{...}}],
+{"topic":"...","kicker":"DATE · SHORT TOPIC LABEL","pronounce":{},
+ "scenes":[{"say":"...","highlight":["..."],"bg":"ink","layers":[{...}]}],
  "post_caption":"1-2 line Instagram caption with a question to drive comments",
  "hashtags":["#facts","..."],
  "sources":["url or source name", "..."]}
@@ -144,8 +158,10 @@ def validate(data):
 		raise ValueError('Script has too few scenes')
 	for i, s in enumerate(scenes):
 		v = s.get('visual') or {}
-		if i == 0 and v.get('type') != 'hook':
+		if not s.get('layers') and i == 0 and v.get('type') != 'hook':
 			s['visual'] = {'type': 'hook', 'emoji': v.get('emoji', '🤯'), 'text': v.get('text', '')}
+		if s.get('layers') and not s.get('bg'):
+			s['bg'] = ['ink', 'paper'][i % 2]
 		s['highlight'] = [h for h in s.get('highlight', []) if h.lower() in s['say'].lower()][:2]
 	data['scenes'] = scenes
 	return data

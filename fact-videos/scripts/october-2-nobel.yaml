@@ -1,0 +1,170 @@
+channel: factloop
+kicker: 02 Oct · Gandhi Jayanti
+voice: en-US-AndrewMultilingualNeural
+rate: +6%
+pronounce:
+  Hammarskjöld: Hammar-shold
+scenes:
+- say: In 1948, the Nobel Peace Prize went to... nobody.
+  highlight:
+  - nobody
+  bg: ink
+  layers:
+  - type: ghost
+    text: '1948'
+    y: 1180
+  - type: kicker
+    text: Oslo · 1948
+    y: 560
+  - type: headline
+    text: The Peace Prize went to
+    y: 780
+    size: 140
+  - type: stamp
+    text: Nobody
+    at: nobody
+    y: 1080
+    size: 170
+- say: The committee said there was no suitable living candidate.
+  highlight:
+  - living
+  bg: paper
+  layers:
+  - type: quote
+    text: No suitable living candidate.
+    by: Nobel Committee, 1948
+    highlight:
+    - living
+    y: 860
+    size: 96
+- say: Because the man they were considering had been assassinated, just months earlier.
+  highlight:
+  - assassinated
+  bg: ink
+  transition: push
+  layers:
+  - type: photo
+    openverse: 844d1dbb-7a41-4e33-bc77-5bfd9aa4ef6b
+    frame: print
+    treatment: bw
+    y: 800
+    w: 720
+    h: 860
+    tilt: -2
+  - type: kicker
+    text: 30 January 1948
+    y: 1340
+    at: assassinated
+- say: Mahatma Gandhi. Nominated five times, and never won.
+  highlight:
+  - five
+  - never
+  bg: paper
+  layers:
+  - type: photo
+    openverse: 47830f51-839b-4c2c-b6c9-6506ce84cf25
+    frame: strip
+    treatment: duotone
+    y: 600
+    h: 620
+  - type: lower_third
+    name: Mahatma Gandhi
+    role: 1869 — 1948
+    y: 1080
+    at: Gandhi
+  - type: chips
+    items:
+    - '1937'
+    - '1938'
+    - '1939'
+    - '1947'
+    - '1948'
+    cross: true
+    y: 1270
+    at: nominated
+    stagger: 0.12
+- say: Here's the twist. In 1961, they gave it to U.N. chief Dag Hammarskjöld, after he had died.
+  highlight:
+  - twist
+  - died
+  bg: red
+  layers:
+  - type: ghost
+    text: '1961'
+    y: 1250
+  - type: counter
+    value: 1961
+    plain: true
+    label: Peace prize
+    y: 760
+    at: '1961'
+    roll: 1.1
+  - type: stamp
+    text: Posthumous
+    at: died
+    y: 1110
+    size: 120
+    rotate: -7
+    color:
+    - 17
+    - 17
+    - 19
+- say: In 2006, the Nobel Institute's own director called Gandhi their greatest omission.
+  highlight:
+  - greatest
+  - omission
+  bg: paper
+  layers:
+  - type: kicker
+    text: Nobel Institute · 2006
+    y: 560
+  - type: headline
+    text: The greatest omission
+    font: serif
+    size: 150
+    y: 820
+    marker: omission
+  - type: icon
+    name: award
+    size: 200
+    y: 1220
+    at: director
+- say: Today is his birthday. So tell me, should the Nobel ever be given after death?
+  highlight:
+  - death
+  bg: ink
+  layers:
+  - type: kicker
+    text: 2 October 1869
+    y: 470
+  - type: headline
+    text: Happy birthday, Bapu
+    font: serif
+    size: 96
+    y: 650
+  - type: split
+    y: 1000
+    at: should
+    left:
+      icon: check
+      label: 'Yes'
+    right:
+      icon: x
+      label: 'No'
+      accent: true
+post_caption: '1948: the Nobel Peace Prize went to nobody. 1961: it went to a man who had already died. Should the Nobel be given after death?
+  👇'
+hashtags:
+- '#GandhiJayanti'
+- '#NobelPrize'
+- '#Gandhi'
+- '#history'
+- '#facts'
+- '#india'
+- '#controversy'
+- '#reels'
+sources:
+- nobelprize.org - 'Mahatma Gandhi, the Missing Laureate' (no award in 1948, 'no suitable living candidate'; nominations 1937, 1938, 1939, 1947,
+  1948)
+- nobelprize.org - Dag Hammarskjöld, Nobel Peace Prize 1961 (awarded posthumously)
+- 'Geir Lundestad, director of the Norwegian Nobel Institute, 2006: Gandhi''s omission called the greatest in the prize''s history'
