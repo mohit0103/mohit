@@ -36,12 +36,14 @@ MONO = 'IBMPlexMono-Medium.ttf'
 BEBAS = 'BebasNeue-Regular.ttf'
 SANS = 'Inter-Bold.ttf'
 
-PAL = dict(paper=(238, 232, 220), ink=(17, 17, 19), red=(228, 55, 44), yellow=(255, 212, 60), mute=(128, 120, 110), white=(250, 248, 244))
+PAL = dict(paper=(238, 232, 220), ink=(17, 17, 19), red=(228, 55, 44), yellow=(255, 212, 60), mute=(128, 120, 110), white=(250, 248, 244), gold=(232, 184, 74), night=(12, 12, 16))
 
 
 def colors(bg):
 	if bg == 'paper':
 		return dict(bg=PAL['paper'], fg=PAL['ink'], accent=PAL['red'], mute=PAL['mute'], hl=PAL['yellow'])
+	if bg == 'aura':
+		return dict(bg=PAL['night'], fg=PAL['white'], accent=PAL['gold'], mute=(160, 150, 130), hl=PAL['gold'])
 	if bg == 'red':
 		return dict(bg=PAL['red'], fg=PAL['white'], accent=PAL['ink'], mute=(255, 205, 195), hl=PAL['yellow'])
 	return dict(bg=PAL['ink'], fg=PAL['white'], accent=PAL['red'], mute=(150, 146, 140), hl=PAL['yellow'])
@@ -106,7 +108,7 @@ def wrap(s, f, max_w):
 
 
 def norm(w):
-	return ''.join(ch for ch in w.lower() if ch.isalnum())
+	return ''.join(ch for ch in str(w).lower() if ch.isalnum())
 
 
 # ---------------------------------------------------------------- shared texture
@@ -620,10 +622,100 @@ def L_list(c, L, t, dur, col):
 		c.restore()
 
 
+def L_trajectory(c, L, t, dur, col):
+	"""A six: the ball's flight path draws itself from the bat up and out of the ground, then a '6' bursts."""
+	n = int(L.get('count', 1))
+	gap = L.get('gap', 1.1)
+	y = L.get('y', 900)
+	# ground arc (boundary rope) + pitch
+	k0 = ease_in_out(t / 0.6)
+	rope = skia.Path()
+	rope.addArc(skia.Rect(-200, y - 120, W + 200, y + 700), 200, 140 * k0)
+	c.drawPath(rope, paint(C(col['fg']), 0.25, stroke=4))
+	c.drawRect(skia.Rect(W / 2 - 40, y + 260, W / 2 + 40, y + 420), paint(C(col['fg']), 0.12 * k0))
+	for i in range(n):
+		tt = t - i * gap
+		if tt < 0:
+			continue
+		side = -1 if i % 2 else 1
+		x0, y0 = W / 2, y + 300
+		x1, y1 = W / 2 + side * 330, y - 520
+		path = skia.Path()
+		path.moveTo(x0, y0)
+		path.quadTo(W / 2 + side * 120, y - 760, x1, y1)
+		k = ease_out(tt / 0.7)
+		meas = skia.PathMeasure(path, False)
+		seg = skia.Path()
+		meas.getSegment(max(0.0, meas.getLength() * (k - 0.55)), meas.getLength() * k, seg, True)
+		c.drawPath(seg, paint(C(col['accent']), 0.35, stroke=26, blur=10))
+		c.drawPath(seg, paint(C(col['accent']), stroke=8))
+		pos, _ = meas.getPosTan(meas.getLength() * k)
+		c.drawCircle(pos.x(), pos.y(), 16, paint(C(PAL['red'])))
+		c.drawCircle(pos.x(), pos.y(), 16, paint(C(PAL['white']), 0.6, stroke=3))
+		kb = back_out((tt - 0.6) / 0.35)
+		if kb > 0:
+			f = font(DISPLAY, 260)
+			c.save()
+			c.translate(x1, y1 + 60)
+			c.scale(kb, kb)
+			c.rotate(side * 6)
+			c.drawString('6', -f.measureText('6') / 2, 90, f, paint(C(col['accent'])))
+			c.restore()
+			ks = ease_out((tt - 0.6) / 0.6)
+			if ks < 1:
+				for j in range(12):
+					a = j / 12 * 2 * math.pi
+					r1 = 150 + 120 * ks
+					c.drawLine(x1 + math.cos(a) * r1, y1 + math.sin(a) * r1, x1 + math.cos(a) * (r1 + 50 * (1 - ks)), y1 + math.sin(a) * (r1 + 50 * (1 - ks)), paint(C(col['accent']), 1 - ks, stroke=6))
+
+
+def L_jersey(c, L, t, dur, col):
+	"""Back of a cricket shirt with a name and number (original flat design)."""
+	y = L.get('y', 860)
+	k = back_out(t / 0.7, 1.3)
+	c.save()
+	c.translate(W / 2, y + (1 - clamp(k)) * 200)
+	c.scale(0.9 + 0.1 * clamp(k), 0.9 + 0.1 * clamp(k))
+	body = skia.Path()
+	body.moveTo(-170, -330)
+	body.quadTo(0, -280, 170, -330)   # collar
+	body.lineTo(380, -230)            # right shoulder
+	body.lineTo(440, 30)              # right sleeve end
+	body.lineTo(300, 60)
+	body.lineTo(290, 400)             # right hem
+	body.lineTo(-290, 400)
+	body.lineTo(-300, 60)
+	body.lineTo(-440, 30)
+	body.lineTo(-380, -230)
+	body.close()
+	c.drawPath(body, paint(skia.Color(0, 0, 0), 0.5 * clamp(t / 0.3), blur=40))
+	c.drawPath(body, paint(C(tuple(L.get('shirt', (24, 58, 140)))), clamp(t / 0.2)))
+	c.drawPath(body, paint(C(col['accent']), clamp(t / 0.2), stroke=6))
+	name = str(L.get('name', '')).upper()
+	nf = font(BEBAS, 110)
+	kn = ease_out((t - 0.3) / 0.4)
+	c.drawString(name, -nf.measureText(name) / 2, -150, nf, paint(C(PAL['white']), kn))
+	num = str(L.get('number', ''))
+	f = font(BEBAS, 430)
+	kk = back_out((t - 0.45) / 0.45)
+	if kk > 0:
+		c.save()
+		c.translate(0, 180)
+		c.scale(kk, kk)
+		c.drawString(num, -f.measureText(num) / 2, 120, f, paint(C(col['accent'])))
+		c.restore()
+	c.restore()
+	# aura glow pulse behind
+	kg = ease_out((t - 0.6) / 0.8)
+	if kg > 0:
+		c.drawCircle(W / 2, y, 520 + 40 * math.sin(t * 3), paint(C(col['accent']), 0.10 * kg, stroke=18, blur=20))
+
+
 LAYERS = {
 	'ghost': L_ghost, 'photo': L_photo, 'headline': L_headline, 'kicker': L_kicker, 'stamp': L_stamp,
 	'counter': L_counter, 'chips': L_chips, 'quote': L_quote, 'icon': L_icon, 'redact': L_redact,
 	'lower_third': L_lower_third, 'split': L_split, 'bars': L_bars, 'list': L_list,
+	'trajectory': L_trajectory, 'jersey': L_jersey,
 }
 
 # SFX cue per layer type (name, gain); see sfx.py
@@ -631,4 +723,5 @@ LAYER_SFX = {
 	'photo': ('swish', 0.10), 'stamp': ('thud', 0.45), 'counter': ('ticks', 0.10), 'chips': ('chiptick', 0.10),
 	'quote': ('type', 0.06), 'icon': ('pop', 0.10), 'headline': ('swish', 0.05), 'redact': ('marker', 0.10),
 	'split': ('swish', 0.08), 'bars': ('ticks', 0.06), 'lower_third': ('swish', 0.05),
+	'trajectory': ('whoosh', 0.10), 'jersey': ('thud', 0.25),
 }

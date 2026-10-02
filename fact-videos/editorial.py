@@ -34,13 +34,16 @@ class Backgrounds:
 		self.tex = {}
 		yy, xx = np.mgrid[0:H, 0:W]
 		vig = np.clip(np.hypot(xx - W / 2, yy - H * 0.45) / (H * 0.75), 0, 1) ** 2
-		for name in ('paper', 'ink', 'red'):
+		for name in ('paper', 'ink', 'red', 'aura'):
 			base = np.array(colors(name)['bg'], dtype=np.float32)
 			fib = rng.normal(0, 1, (H // 4, W // 4)).astype(np.float32)
 			fib = np.kron(fib, np.ones((4, 4), dtype=np.float32))[:H, :W]  # soft fibres
 			fine = rng.normal(0, 1, (H, W)).astype(np.float32)
 			amt = 5 if name == 'paper' else 4
-			img = base[None, None, :] + (fib * amt * 0.6 + fine * amt)[..., None]
+			if name == 'aura':  # warm gold glow rising from the bottom
+				glow = np.clip(1 - np.hypot(xx - W / 2, yy - H * 0.95) / (H * 0.7), 0, 1) ** 2
+				base = base[None, None, :] + glow[..., None] * np.array([70, 48, 10], dtype=np.float32)
+			img = (base if base.ndim == 3 else base[None, None, :]) + (fib * amt * 0.6 + fine * amt)[..., None]
 			img *= (1 - vig * (0.12 if name == 'paper' else 0.45))[..., None]
 			rgba = np.dstack([img.clip(0, 255), np.full((H, W), 255, np.float32)]).astype(np.uint8)
 			self.tex[name] = skia.Image.fromarray(rgba, colorType=skia.kRGBA_8888_ColorType)
