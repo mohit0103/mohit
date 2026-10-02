@@ -1,8 +1,7 @@
 name: Daily Trending Video
 
 on:
-  schedule:
-    - cron: '47 1 * * *'   # every day ~07:17 IST
+  # Daily videos are made by Claude in the chat session (option B); this stays as a manual button.
   workflow_dispatch:
 
 permissions:
