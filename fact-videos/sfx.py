@@ -179,3 +179,20 @@ def ambient_bed(seconds):
 	hat = _lowpass(rng.standard_normal(n), 0.95) * hat_env * 0.02
 	fade = np.clip(np.minimum(t / 1.5, (seconds - t) / 2.0), 0, 1)
 	return (pad + sub + hat) * fade
+
+
+def master(in_wav, out_wav, target_lufs=-10.0, true_peak=-1.0):
+	"""Loud, clean mastering for phone speakers: compress, then two-pass loudness-normalise to Reels level."""
+	import json
+	import re
+	import subprocess
+
+	pre = ('highpass=f=70,acompressor=threshold=-24dB:ratio=4:attack=3:release=100:makeup=6,'
+	       'alimiter=limit=0.5:attack=2:release=40:level=false')  # tame peaks so loudnorm can push level up
+	measure = subprocess.run(
+		['ffmpeg', '-hide_banner', '-i', in_wav, '-af', f'{pre},loudnorm=I={target_lufs}:TP={true_peak}:LRA=7:print_format=json', '-f', 'null', '-'],
+		capture_output=True, text=True).stderr
+	m = json.loads(re.search(r'\{[^{}]*"input_i"[^{}]*\}', measure, re.S).group(0))
+	ln = (f"loudnorm=I={target_lufs}:TP={true_peak}:LRA=7:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
+	      f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+	subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', in_wav, '-af', f'{pre},{ln},alimiter=limit=0.89:level=false', '-ar', '48000', out_wav], check=True)

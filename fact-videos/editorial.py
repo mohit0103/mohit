@@ -275,19 +275,22 @@ def mix(samples, lead, scenes, total, script, path):
 					sfx.place(fx, sfx.CUES[name](), L['_start'] + (0.14 if name == 'thud' else 0.0), gain)
 	bed = np.zeros(n)
 	if script.get('music', 'auto') == 'auto':
-		bed = sfx.ambient_bed(total) * float(script.get('music_volume', 0.5))
+		bed = sfx.ambient_bed(total) * float(script.get('music_volume', 0.8))
 	elif script.get('music'):
 		import tts
 		raw = tts._decode(os.path.join(os.path.dirname(os.path.abspath(__file__)), script['music'])).astype(np.float64) / 32768.0
 		bed = np.tile(raw, int(np.ceil(n / max(len(raw), 1))))[:n] * float(script.get('music_volume', 0.12))
 	env = np.convolve(np.abs(voice), np.ones(2400) / 2400, mode='same')
-	out = voice + fx + bed * (1 - 0.55 * np.clip(env * 12, 0, 1))
+	out = voice + fx + bed * (1 - 0.4 * np.clip(env * 12, 0, 1))
 	out /= max(1.0, np.abs(out).max() / 0.95)
-	with wave.open(path, 'wb') as wf:
+	raw = path + '.raw.wav'
+	with wave.open(raw, 'wb') as wf:
 		wf.setnchannels(1)
 		wf.setsampwidth(2)
 		wf.setframerate(sfx.SR)
 		wf.writeframes((out * 32767).astype(np.int16).tobytes())
+	sfx.master(raw, path, float(script.get('loudness', -10)))
+	os.unlink(raw)
 
 
 # ---------------------------------------------------------------- main
@@ -313,7 +316,7 @@ def render(script, samples, lead, scenes, total, out_path, preview=False):
 	wav = out_path + '.mix.wav'
 	mix(samples, lead, scenes, total, script, wav)
 	cmd = ['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', '-i', wav,
-	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '24', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out_path]
+	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '24', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', out_path]
 	ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 	main = skia.Surface(W, H)
 	sa, sb = skia.Surface(W, H), skia.Surface(W, H)

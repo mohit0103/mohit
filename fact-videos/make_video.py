@@ -215,11 +215,14 @@ def mix_audio(samples, lead, scenes, total, script, path):
 	env = np.convolve(np.abs(voice), np.ones(2400) / 2400, mode='same')
 	mix = voice + fx_track + music * (1 - 0.6 * np.clip(env * 12, 0, 1))
 	mix /= max(1.0, np.abs(mix).max() / 0.95)
-	with wave.open(path, 'wb') as wf:
+	raw = path + '.raw.wav'
+	with wave.open(raw, 'wb') as wf:
 		wf.setnchannels(1)
 		wf.setsampwidth(2)
 		wf.setframerate(sfx.SR)
 		wf.writeframes((mix * 32767).astype(np.int16).tobytes())
+	sfx.master(raw, path, float(script.get('loudness', -10)))
+	os.unlink(raw)
 
 
 # ---------------------------------------------------------------- render
@@ -239,7 +242,7 @@ def render(script_path, out_path, engine='auto', voice=None, rate=None, preview=
 	mix_audio(samples, lead, scenes, total, script, wav)
 
 	cmd = ['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', '-i', wav,
-	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out_path]
+	       '-c:v', 'libx264', '-preset', 'medium', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', out_path]
 	ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 	surface = skia.Surface(W, H)
 	c = surface.getCanvas()
