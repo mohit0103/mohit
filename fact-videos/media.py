@@ -24,9 +24,17 @@ TABLER = 'https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/{}.svg'
 CREDITS = []  # filled as photos are used; printed into the post caption
 
 
-def _get(url, timeout=40):
-	with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
-		return r.read()
+def _get(url, timeout=40, tries=3):
+	import time
+
+	for attempt in range(tries):
+		try:
+			with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
+				return r.read()
+		except Exception:
+			if attempt == tries - 1:
+				raise
+			time.sleep(2 * (attempt + 1))
 
 
 def _cached(key, url):
@@ -90,7 +98,8 @@ def photo(spec):
 				CREDITS.append(spec['credit'])
 		else:
 			if spec.get('openverse'):
-				r = json.loads(_get(f"https://api.openverse.org/v1/images/{spec['openverse']}/"))
+				meta = _cached(f"photos/{spec['openverse']}.json", f"https://api.openverse.org/v1/images/{spec['openverse']}/")
+				r = json.load(open(meta))
 				cands = [r]
 				pick = 0
 			else:

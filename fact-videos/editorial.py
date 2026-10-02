@@ -303,6 +303,10 @@ def render(script, samples, lead, scenes, total, out_path, preview=False):
 		for L in sc.get('layers', []):
 			if L.get('type') == 'photo':
 				L['_skip'] = media.photo(L) is None
+			if L.get('type') == 'split':
+				for side in (L.get('left', {}), L.get('right', {})):
+					if side.get('query') or side.get('path') or side.get('openverse'):
+						media.photo(side)
 			if L.get('type') == 'icon':
 				media.icon(L.get('name', 'sparkles'))
 

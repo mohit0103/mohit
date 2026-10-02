@@ -187,6 +187,8 @@ def L_photo(c, L, t, dur, col):
 		# legibility gradient
 		g = skia.GradientShader.MakeLinear([skia.Point(0, H * 0.35), skia.Point(0, H)], [C(col['bg'], 0), C(col['bg'], 235)])
 		c.drawRect(r, skia.Paint(Shader=g))
+		if L.get('dim'):
+			c.drawRect(r, paint(C(col['bg']), float(L['dim'])))
 		g2 = skia.GradientShader.MakeLinear([skia.Point(0, 0), skia.Point(0, 380)], [C(col['bg'], 200), C(col['bg'], 0)])
 		c.drawRect(skia.Rect(0, 0, W, 380), skia.Paint(Shader=g2))
 		c.restore()
@@ -421,8 +423,8 @@ def L_chips(c, L, t, dur, col):
 				on = i == hi or (hi == -1 and i == len(items) - 1 and L.get('last_accent'))
 				c.drawRRect(skia.RRect.MakeRectXY(box, h / 2, h / 2), paint(C(col['accent'] if on else col['fg']), 1 if on else 0.92))
 				c.drawString(items[i], -f.measureText(items[i]) / 2, f.getSize() * 0.36, f, paint(C(col['bg'])))
-				if L.get('cross'):
-					kx = ease_in_out((t - len(items) * stagger - 0.2 - i * 0.12) / 0.25)
+				if L.get('cross') or i in L.get('crossed', []):
+					kx = ease_in_out((t - (i + 1) * stagger - 0.1) / 0.25) if L.get('crossed') else ease_in_out((t - len(items) * stagger - 0.2 - i * 0.12) / 0.25)
 					if kx > 0:
 						c.drawLine(box.left() + 8, 6, box.left() + 8 + (box.width() - 16) * kx, -6, paint(C(PAL['red']), stroke=9))
 				c.restore()
@@ -564,7 +566,7 @@ def L_split(c, L, t, dur, col):
 		elif side.get('query') or side.get('path') or side.get('openverse'):
 			img = media.photo(side)
 			if img is not None:
-				r = skia.Rect(sx - 200, y - 330, sx + 200, y + 170)
+				r = skia.Rect(sx - 235, y - 420, sx + 235, y + 200)
 				c.save()
 				c.clipRect(r)
 				_cover(c, img, r, 1.05 + 0.05 * clamp(t / max(dur, 1)), media.treat(img, side.get('treatment', 'duotone'), (30, 26, 24), (250, 240, 225)), alpha=k)
