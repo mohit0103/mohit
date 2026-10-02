@@ -45,7 +45,15 @@ Layer types:
   {"type":"lower_third","name":"Full Name","role":"what they are"}                   name tag under a photo
   {"type":"redact","text":"a sentence","hide":["word"]}                                classified / hidden-truth feel
   {"type":"ghost","text":"1948","y":1180}                                              huge faint background word/number
-Good combos: ghost+kicker+headline+stamp (hook); photo(print)+kicker; photo(strip)+lower_third+chips; counter+stamp; quote; split (final question).
+HOUSE STYLE (follow strictly - this is what the channel owner asked for):
+- PHOTO-LED, VERY LITTLE TEXT. Every scene except the last has a real "photo" layer (frame "full" with "dim": 0.15-0.3, or
+  "print", or "strip") plus AT MOST ONE short graphic on top: a stamp (1-2 words), a counter, chips (single words/years),
+  or a split. No paragraphs on screen, no headline over a photo except the hook's 2-3 word title. Max 3 words per element.
+- Hook scene: full-frame photo + chips or a 2-3 word headline + a stamp that slams on the shock word.
+- Last scene: the debate question, shown as a split (Yes/No or A/B) or chips of options. Options must look neutral
+  (no highlight), never take a side.
+- Photo queries: concrete things that exist in openly-licensed photos (stadiums, fans, landmarks, objects, statues).
+  Never ask for a photo of a specific living celebrity, and never label a generic photo as a specific event.
 Never put two big elements at the same y. Numbers on screen must match the narration.
 """
 
@@ -60,7 +68,8 @@ THE HOOK (scene 1) DECIDES EVERYTHING. Lead with the most surprising, debated or
 STRUCTURE: hook -> quick context -> 2-3 escalating reveals (each a new surprise, "but here's the twist") -> end with a
 debate question that splits viewers ("Should...? Yes or no?") so people comment. The controversy must be a real, documented debate:
 never invent outrage, never attack a religion, caste, community or private person, never take sides in party politics.
-STYLE: spoken, punchy, simple English (a 14-year-old understands). Max 16 words per scene, 6-8 scenes, total 70-110 words.
+STYLE: spoken, punchy, simple English (a 14-year-old understands). SHORT REEL: 5-7 scenes, max 18 words per scene,
+total 55-90 words (about 20-35 seconds). Every line must earn its place.
 Use Indian context and units where natural (₹, lakh, crore, km). No hashtags or emojis in "say".
 ACCURACY: only well-established facts. If unsure of a number, say it approximately ("almost", "about") or drop it. No invented studies or quotes.
 "highlight": 1-2 exact words from that scene's "say" to pop in the captions.
@@ -182,6 +191,8 @@ def write(topic=None, trending=False, channel='factloop', theme='ink', out=None)
 		'channel': channel,
 		'kicker': data.get('kicker', ''),
 		'theme': theme,
+		'voice': os.environ.get('VOICE') or 'en-US-AndrewMultilingualNeural',
+		'rate': '+10%',
 		'pronounce': data.get('pronounce') or {},
 		'scenes': data['scenes'],
 		'post_caption': data.get('post_caption', ''),

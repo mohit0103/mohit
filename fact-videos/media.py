@@ -53,7 +53,10 @@ def _cached(key, url):
 def _search(query, n=8):
 	q = urllib.parse.urlencode({'q': query, 'license': 'pdm,cc0,by,by-sa', 'page_size': n, 'mature': 'false'})
 	data = json.loads(_get(f'https://api.openverse.org/v1/images/?{q}'))
-	return [r for r in data.get('results', []) if (r.get('width') or 0) >= 500]
+	agency = re.compile(r'\b(afp|reuters|getty|pti|ani|ap photo|bcci|icc|ipl|shutterstock|alamy)\b', re.I)
+	# skip likely press-agency re-uploads whose "free" licence isn't trustworthy
+	return [r for r in data.get('results', []) if (r.get('width') or 0) >= 500
+	        and not agency.search(f"{r.get('title', '')} {r.get('creator', '')} {r.get('url', '')}")]
 
 
 def _vision_pick(query, cands):
@@ -62,7 +65,8 @@ def _vision_pick(query, cands):
 	if not key or len(cands) < 2:
 		return 0
 	parts = [{'text': f'Which image best and most clearly shows: "{query}"? Prefer a real photograph of the actual subject '
-	          '(not a statue, mural, poster, meme or collage unless asked), clean, no big text or watermark. '
+	          '(not a statue, mural, poster, meme or collage unless asked), clean, no big text, logo or watermark, '
+	          'and not an obvious press-agency or broadcast image. '
 	          'Answer with only the image number (0-based), or -1 if none fit.'}]
 	for i, c in enumerate(cands):
 		parts += [{'text': f'Image {i}:'}, {'inline_data': {'mime_type': 'image/jpeg', 'data': base64.b64encode(_get(c['thumbnail'])).decode()}}]
