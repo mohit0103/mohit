@@ -1,0 +1,181 @@
+channel: factloop
+kicker: 03 Oct · IND vs PAK
+voice: en-US-AndrewMultilingualNeural
+rate: +11%
+pronounce:
+  nil: nill
+scenes:
+- say: Tomorrow, India and Pakistan play for Asian Games cricket gold. And it has never happened before.
+  highlight:
+  - gold
+  - never
+  bg: ink
+  layers:
+  - type: photo
+    openverse: 37bfdd7f-917b-47fd-8e52-20b2b90c3020
+    frame: full
+    treatment: color
+    focus: 0.5
+  - type: headline
+    text: IND vs PAK
+    y: 800
+    size: 210
+    accent:
+    - vs
+  - type: stamp
+    text: First ever
+    at: never
+    y: 1090
+    size: 115
+    rotate: -7
+- say: Two countries that stop everything for this one match.
+  highlight:
+  - everything
+  bg: ink
+  transition: wipe
+  layers:
+  - type: split
+    y: 900
+    left:
+      openverse: 63562549-e0e4-4b12-b56e-af51d018befa
+      label: India
+      treatment: color
+    right:
+      openverse: 719edbd8-e7a2-4b54-acfd-e26344d08cd3
+      label: Pakistan
+      treatment: color
+      accent: true
+- say: Cricket joined the Asian Games in 2010. India skipped it twice, then won gold in 2023.
+  highlight:
+  - skipped
+  - gold
+  bg: paper
+  layers:
+  - type: photo
+    openverse: 666afb8b-7651-454f-98b9-7bdd75103403
+    frame: strip
+    treatment: duotone
+    y: 680
+    h: 760
+  - type: chips
+    at: '2010'
+    items:
+    - '2010'
+    - '2014'
+    - 2023 gold
+    highlight: 2
+    y: 1230
+    stagger: 0.45
+    size: 70
+    crossed:
+    - 0
+    - 1
+- say: But here's the twist. That 2023 final was washed out by rain, and India got gold on ranking.
+  highlight:
+  - twist
+  - rain
+  bg: ink
+  layers:
+  - type: photo
+    openverse: a7d85bf0-ca33-4d25-842a-ba2654fc97cc
+    frame: full
+    treatment: bw
+    focus: 0.5
+  - type: stamp
+    text: Washed out
+    at: rain
+    y: 900
+    size: 125
+    rotate: -7
+- say: And in 2007, a tied World Cup game between them went to a bowl-out. India won it three-nil.
+  highlight:
+  - bowl-out
+  - three-nil
+  bg: red
+  layers:
+  - type: photo
+    openverse: 5833c086-2129-4fca-8242-ccb7e5971d7b
+    frame: print
+    treatment: duotone
+    y: 800
+    w: 760
+    h: 860
+    tilt: 3
+  - type: stamp
+    text: 3 - 0
+    at: three-nil
+    y: 1180
+    size: 150
+    rotate: -8
+    color:
+    - 17
+    - 17
+    - 19
+- say: Pakistan never beat India at a World Cup until 2021. Then they won by ten wickets.
+  highlight:
+  - never
+  - ten
+  bg: paper
+  layers:
+  - type: photo
+    openverse: 142ffb15-0d60-4795-a718-e75de2a3967f
+    frame: full
+    treatment: duotone
+    focus: 0.4
+    dim: 0.25
+  - type: stamp
+    text: 10 wickets
+    at: ten
+    y: 960
+    size: 115
+    rotate: -6
+- say: And this week, India edged Pakistan four-three in hockey. Now it's cricket's turn.
+  highlight:
+  - four-three
+  - cricket's
+  bg: red
+  layers:
+  - type: ghost
+    text: 4-3
+    y: 1250
+  - type: counter
+    value: 4
+    suffix: ' - 3'
+    y: 900
+    size: 300
+    roll: 0.9
+- say: So tell me. Should a gold medal ever be decided by rain? Yes or no?
+  highlight:
+  - rain
+  bg: ink
+  layers:
+  - type: photo
+    openverse: 3318fc07-26f6-45e1-833f-4a60959ae956
+    frame: full
+    treatment: duotone
+    focus: 0.4
+    dim: 0.55
+  - type: split
+    y: 960
+    at: Should
+    left:
+      icon: check
+      label: 'Yes'
+    right:
+      icon: x
+      label: 'No'
+      accent: true
+post_caption: IND vs PAK for Asian Games GOLD tomorrow 🔥 Last time India won this gold… the final was washed out by rain. Should a gold ever be decided by rain? Yes or no 👇
+hashtags:
+- '#INDvPAK'
+- '#AsianGames2026'
+- '#IndiaVsPakistan'
+- '#cricket'
+- '#TeamIndia'
+- '#reels'
+sources:
+- 'News reports 1-2 Oct 2026 (ETV Bharat, Times of India, Cricbuzz): India vs Pakistan men''s cricket gold medal match, Asian Games 2026, Saturday 3 Oct; India beat Pakistan 4-3 in the hockey semi-final'
+- 'Asian Games cricket: introduced 2010 (Guangzhou); India sent no men''s team in 2010 and 2014'
+- Hangzhou 2023 men's final vs Afghanistan abandoned due to rain; India awarded gold on higher ranking
+- '2007 ICC World T20: India vs Pakistan tie decided by bowl-out, India won 3-0'
+- '2021 ICC T20 World Cup, Dubai: Pakistan beat India by 10 wickets, their first World Cup win over India'

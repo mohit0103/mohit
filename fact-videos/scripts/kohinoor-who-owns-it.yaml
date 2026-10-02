@@ -1,0 +1,122 @@
+channel: factloop
+kicker: History · Koh-i-Noor
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Koh-i-Noor: Koh-ee-noor
+scenes:
+- say: Three countries say this diamond belongs to them. Britain refuses to give it back.
+  highlight:
+  - three
+  - refuses
+  bg: aura
+  layers:
+  - type: photo
+    openverse: 3fff4bc2-1b60-4f60-bcfa-33399e635893
+    frame: full
+    treatment: color
+    focus: 0.45
+    dim: 0.15
+  - type: chips
+    at: three
+    items:
+    - India
+    - Pakistan
+    - Afghanistan
+    y: 960
+    stagger: 0.3
+    size: 72
+  - type: stamp
+    text: Refused
+    at: refuses
+    y: 1270
+    size: 130
+    rotate: -7
+- say: It was handed over in 1849, by a ten year old king.
+  highlight:
+  - ten
+  bg: paper
+  layers:
+  - type: photo
+    openverse: 7b0e8f22-19fb-43ac-a6bc-019bd37f0cca
+    frame: print
+    treatment: duotone
+    y: 800
+    w: 740
+    h: 880
+    tilt: -3
+  - type: stamp
+    text: Age 10
+    at: ten
+    y: 1210
+    size: 130
+    rotate: -8
+- say: Then it was cut down from 186 carats, to about 105.
+  highlight:
+  - cut
+  bg: ink
+  layers:
+  - type: icon
+    name: diamond
+    size: 240
+    y: 640
+    ring: false
+  - type: bars
+    y: 1060
+    at: cut
+    items:
+    - label: Before · carats
+      value: 186
+    - label: After · carats
+      value: 105.6
+      decimals: 1
+- say: Today it sits in the Tower of London. Even at the 2023 coronation, Britain chose not to use it.
+  highlight:
+  - not
+  bg: ink
+  layers:
+  - type: photo
+    openverse: 5010810f-d7b3-483f-9156-aaa583360c14
+    frame: full
+    treatment: duotone
+    focus: 0.45
+    dim: 0.2
+  - type: stamp
+    text: Not used
+    at: chose
+    y: 1000
+    size: 130
+    rotate: -6
+- say: So should Britain give it back? And to whom?
+  highlight:
+  - whom
+  bg: red
+  layers:
+  - type: headline
+    text: Give it back?
+    font: serif
+    size: 120
+    y: 600
+  - type: chips
+    at: whom
+    items:
+    - India
+    - Pakistan
+    - Afghanistan
+    - Keep it
+    y: 1000
+    stagger: 0.15
+    size: 72
+post_caption: 3 countries claim it. Britain won't give it back. Should the Koh-i-Noor be returned — and to whom? 👇
+hashtags:
+- '#KohiNoor'
+- '#history'
+- '#india'
+- '#facts'
+- '#controversy'
+- '#reels'
+sources:
+- 'Treaty of Lahore (1849): the Koh-i-Noor surrendered to the British; Maharaja Duleep Singh was 10'
+- 'Royal Collection Trust / Historic Royal Palaces: recut in 1852 from about 186 to 105.6 carats; now in the Crown of Queen Elizabeth The Queen Mother, Tower of London'
+- Claims by India, Pakistan and Afghanistan; UK has repeatedly said it will not return it (e.g. PM David Cameron, 2010 and 2013)
+- 'Buckingham Palace, 2023: Queen Camilla crowned with Queen Mary''s Crown; the Koh-i-Noor was not used'

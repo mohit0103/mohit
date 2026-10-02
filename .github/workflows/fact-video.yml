@@ -1,0 +1,36 @@
+name: Make Fact Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic for a new video (AI writes the script). Leave empty to use a script file below.'
+        required: false
+        default: ''
+      script:
+        description: 'Or: path of an existing script in fact-videos/'
+        required: false
+        default: 'scripts/octopus-three-hearts.yaml'
+      voice:
+        description: 'Voice (empty = best available). Edge: en-US-AndrewMultilingualNeural, en-IN-PrabhatNeural, en-IN-NeerjaNeural'
+        required: false
+        default: ''
+      theme:
+        description: 'Look: ink, night or paper'
+        required: false
+        default: 'ink'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  make:
+    uses: ./.github/workflows/render.yml
+    with:
+      topic: ${{ inputs.topic }}
+      script: ${{ inputs.script }}
+      voice: ${{ inputs.voice }}
+      theme: ${{ inputs.theme }}
+      trending: false
+    secrets: inherit

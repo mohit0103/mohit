@@ -1,0 +1,6 @@
+skia-python==144.0.post2
+numpy
+pyyaml
+edge-tts
+piper-tts
+faster-whisper

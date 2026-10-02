@@ -1,0 +1,95 @@
+channel: factloop
+kicker: october 2nd
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Dandi: Daandi
+scenes:
+- say: The man on every Indian note was nominated for the Nobel Peace Prize five times. He never won.
+  highlight:
+  - five
+  - never
+  visual:
+    type: hook
+    emoji: 🏅
+    text: 5 times. 0 wins.
+- say: Today is his birthday. Gandhi was born on October 2nd, 1869.
+  highlight:
+  - birthday
+  visual:
+    type: hero
+    emoji: 🎂
+    orbit:
+    - 👓
+    - 🕊️
+    - 📜
+    label: 2 Oct 1869 · Porbandar
+- say: In 1930, he walked about 390 kilometres to the sea, just to make salt.
+  highlight:
+  - salt
+  visual:
+    type: stat
+    value: 390
+    suffix: ' km'
+    label: the Dandi March
+    emoji: 🧂
+- say: Twenty four days on foot. The whole world watched.
+  highlight:
+  - world
+  visual:
+    type: flow
+    steps:
+    - emoji: 🚶
+      label: 24 days walking
+    - emoji: 🌊
+      label: reaches the sea
+    - emoji: 🧂
+      label: makes salt
+- say: But here's the twist. Another great leader shares his birthday.
+  highlight:
+  - twist
+  visual:
+    type: versus
+    left:
+      emoji: 👓
+      label: Gandhi · 1869
+    right:
+      emoji: 🧑‍🌾
+      label: Shastri · 1904
+- say: Lal Bahadur Shastri, India's second Prime Minister. He gave us Jai Jawan, Jai Kisan.
+  highlight:
+  - Jawan
+  - Kisan
+  visual:
+    type: hero
+    emoji: 🧑‍🌾
+    orbit:
+    - 🪖
+    - 🚜
+    - 🌽
+    label: Jai Jawan · Jai Kisan
+- say: And that Nobel? Never came. But the UN made his birthday the world's Day of Non-Violence.
+  highlight:
+  - Non-Violence
+  visual:
+    type: hero
+    emoji: 🕊️
+    orbit:
+    - 🌐
+    - 🤝
+    - ☮️
+    label: Intl. Day of Non-Violence
+post_caption: Two leaders. One birthday. 🇮🇳 Which fact surprised you more? Comment below 👇
+hashtags:
+- '#GandhiJayanti'
+- '#ShastriJayanti'
+- '#October2'
+- '#facts'
+- '#india'
+- '#history'
+- '#didyouknowfacts'
+- '#reels'
+sources:
+- 'Nobel Prize nomination archive (nobelprize.org): Gandhi nominated 1937, 1938, 1939, 1947, 1948'
+- 'UN General Assembly resolution A/RES/61/271 (2007): International Day of Non-Violence on 2 October'

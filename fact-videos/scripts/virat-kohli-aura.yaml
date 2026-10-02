@@ -1,0 +1,158 @@
+channel: factloop
+kicker: Aura moments · Kohli
+voice: en-US-AndrewMultilingualNeural
+rate: +12%
+pronounce:
+  ODI: O.D.I.
+  RCB: R.C.B.
+  IPL: I.P.L.
+  Wankhede: Wan-khe-day
+scenes:
+- say: India needed thirty one off twelve balls. Ninety thousand people at the MCG. Then Virat Kohli switched on the aura.
+  highlight:
+  - twelve
+  - aura
+  bg: aura
+  layers:
+  - type: ghost
+    text: '31'
+    y: 1250
+  - type: kicker
+    text: MCG · T20 World Cup 2022
+    y: 560
+  - type: headline
+    text: 31 off 12
+    y: 800
+    size: 230
+    accent:
+    - 'off'
+  - type: stamp
+    text: Aura
+    at: aura
+    y: 1120
+    size: 170
+    rotate: -8
+    color:
+    - 232
+    - 184
+    - 74
+- say: Back to back sixes. One of them straight back over the bowler's head, off the back foot.
+  highlight:
+  - sixes
+  - head
+  bg: ink
+  layers:
+  - type: trajectory
+    count: 2
+    gap: 1.2
+    y: 1080
+- say: India won off the very last ball. Kohli, eighty two not out.
+  highlight:
+  - last
+  - eighty
+  bg: red
+  layers:
+  - type: ghost
+    text: 82*
+    y: 1250
+  - type: kicker
+    text: Not out · 53 balls
+    y: 560
+  - type: counter
+    value: 82
+    suffix: '*'
+    y: 900
+    roll: 2.0
+- say: A year later, at the Wankhede, he hit his fiftieth ODI hundred and broke Sachin Tendulkar's record. With Sachin watching.
+  highlight:
+  - fiftieth
+  - watching
+  bg: paper
+  layers:
+  - type: kicker
+    text: Wankhede · World Cup 2023
+    y: 540
+  - type: headline
+    text: Record broken
+    font: serif
+    size: 110
+    y: 700
+    marker: broken
+  - type: bars
+    y: 1060
+    at: fiftieth
+    items:
+    - label: Kohli · ODI hundreds
+      value: 50
+    - label: Sachin · ODI hundreds
+      value: 49
+- say: 2024, the T20 World Cup final. He top scored with seventy six, lifted the trophy, and walked away from T20 cricket.
+  highlight:
+  - seventy
+  - trophy
+  bg: ink
+  layers:
+  - type: kicker
+    text: Barbados · 2024 final
+    y: 520
+  - type: icon
+    name: trophy
+    size: 260
+    y: 790
+  - type: counter
+    value: 76
+    label: in the final
+    y: 1250
+    size: 170
+    at: seventy
+    roll: 1.0
+- say: Then 2025. After eighteen years of waiting, RCB finally won the IPL. Eighteen years. Jersey number eighteen.
+  highlight:
+  - eighteen
+  - finally
+  bg: aura
+  layers:
+  - type: ghost
+    text: '18'
+    y: 1300
+  - type: jersey
+    name: Kohli
+    number: '18'
+    y: 880
+  - type: kicker
+    text: IPL champions · 2025
+    y: 500
+- say: So be honest. Kohli or Sachin, who has more aura? Comment below.
+  highlight:
+  - aura
+  bg: ink
+  layers:
+  - type: headline
+    text: Who has more aura?
+    font: serif
+    size: 100
+    y: 560
+  - type: split
+    y: 1000
+    at: Kohli
+    left:
+      icon: crown
+      label: Kohli
+      accent: true
+    right:
+      icon: crown
+      label: Sachin
+post_caption: 31 off 12. 90,000 people. Then Kohli switched on the aura 🔥 Kohli or Sachin — who has more aura? Comment below 👇
+hashtags:
+- '#ViratKohli'
+- '#Kohli'
+- '#KingKohli'
+- '#cricket'
+- '#TeamIndia'
+- '#aura'
+- '#reels'
+sources:
+- 'T20 World Cup 2022, India vs Pakistan, MCG, 23 Oct 2022: India needed 31 off 12; Kohli 82* off 53, two sixes off Haris Rauf in the 19th over; India won off the last ball; crowd ~90,000'
+- 'ODI World Cup 2023 semi-final, Wankhede, 15 Nov 2023: Kohli''s 50th ODI hundred, passing Sachin Tendulkar''s 49'
+- 'T20 World Cup 2024 final, Barbados, 29 Jun 2024: Kohli 76, Player of the Match; retired from T20Is after the win'
+- 'IPL 2025 final, 3 Jun 2025: RCB beat Punjab Kings for their first title; Kohli has played every season for RCB since 2008; wears No. 18'

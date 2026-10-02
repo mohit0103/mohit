@@ -1,0 +1,61 @@
+channel: factloop
+kicker: 02 Oct · Asian Games
+voice: en-US-AndrewMultilingualNeural
+rate: "+6%"
+pronounce:
+  Hangzhou: Hang-joe
+scenes:
+  - say: The Asian Games were born in India. So why has India never topped the medal table? Not even once.
+    highlight: [never, once]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 6b6e739e-d372-48ac-ac99-fc2f817b605f, frame: full, treatment: duotone, focus: 0.5}
+      - {type: kicker, text: "New Delhi · 1951", y: 620}
+      - {type: headline, text: "Born in India", y: 800, size: 170}
+      - {type: stamp, text: "Never No. 1", at: never, y: 1090, size: 120, rotate: -7}
+
+  - say: The very first Asian Games were held in New Delhi, in 1951. India finished second, with 15 golds to Japan's 24.
+    highlight: [second]
+    bg: paper
+    layers:
+      - {type: photo, openverse: b0568610-f3c1-491c-8172-9de0551ee3ba, frame: strip, treatment: duotone, y: 600, h: 600}
+      - {type: bars, y: 1150, at: second, items: [{label: "Japan · gold", value: 24}, {label: "India · gold", value: 15}]}
+
+  - say: After that, Japan topped every Games till 1978. Then China took over in 1982, and never let go.
+    highlight: [China, never]
+    bg: ink
+    layers:
+      - {type: ghost, text: "Top", y: 1250}
+      - {type: split, y: 850, left: {icon: crown, label: "Japan", sub: "1951 - 1978"}, right: {icon: crown, label: "China", sub: "1982 - now", accent: true}}
+
+  - say: In 2023, India finally crossed one hundred medals. One hundred and seven.
+    highlight: [seven]
+    bg: red
+    layers:
+      - {type: ghost, text: "100+", y: 1250}
+      - {type: kicker, text: "Hangzhou · 2023", y: 560}
+      - {type: counter, value: 107, label: "medals for India", y: 900, at: hundred, roll: 1.4}
+      - {type: stamp, text: "Record", at: seven, y: 1180, size: 110, rotate: -6, color: [17, 17, 19]}
+
+  - say: But here's the twist. China won 201 golds that year. Its golds alone beat India's entire medal count.
+    highlight: [twist, alone]
+    bg: paper
+    layers:
+      - {type: kicker, text: "Hangzhou · 2023", y: 540}
+      - {type: headline, text: "Golds vs everything", font: serif, size: 96, y: 680, marker: everything}
+      - {type: bars, y: 1040, at: China, items: [{label: "China · golds only", value: 201}, {label: "India · all medals", value: 107}]}
+
+  - say: As the 2026 Games wrap up in Japan, tell me. Will India ever top the table? Yes or no?
+    highlight: [ever]
+    bg: ink
+    layers:
+      - {type: kicker, text: "Aichi-Nagoya · 2026", y: 470}
+      - {type: headline, text: "Can India be No. 1?", font: serif, size: 100, y: 640}
+      - {type: split, y: 1030, at: Will, left: {icon: check, label: "Yes"}, right: {icon: x, label: "No", accent: true}}
+
+post_caption: "The Asian Games started in New Delhi in 1951… and India has NEVER finished No. 1. Will it ever happen? Yes or no 👇"
+hashtags: ["#AsianGames2026", "#AsianGames", "#TeamIndia", "#sports", "#facts", "#india", "#reels"]
+sources:
+  - "Olympic Council of Asia / Asian Games records: 1951 New Delhi medal table (Japan 24 gold, India 15 gold)"
+  - "Asian Games medal tables: Japan first 1951–1978, China first every edition since 1982"
+  - "Hangzhou 2022 (held 2023) final medal table: India 107 medals (28 gold); China 201 gold, 383 total"
