@@ -1,0 +1,54 @@
+channel: factloop
+kicker: History · 1932
+voice: en-US-AndrewMultilingualNeural
+rate: "+10%"
+pronounce: {}
+scenes:
+  - say: In 1932, Australia went to war against birds. And the birds won.
+    highlight: [war, won]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 19449045-9b68-44ee-958d-501d3d1560bb, frame: full, treatment: color, focus: 0.35, dim: 0.15}
+      - {type: kicker, text: "Western Australia · 1932", y: 560}
+      - {type: stamp, text: "Birds won", at: birds, y: 1180, size: 140, rotate: -8}
+
+  - say: About twenty thousand emus were wrecking wheat farms.
+    highlight: [twenty]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 5889425e-5fc7-49fd-a458-9814ff83a512, frame: full, treatment: color, focus: 0.5, dim: 0.3}
+      - {type: counter, value: 20000, label: "emus", y: 960, size: 220, roll: 1.4}
+
+  - say: So the army sent in soldiers. With machine guns.
+    highlight: [army, machine]
+    bg: paper
+    layers:
+      - {type: photo, openverse: 722635af-f069-4289-b7bf-22dc708aa985, frame: print, treatment: duotone, y: 780, w: 760, h: 860, tilt: -3}
+      - {type: stamp, text: "Machine guns", at: machine, y: 1200, size: 115, rotate: -6}
+
+  - say: They fired almost ten thousand bullets. Confirmed kills? Nine hundred eighty six.
+    highlight: [ten, Confirmed]
+    bg: red
+    layers:
+      - {type: counter, value: 9860, label: "bullets fired", y: 800, size: 220, roll: 1.5}
+      - {type: stamp, text: "986 kills", at: Confirmed, y: 1170, size: 125, rotate: -7, color: [17, 17, 19]}
+
+  - say: That's ten bullets per bird. The emus split up and just kept running.
+    highlight: [ten, running]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 77d5384d-4a1b-4e79-b8c3-a8a0d5e74da9, frame: full, treatment: color, focus: 0.5, dim: 0.2}
+      - {type: stamp, text: "10 per bird", at: ten, y: 1000, size: 130, rotate: -6, color: [255, 212, 60]}
+
+  - say: The army pulled out. So who really won this war? The army, or the emus?
+    highlight: [won]
+    bg: ink
+    layers:
+      - {type: photo, openverse: e90dbf9e-a0ab-4717-85eb-7bd8f651b1fd, frame: full, treatment: duotone, focus: 0.4, dim: 0.55}
+      - {type: split, y: 960, at: who, left: {icon: shield, label: "Army"}, right: {icon: feather, label: "Emus"}}
+
+post_caption: "In 1932 Australia sent soldiers with machine guns to fight emus… and the emus won. 🐦 9,860 bullets. 986 birds. Who really won — army or emus? 👇"
+hashtags: ["#EmuWar", "#history", "#facts", "#australia", "#didyouknow", "#weirdhistory", "#reels"]
+sources:
+  - "National Archives of Australia / Australian War Memorial: the 'Emu War', Western Australia, Nov-Dec 1932; ~20,000 emus damaging wheat crops"
+  - "Major G.P.W. Meredith's report: two Lewis guns; 986 kills from 9,860 rounds; operation withdrawn"
