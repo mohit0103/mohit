@@ -2,7 +2,8 @@
 import type { Feeds, InlineButton, Llm, LlmRequest, Speech, Telegram, Weather } from './types';
 import { LlmError } from './types';
 import { Store } from './store';
-import { localDate } from './time';
+import { localDate, utc } from './time';
+import { DEFAULT_VOICE, VOICES, edgeSynthesize } from './edge';
 
 // ---------- Telegram ----------
 
@@ -243,6 +244,7 @@ export class WorkersSpeech implements Speech {
 		private speaker = 'apollo',
 		private dailyChars = 3000,
 		private llmFallback?: Llm,
+		private edge: ((text: string, voiceId: string) => Promise<Uint8Array>) | null = (t, v) => edgeSynthesize(t, v),
 	) {}
 
 	async transcribe(audio: Uint8Array, mime: string): Promise<string> {
@@ -263,9 +265,26 @@ export class WorkersSpeech implements Speech {
 		return text.trim();
 	}
 
-	async synthesize(text: string): Promise<{ audio: Uint8Array; mime: string } | null> {
+	/**
+	 * Voices in order of quality: Microsoft neural (free, most human), Deepgram Aura (daily budget),
+	 * then MeloTTS. Returns null if all fail, and the caller sends text instead.
+	 */
+	async synthesize(text: string, voice?: string): Promise<{ audio: Uint8Array; mime: string } | null> {
 		const clean = speakable(text);
 		if (!clean) return null;
+		const errors: string[] = [];
+		const at = utc(this.now());
+		const voiceKey = voice ?? ((await this.store.get('tts_voice')) || DEFAULT_VOICE);
+		const v = VOICES[voiceKey] ?? VOICES[DEFAULT_VOICE];
+		if (this.edge) {
+			try {
+				const audio = await this.edge(clean, v.id);
+				await this.store.diag('voice', true, `natural voice (${voiceKey})`, at);
+				return { audio, mime: 'audio/mpeg' };
+			} catch (e) {
+				errors.push(`natural voice: ${String(e).slice(0, 120)}`);
+			}
+		}
 		const key = `tts_chars:${localDate(this.now())}`;
 		const used = Number((await this.store.get(key)) ?? 0);
 		const ai = this.ai as any;
@@ -275,20 +294,26 @@ export class WorkersSpeech implements Speech {
 				const audio = await toBytes(res);
 				if (audio.length > 100) {
 					await this.store.set(key, String(used + clean.length));
+					await this.store.diag('voice', errors.length === 0, ['Aura voice', ...errors].join('; '), at);
 					return { audio, mime: 'audio/ogg' };
 				}
+				errors.push('aura: empty audio');
 			} catch (e) {
-				console.warn('aura failed', e);
+				errors.push(`aura: ${String(e).slice(0, 120)}`);
 			}
-		}
-		// Cheaper backup voice once the daily budget for the natural voice is used up.
+		} else errors.push('aura: daily budget used');
 		try {
 			const res = await ai.run(MELO, { prompt: clean, lang: 'en' });
 			const audio = await toBytes(res);
-			if (audio.length > 100) return { audio, mime: 'audio/mpeg' };
+			if (audio.length > 100) {
+				await this.store.diag('voice', false, ['backup voice', ...errors].join('; '), at);
+				return { audio, mime: 'audio/mpeg' };
+			}
+			errors.push('melo: empty audio');
 		} catch (e) {
-			console.warn('melotts failed', e);
+			errors.push(`melo: ${String(e).slice(0, 120)}`);
 		}
+		await this.store.diag('voice', false, `no voice: ${errors.join('; ')}`, at);
 		return null;
 	}
 }

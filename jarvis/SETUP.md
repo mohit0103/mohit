@@ -75,7 +75,9 @@ Then just talk to it, by voice note or text:
 
 ## If something goes wrong
 
-- Send `/ping`. If there's no answer, check the latest **Actions → Jarvis** run.
+- Send `/status` to see whether email, voice, the brain and the schedule are working (with the last error, if any).
+- Send `/ping`. If there is no answer, check the latest **Actions → Jarvis** run.
+- Send `/voices` to hear the available voices and pick one.
 - "Brain hit its free limit": Gemini's free quota ran out. Jarvis saves your message and answers when quota returns.
-- Voice notes turn into text near the end of a busy day: the free natural voice has a daily budget, then a backup voice is used, then text.
+- If voice notes sound robotic or turn into text, `/status` shows why: Jarvis falls back from the natural voice to Aura, then a backup voice, then text.
 - To change a key, update the GitHub secret and re-run the workflow.

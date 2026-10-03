@@ -60,7 +60,7 @@ export class LlmError extends Error {
 export interface Speech {
 	transcribe(audio: Uint8Array, mime: string): Promise<string>;
 	/** Returns null when speech is unavailable or over budget; the caller sends text instead. */
-	synthesize(text: string): Promise<{ audio: Uint8Array; mime: string } | null>;
+	synthesize(text: string, voice?: string): Promise<{ audio: Uint8Array; mime: string } | null>;
 }
 
 export interface Weather {

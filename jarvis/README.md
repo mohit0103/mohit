@@ -23,7 +23,7 @@ Setup from a phone: [SETUP.md](SETUP.md). Design and decisions: [PLAN.md](PLAN.m
 
 ```
 npm install
-npm test             # 71 unit and scenario tests (fake Telegram/Gemini, real SQLite)
+npm test             # 80 unit and scenario tests (fake Telegram/Gemini, real SQLite)
 npx tsc --noEmit
 ./scripts/smoke.sh   # boots the Worker in workerd and exercises the real request paths
 ```

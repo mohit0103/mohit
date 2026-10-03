@@ -42,8 +42,14 @@ export async function tick(deps: Deps): Promise<string[]> {
 	await step('email', async () => {
 		if (!deps.mail) return;
 		if (!(await store.claim('runs', `email:${today}:${Math.floor(mins / 30)}`, utc(now)))) return;
-		const n = await syncEmail(deps, store, now);
-		log.push(`email: ${n} new`);
+		try {
+			const n = await syncEmail(deps, store, now);
+			await store.diag('email', true, `synced, ${n} new`, utc(now));
+			log.push(`email: ${n} new`);
+		} catch (e) {
+			await store.diag('email', false, String(e).replace(/^Error: /, ''), utc(now));
+			throw e;
+		}
 	});
 	if (paused) {
 		log.push('paused');
@@ -78,6 +84,10 @@ export async function tick(deps: Deps): Promise<string[]> {
 	await step('followups', () => sendFollowups(deps, store, chatId, now, log));
 	await step('heads-up', () => sendHeadsUps(deps, store, chatId, now, log));
 	await step('nudges', () => maybeNudge(deps, store, chatId, now, log));
+	await step('record', async () => {
+		const failed = log.filter((l) => l.includes(' failed:'));
+		await store.diag('schedule', failed.length === 0, failed.length ? failed.join('; ') : `running every 5 min (${log.join(', ') || 'nothing due'})`, utc(now));
+	});
 	await step('close stale', async () => {
 		for (const p of await store.staleUnanswered(utc(new Date(now.getTime() - 4 * 86_400_000)))) await store.updatePlan(p.id, { status: 'done', outcome: '(no update given)' });
 	});

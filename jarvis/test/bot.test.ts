@@ -244,3 +244,48 @@ describe('commands and buttons', () => {
 		expect(rows(w, 'SELECT done FROM reminders')[0].done).toBe(0);
 	});
 });
+
+describe('email on request, status and voices', () => {
+	const triage = (w: ReturnType<typeof makeWorld>) =>
+		w.llm.on('email triage filter', () => ({
+			items: [{ uid: 1, importance: 'high', kind: 'work', summary: 'Priya (manager): needs the deck by 4 PM', event_title: '', event_starts_at: '', event_all_day: false, followup_question: '', due_title: '', due_at: '', amount: '', urgent: false }],
+		}));
+
+	it('checks Gmail right away when he asks about email, and the model knows it has access', async () => {
+		const w = makeWorld();
+		triage(w);
+		w.mail.inbox = [{ uid: 1, from: 'Priya', subject: 'Deck', date: w.clock.now, text: 'Need the deck by 4' }];
+		w.llm.on(CHAT, () => ({ reply: 'Priya needs the deck by 4!', memory: emptyMemory }));
+		await handleUpdate(w.deps, textUpdate('Any important emails today?'));
+		expect(w.mail.calls).toBe(1);
+		const chat = w.llm.calls.find((c) => c.system.includes('Reply with JSON'))!;
+		expect(chat.system).toContain('Priya (manager): needs the deck by 4 PM');
+		expect(chat.system).toMatch(/you DO have read-only access to his Gmail/);
+		// A non-email message doesn't hit Gmail.
+		await handleUpdate(w.deps, textUpdate('cool thanks'));
+		expect(w.mail.calls).toBe(1);
+	});
+
+	it('/emails lists important mail, and reports a Gmail login problem plainly', async () => {
+		const w = makeWorld();
+		triage(w);
+		w.mail.inbox = [{ uid: 1, from: 'Priya', subject: 'Deck', date: w.clock.now, text: 'x' }];
+		await handleUpdate(w.deps, textUpdate('/emails'));
+		expect(w.tg.visible().at(-1)!.text).toMatch(/❗ Priya \(manager\)/);
+		w.mail.fetchNew = async () => {
+			throw new Error('imap LOGIN failed: NO [AUTHENTICATIONFAILED] Invalid credentials');
+		};
+		await handleUpdate(w.deps, textUpdate('/emails'));
+		expect(w.tg.visible().at(-1)!.text).toMatch(/couldn't check Gmail: imap LOGIN failed/);
+		await handleUpdate(w.deps, textUpdate('/status'));
+		expect(w.tg.visible().at(-1)!.text).toMatch(/⚠️ email .*AUTHENTICATIONFAILED/);
+	});
+
+	it('/voices sends samples and a button sets the voice', async () => {
+		const w = makeWorld();
+		await handleUpdate(w.deps, textUpdate('/voices'));
+		expect(w.tg.visible().filter((s) => s.type === 'voice').length).toBe(4);
+		await handleUpdate(w.deps, buttonUpdate('v:prabhat'));
+		expect(rows(w, "SELECT v FROM kv WHERE k = 'tts_voice'")[0].v).toBe('prabhat');
+	});
+});

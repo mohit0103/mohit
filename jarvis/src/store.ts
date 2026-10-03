@@ -120,6 +120,15 @@ export class Store {
 		await run(this.db, 'DELETE FROM kv WHERE k = ?', k);
 	}
 
+	/** Records the latest outcome of a subsystem (shown by /status). Never throws. */
+	async diag(name: string, ok: boolean, info: string, at: string): Promise<void> {
+		await this.set(`diag:${name}`, JSON.stringify({ ok, info: info.slice(0, 300), at })).catch(() => undefined);
+	}
+	async diags(): Promise<{ name: string; ok: boolean; info: string; at: string }[]> {
+		const rows = await all<{ k: string; v: string }>(this.db, "SELECT k, v FROM kv WHERE k LIKE 'diag:%' ORDER BY k");
+		return rows.map((r) => ({ name: r.k.slice(5), ...JSON.parse(r.v) }));
+	}
+
 	/** Claims a once-only key. Returns false when it was already claimed. */
 	async claim(table: 'runs' | 'updates', key: string | number, at: string): Promise<boolean> {
 		const col = table === 'runs' ? 'key' : 'id';

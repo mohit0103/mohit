@@ -7,6 +7,8 @@ import { Store } from './store';
 import { addDays, atLocal, human, localDate, utc } from './time';
 import { LlmError, type Deps } from './types';
 import { runBriefing, runCheckin } from './scheduler';
+import { syncEmail } from './email/sync';
+import { VOICES } from './edge';
 
 const HELP = `Hey! I'm Jarvis. Just talk to me, by voice note or text. I remember what you tell me, remind you about things, and check in on you.
 
@@ -18,6 +20,9 @@ Commands:
 /briefing - morning briefing now
 /checkin - evening check-in now
 /pause 3 - no proactive messages for 3 hours (/resume to undo)
+/emails - check your inbox now
+/voices - hear the voices and pick one
+/status - check everything is working
 /export - download all my memory as a file
 /forget 12 - delete fact number 12
 /ping - check I'm alive`;
@@ -90,12 +95,14 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 	const now = deps.now();
 	await store.addMessage('user', text, 'chat', utc(now));
 	await deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing');
+	if (deps.mail && /\b(e-?mails?|inbox|gmail|mails?)\b/i.test(text)) await checkMailNow(deps, store, now);
 	let result: ChatReply;
 	try {
 		result = await think(deps, store, now);
 	} catch (e) {
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
+		await store.diag('brain', false, String(e), utc(now));
 		await store.set('pending_reply', utc(now));
 		const sorry =
 			kind === 'quota'
@@ -107,6 +114,7 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 		return;
 	}
 	await store.del('pending_reply');
+	await store.diag('brain', true, 'replying normally', utc(now));
 	try {
 		await applyMemory(store, result.memory, now);
 	} catch (e) {
@@ -130,7 +138,8 @@ ${MEMORY_RULES}
 Reply with JSON: {"reply": what you say back (1-4 short spoken sentences unless he asks for more), "memory": {...}}.
 If he answers a follow-up about a plan, react to it like a friend and mark the plan done with the outcome.
 If he asks what you know about him, summarise warmly. If he says "forget that", remove the matching facts.
-Never claim you did something (sent an email, booked something) that you cannot do.`;
+Never claim you did something (sent an email, booked something) that you cannot do.
+${deps.mail ? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him nothing important came in recently. Never say you lack email access.` : `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`}`;
 	const turns = toTurns(recent);
 	const r = await generateJson<ChatReply>(deps.llm, { system, turns, schema: chatSchema, temperature: 0.8 });
 	if (typeof r?.reply !== 'string') throw new LlmError('reply missing', 'bad_response');
@@ -199,6 +208,34 @@ async function handleCommand(deps: Deps, store: Store, chatId: string, text: str
 			const bytes = new TextEncoder().encode(JSON.stringify(data, null, 2));
 			return deps.tg.sendDocument(chatId, bytes, `jarvis-memory-${localDate(now)}.json`, 'Everything I remember, as a file.');
 		}
+		case '/emails': {
+			if (!deps.mail) return deps.tg.sendMessage(chatId, "Gmail isn't connected yet. Add the GMAIL_ADDRESS and GMAIL_APP_PASSWORD secrets and redeploy.");
+			await deps.tg.sendChatAction(chatId, 'typing');
+			const err = await checkMailNow(deps, store, now);
+			if (err) return deps.tg.sendMessage(chatId, `I couldn't check Gmail: ${err}`);
+			const mails = await store.recentEmails(utc(new Date(now.getTime() - 2 * 86_400_000)));
+			if (!mails.length) return deps.tg.sendMessage(chatId, '📭 Nothing important in your inbox from the last 2 days.');
+			return deps.tg.sendMessage(chatId, `📬 Important email, last 2 days:\n${mails.map((m) => `• ${m.importance === 'high' ? '❗ ' : ''}${m.summary}`).join('\n')}`);
+		}
+		case '/status': {
+			const diags = await store.diags();
+			const lines = ['🩺 Jarvis status', `Time: ${human(now)}`, `Gmail: ${deps.mail ? 'connected' : 'not connected'}`];
+			for (const d of diags) lines.push(`${d.ok ? '✅' : '⚠️'} ${d.name} (${human(new Date(d.at))}): ${d.info}`);
+			if (!diags.length) lines.push('No activity recorded yet.');
+			return deps.tg.sendMessage(chatId, lines.join('\n'));
+		}
+		case '/voices': {
+			await deps.tg.sendMessage(chatId, "Here's how each voice sounds. Tap a button to pick one 👇");
+			for (const [key, v] of Object.entries(VOICES)) {
+				const audio = await deps.speech.synthesize(`Hey ${deps.config.name}! I'm ${v.label.split(':')[0]}. How's your day going? I'll keep you on top of things.`, key);
+				if (audio) await deps.tg.sendVoice(chatId, audio.audio, audio.mime, v.label);
+			}
+			const keys = Object.keys(VOICES);
+			return deps.tg.sendMessage(chatId, 'Which voice do you like?', [
+				keys.slice(0, 2).map((k) => ({ text: `Use ${k[0].toUpperCase()}${k.slice(1)}`, data: `v:${k}` })),
+				keys.slice(2).map((k) => ({ text: `Use ${k[0].toUpperCase()}${k.slice(1)}`, data: `v:${k}` })),
+			]);
+		}
 		case '/briefing':
 			return runBriefing(deps, store, chatId, now);
 		case '/checkin':
@@ -227,11 +264,35 @@ async function handleButton(deps: Deps, store: Store, cq: any): Promise<void> {
 		await store.snoozeReminder(id, utc(when));
 		return deps.tg.answerCallback(cq.id, `Snoozed until ${human(when, false)}`);
 	}
+	if (kind === 'v' && VOICES[action]) {
+		await store.set('tts_voice', action);
+		await deps.tg.answerCallback(cq.id, `Voice set to ${action}`);
+		const audio = await deps.speech.synthesize(`Done! This is my voice from now on, ${deps.config.name}.`);
+		if (audio) await deps.tg.sendVoice(chatId, audio.audio, audio.mime);
+		return;
+	}
 	if (kind === 'a' && Number.isInteger(id)) {
 		await store.setAdminStatus(id, action === 'done' ? 'done' : 'open');
 		return deps.tg.answerCallback(cq.id, 'Marked done ✅');
 	}
 	return deps.tg.answerCallback(cq.id);
+}
+
+/** Syncs Gmail right away (bounded wait). Returns an error message, or null on success. */
+async function checkMailNow(deps: Deps, store: Store, now: Date): Promise<string | null> {
+	try {
+		const n = await Promise.race([
+			syncEmail(deps, store, now),
+			new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Gmail took too long to answer')), 20_000)),
+		]);
+		await store.diag('email', true, `checked on request, ${n} new`, utc(now));
+		return null;
+	} catch (e) {
+		console.error('email check failed', e);
+		const msg = String(e).replace(/^Error: /, '');
+		await store.diag('email', false, msg, utc(now));
+		return msg;
+	}
 }
 
 /** Retries a reply that failed earlier (e.g. Gemini quota). Called from the scheduler. */

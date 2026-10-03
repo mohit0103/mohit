@@ -99,7 +99,7 @@ describe('voice budget', () => {
 	it('uses the natural voice until the daily budget, then the backup voice', async () => {
 		const { ai, runs } = fakeAi();
 		const now = () => new Date('2026-10-03T10:00:00+05:30');
-		const s = new WorkersSpeech(ai, new Store(fakeD1()), now, 'apollo', 100);
+		const s = new WorkersSpeech(ai, new Store(fakeD1()), now, 'apollo', 100, undefined, null);
 		expect((await s.synthesize('a'.repeat(80)))?.mime).toBe('audio/ogg');
 		expect((await s.synthesize('b'.repeat(80)))?.mime).toBe('audio/mpeg');
 		expect(runs).toEqual(['@cf/deepgram/aura-2-en', '@cf/myshell-ai/melotts']);
@@ -107,7 +107,7 @@ describe('voice budget', () => {
 
 	it('returns null (send text) when every voice fails', async () => {
 		const { ai } = fakeAi(['aura', 'melo']);
-		const s = new WorkersSpeech(ai, new Store(fakeD1()), () => new Date(), 'apollo', 3000);
+		const s = new WorkersSpeech(ai, new Store(fakeD1()), () => new Date(), 'apollo', 3000, undefined, null);
 		expect(await s.synthesize('hello')).toBeNull();
 		expect(await s.synthesize('🎉')).toBeNull();
 	});
@@ -115,7 +115,7 @@ describe('voice budget', () => {
 	it('transcribes with Whisper and falls back to Gemini', async () => {
 		const { ai } = fakeAi(['whisper']);
 		const llm = { generate: async () => 'from gemini' };
-		const s = new WorkersSpeech(ai, new Store(fakeD1()), () => new Date(), 'apollo', 3000, llm);
+		const s = new WorkersSpeech(ai, new Store(fakeD1()), () => new Date(), 'apollo', 3000, llm, null);
 		expect(await s.transcribe(new Uint8Array([1]), 'audio/ogg')).toBe('from gemini');
 		const ok = new WorkersSpeech(fakeAi().ai, new Store(fakeD1()), () => new Date());
 		expect(await ok.transcribe(new Uint8Array([1]), 'audio/ogg')).toBe('hello there');
@@ -181,5 +181,31 @@ describe('model discovery', () => {
 		const g = new Gemini('k', 'old-a,old-b', f, noSleep);
 		expect(await g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] })).toBe('hello from the future');
 		expect(calls.filter((c) => c.url.includes('/models?')).length).toBe(1);
+	});
+});
+
+describe('natural voice first', () => {
+	it('uses the Microsoft neural voice and the chosen voice, falling back to Aura on failure', async () => {
+		const store = new Store(fakeD1());
+		const used: string[] = [];
+		const edgeOk = async (_t: string, v: string) => {
+			used.push(v);
+			return new Uint8Array(300);
+		};
+		const ai = { run: async () => new Response(new Uint8Array(500)).body } as unknown as Ai;
+		const s = new WorkersSpeech(ai, store, () => new Date(), 'apollo', 3000, undefined, edgeOk);
+		expect((await s.synthesize('hello'))?.mime).toBe('audio/mpeg');
+		await store.set('tts_voice', 'prabhat');
+		await s.synthesize('hello');
+		expect(await s.synthesize('hello', 'brian')).not.toBeNull();
+		expect(used).toEqual(['en-US-AndrewMultilingualNeural', 'en-IN-PrabhatNeural', 'en-US-BrianMultilingualNeural']);
+
+		const broken = new WorkersSpeech(ai, store, () => new Date(), 'apollo', 3000, undefined, async () => {
+			throw new Error('blocked');
+		});
+		expect((await broken.synthesize('hello'))?.mime).toBe('audio/ogg');
+		const d = (await store.diags()).find((x) => x.name === 'voice')!;
+		expect(d.ok).toBe(false);
+		expect(d.info).toMatch(/natural voice: Error: blocked/);
 	});
 });
