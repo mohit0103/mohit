@@ -72,6 +72,19 @@ export default {
 				voice: (await store.get('tts_voice')) ?? 'default',
 			});
 		}
+		if (req.method === 'GET' && url.pathname === '/review') {
+			// Recent conversation, timings and self-reviews, for improving Jarvis. Owner key only.
+			if (req.headers.get('x-jarvis-key') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) return new Response('forbidden', { status: 403 });
+			const hours = Math.min(Number(url.searchParams.get('hours')) || 24, 24 * 14);
+			const since = new Date(Date.now() - hours * 3600_000).toISOString();
+			const store = new Store(env.DB);
+			const messages = (await env.DB.prepare('SELECT role, kind, at, meta, text FROM messages WHERE at >= ? ORDER BY id').bind(since).all()).results;
+			const reviews = (await env.DB.prepare("SELECT k, v FROM kv WHERE k LIKE 'review:%' ORDER BY k DESC LIMIT 7").all<{ k: string; v: string }>()).results.map((r) => ({
+				date: r.k.slice(7),
+				...JSON.parse(r.v),
+			}));
+			return Response.json({ since, messages, reviews, diags: await store.diags(), model: await store.get('llm_model') });
+		}
 		if (req.method === 'POST' && url.pathname === '/telegram') {
 			if (req.headers.get('x-telegram-bot-api-secret-token') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) {
 				return new Response('forbidden', { status: 403 });

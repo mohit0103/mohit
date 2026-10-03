@@ -56,6 +56,7 @@ export interface Message {
 	text: string;
 	kind: string;
 	at: string;
+	meta?: string;
 }
 export interface EmailRow {
 	uid: number;
@@ -136,8 +137,8 @@ export class Store {
 	}
 
 	// --- messages ---
-	async addMessage(role: 'user' | 'jarvis', text: string, kind: string, at: string): Promise<void> {
-		await insert(this.db, 'INSERT INTO messages (role, text, kind, at) VALUES (?, ?, ?, ?)', role, text, kind, at);
+	async addMessage(role: 'user' | 'jarvis', text: string, kind: string, at: string, meta = ''): Promise<void> {
+		await insert(this.db, 'INSERT INTO messages (role, text, kind, at, meta) VALUES (?, ?, ?, ?, ?)', role, text, kind, at, meta);
 	}
 	async recentMessages(limit: number): Promise<Message[]> {
 		const rows = await all<Message>(this.db, 'SELECT * FROM messages ORDER BY id DESC LIMIT ?', limit);

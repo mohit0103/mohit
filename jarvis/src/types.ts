@@ -45,6 +45,8 @@ export interface LlmRequest {
 	audio?: { mime: string; data: Uint8Array };
 	/** Latency-sensitive: turn model thinking down to the minimum. */
 	fast?: boolean;
+	/** Let the model use Google Search for current or factual questions. */
+	search?: boolean;
 }
 
 export interface Llm {

@@ -277,3 +277,21 @@ describe('fast replies', () => {
 		expect(calls[0].url).toContain('/b:'); // skips the dead model next time
 	});
 });
+
+describe('web search', () => {
+	it('adds Google Search for search requests and drops it if a model refuses', async () => {
+		const bodies: any[] = [];
+		const { f } = fakeFetch((_url, init) => {
+			const b = JSON.parse(String(init!.body));
+			bodies.push(b);
+			return b.tools ? new Response('Search grounding is not supported', { status: 400 }) : ok('answer');
+		});
+		const g = new Gemini('k', 'm', f, noSleep);
+		expect(await g.generate({ system: '', turns: [{ role: 'user', text: 'score?' }], search: true })).toBe('answer');
+		expect(bodies[0].tools).toEqual([{ google_search: {} }]);
+		expect(bodies[1].tools).toBeUndefined();
+		// Never combined with JSON output.
+		await g.generate({ system: '', turns: [{ role: 'user', text: 'x' }], search: true, schema: { type: 'OBJECT' } });
+		expect(bodies.at(-1).tools).toBeUndefined();
+	});
+});

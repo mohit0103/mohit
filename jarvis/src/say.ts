@@ -13,6 +13,8 @@ export interface SayOptions {
 	buttons?: InlineButton[][];
 	/** Extra text sent after the voice note (details not worth reading aloud, like lists). */
 	details?: string;
+	/** Stored with the message for review (e.g. timings). */
+	meta?: string;
 }
 
 /** Sends a message. Voice falls back to text if speech fails; a send failure is logged, not thrown, after one retry. */
@@ -38,7 +40,7 @@ export async function say(deps: Deps, chatId: string, text: string, opts: SayOpt
 		const full = opts.details ? `${text}\n\n${opts.details}` : text;
 		await retry(() => deps.tg.sendMessage(chatId, full, opts.buttons));
 	}
-	await store.addMessage('jarvis', text, opts.kind, utc(deps.now()));
+	await store.addMessage('jarvis', text, opts.kind, utc(deps.now()), opts.meta ?? '');
 }
 
 async function retry(fn: () => Promise<void>): Promise<void> {

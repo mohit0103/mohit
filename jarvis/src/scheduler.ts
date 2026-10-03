@@ -12,6 +12,7 @@ export const BRIEFING_AT = 7 * 60; // 07:00
 export const CHECKIN_AT = 19 * 60; // 19:00
 const CATCH_UP = 180; // minutes a missed slot can still run late
 const DIARY_AT = 23 * 60 + 40;
+const SELF_REVIEW_AT = 23 * 60 + 50;
 
 export async function tick(deps: Deps): Promise<string[]> {
 	const store = new Store(deps.db);
@@ -61,6 +62,10 @@ export async function tick(deps: Deps): Promise<string[]> {
 		const yesterday = addDays(today, -1);
 		if (!(await store.diaryOn(yesterday))?.summary && (await store.claim('runs', `diary:${yesterday}`, utc(now)))) await writeDiary(deps, store, yesterday);
 		if (mins >= DIARY_AT && (await store.claim('runs', `diary:${today}`, utc(now)))) await writeDiary(deps, store, today);
+	});
+
+	await step('self-review', async () => {
+		if (mins >= SELF_REVIEW_AT && (await store.claim('runs', `selfreview:${today}`, utc(now)))) await selfReview(deps, store, today);
 	});
 
 	await step('briefing', async () => {
@@ -409,4 +414,59 @@ async function runMonthly(deps: Deps, store: Store, chatId: string, now: Date): 
 		schema: spokenSchema,
 	});
 	await say(deps, chatId, out.spoken, { voice: true, kind: 'review' });
+}
+
+// ---------- nightly self-review ----------
+
+export interface SelfReview {
+	score: number;
+	summary: string;
+	issues: { jarvis_said: string; problem: string; better_reply: string }[];
+}
+
+/**
+ * Jarvis grades its own replies from the day against what a smart, funny best friend would have said.
+ * The result is stored for the owner (and the developer) to read via /review, to drive improvements.
+ */
+export async function selfReview(deps: Deps, store: Store, date: string): Promise<SelfReview | null> {
+	const msgs = await store.messagesBetween(utc(atLocal(date, 0)), utc(atLocal(addDays(date, 1), 0)));
+	if (!msgs.some((m) => m.role === 'user')) return null;
+	const transcript = msgs
+		.map((m) => `${m.role === 'user' ? deps.config.name : `Jarvis [${m.kind}${m.meta ? `; ${m.meta}` : ''}]`}: ${m.text}`)
+		.join('\n')
+		.slice(-16000);
+	const r = await generateJson<SelfReview>(deps.llm, {
+		system: `You are a demanding reviewer of an AI buddy called Jarvis, who should talk like ${deps.config.name}'s smart, funny, caring best friend.`,
+		turns: [
+			{
+				role: 'user',
+				text: `Review Jarvis's messages from ${date}. Flag replies that were: unhelpful or "I don't know" when it could have searched or reasoned,
+factually wrong, robotic or assistant-like, too long, preachy, repetitive, ignored what he said or what Jarvis should remember,
+mishandled dates/reminders, or were slow (timings like brain=ms are in brackets; over 6000 ms total is slow).
+For each problem give what Jarvis said, the problem, and a better reply. score: 1-10 overall. summary: one line.
+
+${transcript}`,
+			},
+		],
+		schema: {
+			type: 'OBJECT',
+			properties: {
+				score: { type: 'INTEGER' },
+				summary: { type: 'STRING' },
+				issues: {
+					type: 'ARRAY',
+					items: {
+						type: 'OBJECT',
+						properties: { jarvis_said: { type: 'STRING' }, problem: { type: 'STRING' }, better_reply: { type: 'STRING' } },
+						required: ['jarvis_said', 'problem', 'better_reply'],
+					},
+				},
+			},
+			required: ['score', 'summary', 'issues'],
+		},
+		temperature: 0.2,
+	});
+	const review = { score: Number(r.score) || 0, summary: String(r.summary ?? ''), issues: (r.issues ?? []).slice(0, 20) };
+	await store.set(`review:${date}`, JSON.stringify(review));
+	return review;
 }

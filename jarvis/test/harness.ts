@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import type { Deps, Feeds, InlineButton, Llm, LlmRequest, MailMessage, MailSource, Speech, Telegram } from '../src/types';
 import { LlmError } from '../src/types';
 
-const MIGRATION = readFileSync(fileURLToPath(String(new URL('../migrations/0001_init.sql', import.meta.url))), 'utf8');
+const MIGRATION = ['0001_init.sql', '0002_message_meta.sql'].map((f) => readFileSync(fileURLToPath(String(new URL(`../migrations/${f}`, import.meta.url))), 'utf8')).join('\n');
 
 const norm = (v: unknown) => (v === undefined ? null : typeof v === 'boolean' ? (v ? 1 : 0) : v);
 

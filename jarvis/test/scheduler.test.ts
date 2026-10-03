@@ -192,3 +192,23 @@ describe('delivery failures and life admin', () => {
 		expect(rows(w, 'SELECT status FROM admin_items WHERE id = 1')[0].status).toBe('done');
 	});
 });
+
+describe('nightly self-review', () => {
+	it('grades the day once and stores the result for review', async () => {
+		const w = makeWorld('2026-10-05T23:50:00+05:30');
+		scriptDefaults(w);
+		w.llm.on('demanding reviewer', (req) => {
+			expect(req.turns[0].text).toContain('Jarvis [chat; brain=9000]: I am not sure.');
+			return { score: 6, summary: 'Mostly fine, one lazy answer', issues: [{ jarvis_said: 'I am not sure.', problem: 'Could have searched', better_reply: 'India won by 5 wickets!' }] };
+		});
+		w.db.raw.exec(`INSERT INTO messages (role, text, kind, at, meta) VALUES
+			('user', 'who won the match?', 'chat', '2026-10-05T10:00:00.000Z', ''),
+			('jarvis', 'I am not sure.', 'chat', '2026-10-05T10:00:09.000Z', 'brain=9000')`);
+		await tick(w.deps);
+		await tick(w.deps);
+		const stored = JSON.parse(rows(w, "SELECT v FROM kv WHERE k = 'review:2026-10-05'")[0].v);
+		expect(stored.score).toBe(6);
+		expect(stored.issues[0].problem).toBe('Could have searched');
+		expect(w.llm.calls.filter((c) => c.system.includes('demanding reviewer')).length).toBe(1);
+	});
+});

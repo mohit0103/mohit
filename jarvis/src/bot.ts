@@ -113,7 +113,8 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 	}
 	timings.brain = Date.now() - tl;
 	const ts = Date.now();
-	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat' });
+	const meta = Object.entries({ ...timings, voice: viaVoice ? 1 : 0 }).map(([k, v]) => `${k}=${v}`).join(' ');
+	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat', meta });
 	timings.send = Date.now() - ts;
 	timings.total = Date.now() - t0 + (timings.listen ?? 0);
 	await store.del('pending_reply');
@@ -125,7 +126,10 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 const STYLE_TAIL = `Reply with just your message to him: plain spoken words in your buddy voice, usually 1-3 short sentences (more only if he asks).
 If he tells you how a plan went, react like a friend. If he asks to be reminded, confirm casually with the time.
 If he asks what you know about him, sum it up warmly. If he says "forget that", say you've forgotten it.
-Never claim you did something you cannot do (send an email, book something).`;
+Never claim you did something you cannot do (send an email, book something).
+You can look things up with Google Search: use it for facts, news, scores, prices, weather, places, recommendations he asks for,
+how-tos, anything current or anything you're unsure of. Search instead of saying "I don't know". Answer in your own words in
+your buddy voice; never read out links, sources or citations.`;
 
 function emailNote(deps: Deps): string {
 	return deps.mail
@@ -136,7 +140,7 @@ function emailNote(deps: Deps): string {
 async function replyTo(deps: Deps, store: Store, now: Date): Promise<string> {
 	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
 	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${STYLE_TAIL}`;
-	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true });
+	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true, search: true });
 	const reply = cleanReply(text);
 	if (!reply) throw new LlmError('empty reply', 'bad_response');
 	return reply;

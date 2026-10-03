@@ -156,9 +156,11 @@ export class Gemini implements Llm {
 		let lastMsg = '';
 		for (const model of order) {
 			let thinking = req.fast ? thinkingFor(model) : undefined;
+			let search = Boolean(req.search && !req.schema);
 			for (let attempt = 0; attempt < 2; attempt++) {
 				let res: Response;
-				const payload = thinking ? { ...body, generationConfig: { ...body.generationConfig, thinkingConfig: thinking } } : body;
+				const payload: any = thinking ? { ...body, generationConfig: { ...body.generationConfig, thinkingConfig: thinking } } : { ...body };
+				if (search) payload.tools = [{ google_search: {} }];
 				try {
 					res = await this.fetcher(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
 						method: 'POST',
@@ -188,6 +190,11 @@ export class Gemini implements Llm {
 				if (res.status === 429) {
 					lastKind = 'quota';
 					break; // each model has its own free quota, so move on
+				}
+				if (res.status === 400 && search && /tool|search|ground/i.test(lastMsg)) {
+					search = false; // this model can't search; answer without it
+					attempt--;
+					continue;
 				}
 				if (res.status === 400 && thinking && /thinking/i.test(lastMsg)) {
 					thinking = undefined; // this model doesn't take that thinking setting; retry plainly
@@ -307,7 +314,7 @@ export class WorkersSpeech implements Speech {
 				} catch (e) {
 					errors.push(`ElevenLabs: ${String(e).replace(/^Error: /, '').slice(0, 160)}`);
 				}
-			} else errors.push('ElevenLabs: no API key');
+			}
 			voiceKey = FALLBACK_EDGE_VOICE;
 			v = VOICES[voiceKey];
 		}
