@@ -30,7 +30,8 @@ function fakeService(opts: { audio?: boolean } = {}) {
 					emit('X-RequestId:1\r\nPath:turn.start\r\n\r\n{}');
 					if (opts.audio !== false) {
 						emit(frame('X-RequestId:1\r\nContent-Type:audio/mpeg\r\nPath:audio\r\n', new Uint8Array([1, 2, 3])));
-						emit(frame('X-RequestId:1\r\nContent-Type:audio/mpeg\r\nPath:audio\r\n', new Uint8Array([4, 5])));
+						emit(new Blob([frame('X-RequestId:1\r\nContent-Type:audio/mpeg\r\nPath:audio\r\n', new Uint8Array([4, 5]))])); // Workers delivers Blobs
+						emit(new Blob([]));
 					}
 					emit(frame('X-RequestId:1\r\nPath:audio\r\n', new Uint8Array()));
 					emit('X-RequestId:1\r\nPath:turn.end\r\n\r\n{}');

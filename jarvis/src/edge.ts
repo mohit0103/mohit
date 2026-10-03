@@ -53,6 +53,13 @@ export function ssml(text: string, voiceId: string, rate = '+0%'): string {
 	);
 }
 
+async function toBytes(data: unknown): Promise<Uint8Array> {
+	if (data instanceof Uint8Array) return data;
+	if (data instanceof ArrayBuffer) return new Uint8Array(data);
+	if (data && typeof (data as Blob).arrayBuffer === 'function') return new Uint8Array(await (data as Blob).arrayBuffer());
+	return new Uint8Array();
+}
+
 /** Splits a binary frame: 2-byte big-endian header length, headers, then audio bytes. */
 export function parseBinaryFrame(buf: Uint8Array): { path: string; audio: Uint8Array } {
 	if (buf.length < 2) throw new Error('edge frame too short');
@@ -80,29 +87,30 @@ export async function edgeSynthesize(text: string, voiceId: string, opts: { fetc
 	const ws = (res as any).webSocket as WebSocket | null;
 	if (!ws) throw new Error(`edge tts handshake failed: ${res.status}`);
 	(ws as any).accept();
-	const chunks: Uint8Array[] = [];
+	// Binary frames arrive as ArrayBuffer or, in the Workers runtime, as Blob. Reading a Blob is async,
+	// so keep one promise per frame, in arrival order.
+	const frames: Promise<Uint8Array | null>[] = [];
 	const done = new Promise<void>((resolve, reject) => {
 		const timer = setTimeout(() => reject(new Error('edge tts timed out')), opts.timeoutMs ?? 20_000);
-		ws.addEventListener('message', (ev: MessageEvent) => {
-			try {
-				if (typeof ev.data === 'string') {
-					if (/Path:turn\.end/.test(ev.data)) {
-						clearTimeout(timer);
-						resolve();
-					}
-					return;
-				}
-				const frame = parseBinaryFrame(new Uint8Array(ev.data as ArrayBuffer));
-				if (frame.path === 'audio' && frame.audio.length) chunks.push(frame.audio.slice());
-			} catch (e) {
-				clearTimeout(timer);
-				reject(e);
-			}
-		});
-		ws.addEventListener('close', () => {
+		const finish = () => {
 			clearTimeout(timer);
 			resolve();
+		};
+		ws.addEventListener('message', (ev: MessageEvent) => {
+			const data: unknown = ev.data;
+			if (typeof data === 'string') {
+				if (/Path:turn\.end/.test(data)) finish();
+				return;
+			}
+			frames.push(
+				toBytes(data).then((buf) => {
+					if (buf.length < 2) return null; // keep-alive or empty frame
+					const frame = parseBinaryFrame(buf);
+					return frame.path === 'audio' && frame.audio.length ? frame.audio.slice() : null;
+				}),
+			);
 		});
+		ws.addEventListener('close', finish);
 		ws.addEventListener('error', () => {
 			clearTimeout(timer);
 			reject(new Error('edge tts socket error'));
@@ -123,6 +131,7 @@ export async function edgeSynthesize(text: string, voiceId: string, opts: { fetc
 			// already closed
 		}
 	}
+	const chunks = (await Promise.all(frames)).filter((c): c is Uint8Array => c !== null);
 	const total = chunks.reduce((n, c) => n + c.length, 0);
 	if (!total) throw new Error('edge tts returned no audio');
 	const out = new Uint8Array(total);
