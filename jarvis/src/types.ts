@@ -12,6 +12,8 @@ export interface Env {
 	GEMINI_MODELS?: string;
 	TTS_SPEAKER?: string;
 	TTS_DAILY_CHARS?: string;
+	ELEVENLABS_API_KEY?: string;
+	ELEVENLABS_MONTHLY_CHARS?: string;
 	CITY?: string;
 	CITY_LAT?: string;
 	CITY_LON?: string;

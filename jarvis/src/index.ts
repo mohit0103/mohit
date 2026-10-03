@@ -4,6 +4,8 @@ import { ImapMail, gmailSocket } from './email/imap';
 import { tick } from './scheduler';
 import { Gemini, PublicFeeds, TelegramApi, WorkersSpeech } from './services';
 import { Store } from './store';
+import { ElevenLabs } from './eleven';
+import { edgeSynthesize } from './edge';
 import type { Deps, Env } from './types';
 
 export function makeDeps(env: Env): Deps {
@@ -14,7 +16,16 @@ export function makeDeps(env: Env): Deps {
 		db: env.DB,
 		tg: new TelegramApi(env.TELEGRAM_BOT_TOKEN),
 		llm,
-		speech: new WorkersSpeech(env.AI, store, now, env.TTS_SPEAKER || 'apollo', Number(env.TTS_DAILY_CHARS) || 3000, llm),
+		speech: new WorkersSpeech(
+			env.AI,
+			store,
+			now,
+			env.TTS_SPEAKER || 'apollo',
+			Number(env.TTS_DAILY_CHARS) || 3000,
+			llm,
+			(t, v) => edgeSynthesize(t, v),
+			env.ELEVENLABS_API_KEY ? new ElevenLabs(env.ELEVENLABS_API_KEY, store, Number(env.ELEVENLABS_MONTHLY_CHARS) || 9500) : null,
+		),
 		feeds: new PublicFeeds(Number(env.CITY_LAT) || 12.9716, Number(env.CITY_LON) || 77.5946),
 		mail: env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD ? new ImapMail(env.GMAIL_ADDRESS, env.GMAIL_APP_PASSWORD, gmailSocket) : null,
 		now,
@@ -43,6 +54,20 @@ export default {
 		if (req.method === 'GET' && url.pathname === '/health') {
 			const ok = await env.DB.prepare('SELECT 1 AS ok').first().catch(() => null);
 			return Response.json({ ok: Boolean(ok), time: new Date().toISOString() });
+		}
+		if (req.method === 'GET' && url.pathname === '/diag') {
+			// Subsystem status for the owner (no memories or messages). Same key as the webhook secret.
+			if (req.headers.get('x-jarvis-key') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) return new Response('forbidden', { status: 403 });
+			const store = new Store(env.DB);
+			const counts = await env.DB.prepare(
+				"SELECT (SELECT count(*) FROM facts WHERE superseded_at IS NULL) AS facts, (SELECT count(*) FROM plans) AS plans, (SELECT count(*) FROM emails) AS emails, (SELECT count(*) FROM messages) AS messages",
+			).first();
+			return Response.json({
+				diags: await store.diags(),
+				counts,
+				features: { gmail: Boolean(env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD), elevenlabs: Boolean(env.ELEVENLABS_API_KEY) },
+				voice: (await store.get('tts_voice')) ?? 'default',
+			});
 		}
 		if (req.method === 'POST' && url.pathname === '/telegram') {
 			if (req.headers.get('x-telegram-bot-api-secret-token') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) {

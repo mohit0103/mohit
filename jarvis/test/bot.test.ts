@@ -284,7 +284,7 @@ describe('email on request, status and voices', () => {
 	it('/voices sends samples and a button sets the voice', async () => {
 		const w = makeWorld();
 		await handleUpdate(w.deps, textUpdate('/voices'));
-		expect(w.tg.visible().filter((s) => s.type === 'voice').length).toBe(4);
+		expect(w.tg.visible().filter((s) => s.type === 'voice').length).toBe(6);
 		await handleUpdate(w.deps, buttonUpdate('v:prabhat'));
 		expect(rows(w, "SELECT v FROM kv WHERE k = 'tts_voice'")[0].v).toBe('prabhat');
 	});

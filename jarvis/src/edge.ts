@@ -6,13 +6,26 @@ const CHROMIUM_MAJOR = CHROMIUM_FULL_VERSION.split('.')[0];
 const BASE = 'https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1';
 const WIN_EPOCH = 11644473600;
 
-export const VOICES: Record<string, { id: string; label: string }> = {
-	andrew: { id: 'en-US-AndrewMultilingualNeural', label: 'Andrew: warm, confident (US)' },
-	brian: { id: 'en-US-BrianMultilingualNeural', label: 'Brian: casual, easy-going (US)' },
-	prabhat: { id: 'en-IN-PrabhatNeural', label: 'Prabhat: friendly Indian English' },
-	ryan: { id: 'en-GB-RyanNeural', label: 'Ryan: friendly British' },
+export interface Voice {
+	engine: 'eleven' | 'edge';
+	/** Edge voice id, or the ElevenLabs voice name (resolved to an id at runtime). */
+	id: string;
+	label: string;
+}
+
+export const VOICES: Record<string, Voice> = {
+	chris: { engine: 'eleven', id: 'Chris', label: 'Chris: natural, laid-back (ElevenLabs)' },
+	will: { engine: 'eleven', id: 'Will', label: 'Will: friendly, young (ElevenLabs)' },
+	liam: { engine: 'eleven', id: 'Liam', label: 'Liam: upbeat, energetic (ElevenLabs)' },
+	andrew: { engine: 'edge', id: 'en-US-AndrewMultilingualNeural', label: 'Andrew: warm, confident (Microsoft)' },
+	brian: { engine: 'edge', id: 'en-US-BrianMultilingualNeural', label: 'Brian: casual, easy-going (Microsoft)' },
+	prabhat: { engine: 'edge', id: 'en-IN-PrabhatNeural', label: 'Prabhat: Indian English (Microsoft)' },
 };
-export const DEFAULT_VOICE = 'andrew';
+export const DEFAULT_VOICE = 'chris';
+/** Used when ElevenLabs is unavailable or its monthly allowance is spent. */
+export const FALLBACK_EDGE_VOICE = 'andrew';
+/** Slightly quicker than default so voice notes don't drag. */
+export const EDGE_RATE = '+12%';
 
 async function sha256Hex(s: string): Promise<string> {
 	const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -100,7 +113,7 @@ export async function edgeSynthesize(text: string, voiceId: string, opts: { fetc
 		`X-Timestamp:${stamp}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n` +
 			'{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}\r\n',
 	);
-	ws.send(`X-RequestId:${hex(16)}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${stamp}Z\r\nPath:ssml\r\n\r\n${ssml(text, voiceId)}`);
+	ws.send(`X-RequestId:${hex(16)}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${stamp}Z\r\nPath:ssml\r\n\r\n${ssml(text, voiceId, EDGE_RATE)}`);
 	try {
 		await done;
 	} finally {

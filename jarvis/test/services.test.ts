@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ElevenLabs } from '../src/eleven';
 import worker, { webhookSecret } from '../src/index';
 import { Gemini, TelegramApi, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText } from '../src/services';
 import { Store } from '../src/store';
@@ -207,5 +208,46 @@ describe('natural voice first', () => {
 		const d = (await store.diags()).find((x) => x.name === 'voice')!;
 		expect(d.ok).toBe(false);
 		expect(d.info).toMatch(/natural voice: Error: blocked/);
+	});
+});
+
+describe('ElevenLabs voice', () => {
+
+
+	function elFetch(status = 200) {
+		const calls: string[] = [];
+		const f = (async (url: any, init?: any) => {
+			calls.push(`${init?.method ?? 'GET'} ${String(url)}`);
+			if (String(url).endsWith('/voices')) return Response.json({ voices: [{ name: 'Chris', voice_id: 'chris-id' }, { name: 'Will - friendly', voice_id: 'will-id' }] });
+			if (status !== 200) return new Response('{"detail":{"status":"quota_exceeded"}}', { status });
+			return new Response(new Uint8Array(400));
+		}) as typeof fetch;
+		return { f, calls };
+	}
+
+	it('is used first, resolves voices by name once, and meters the monthly allowance', async () => {
+		const store = new Store(fakeD1());
+		const { f, calls } = elFetch();
+		const el = new ElevenLabs('k', store, 30, f);
+		const edge = async () => new Uint8Array(300);
+		const s = new WorkersSpeech({ run: async () => null } as unknown as Ai, store, () => new Date('2026-10-03T10:00:00Z'), 'apollo', 3000, undefined, edge, el);
+		expect((await s.synthesize('hello there'))?.mime).toBe('audio/mpeg');
+		await s.synthesize('hello again');
+		expect(calls.filter((c) => c.endsWith('/voices')).length).toBe(1);
+		expect(calls.filter((c) => c.includes('/text-to-speech/chris-id')).length).toBe(2);
+		// Allowance (30 chars) is now spent: falls back to the Microsoft voice and says why.
+		await s.synthesize('one more message please');
+		const d = (await store.diags()).find((x) => x.name === 'voice')!;
+		expect(d.info).toMatch(/Microsoft voice \(andrew\); ElevenLabs: monthly allowance used/);
+	});
+
+	it('stops calling ElevenLabs for the month after a quota error', async () => {
+		const store = new Store(fakeD1());
+		const { f, calls } = elFetch(402);
+		const el = new ElevenLabs('k', store, 10000, f);
+		await expect(el.synthesize('hi', 'Will', '2026-10-03')).rejects.toThrow(/ElevenLabs 402/);
+		await expect(el.synthesize('hi', 'Will', '2026-10-04')).rejects.toThrow(/quota used up/);
+		expect(calls.filter((c) => c.startsWith('POST')).length).toBe(1);
+		await expect(el.synthesize('hi', 'Will', '2026-11-01')).rejects.toThrow(/ElevenLabs 402/); // new month, tries again
 	});
 });

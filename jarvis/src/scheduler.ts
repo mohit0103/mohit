@@ -245,7 +245,7 @@ export async function runCheckin(deps: Deps, store: Store, chatId: string, now: 
 	}
 	const task = isSunday
 		? `It's Sunday evening: do a warm weekly review voice note (about 150-200 words): highlights of his week, mood trend, goal streaks with encouragement, one suggestion for next week, then ask how his day was.`
-		: `Write the evening check-in voice note (about 60-130 words). Start by asking how his day went. Ask any follow-ups naturally (one or two, the most important first). Give night-before alerts for tomorrow. Mention birthdays with a gift idea from his notes. Ask about today's goals briefly.`;
+		: `Write the evening check-in as a buddy's voice note (about 40-90 words, relaxed, no lecturing). Open casually and ask how his day went. Ask the most important follow-up naturally. Mention tomorrow's plans as a friendly heads-up, not a to-do list. Mention birthdays with a gift idea from his notes. A quick goal nudge only if it fits.`;
 	let out: Spoken;
 	try {
 		out = await generateJson<Spoken>(deps.llm, {

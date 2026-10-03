@@ -3,7 +3,8 @@ import type { Feeds, InlineButton, Llm, LlmRequest, Speech, Telegram, Weather } 
 import { LlmError } from './types';
 import { Store } from './store';
 import { localDate, utc } from './time';
-import { DEFAULT_VOICE, VOICES, edgeSynthesize } from './edge';
+import { DEFAULT_VOICE, FALLBACK_EDGE_VOICE, VOICES, edgeSynthesize } from './edge';
+import type { ElevenLabs } from './eleven';
 
 // ---------- Telegram ----------
 
@@ -245,6 +246,7 @@ export class WorkersSpeech implements Speech {
 		private dailyChars = 3000,
 		private llmFallback?: Llm,
 		private edge: ((text: string, voiceId: string) => Promise<Uint8Array>) | null = (t, v) => edgeSynthesize(t, v),
+		private eleven: ElevenLabs | null = null,
 	) {}
 
 	async transcribe(audio: Uint8Array, mime: string): Promise<string> {
@@ -274,12 +276,26 @@ export class WorkersSpeech implements Speech {
 		if (!clean) return null;
 		const errors: string[] = [];
 		const at = utc(this.now());
-		const voiceKey = voice ?? ((await this.store.get('tts_voice')) || DEFAULT_VOICE);
-		const v = VOICES[voiceKey] ?? VOICES[DEFAULT_VOICE];
+		const fallback = this.eleven ? DEFAULT_VOICE : FALLBACK_EDGE_VOICE;
+		let voiceKey = voice ?? ((await this.store.get('tts_voice')) || fallback);
+		let v = VOICES[voiceKey] ?? VOICES[fallback];
+		if (v.engine === 'eleven') {
+			if (this.eleven) {
+				try {
+					const audio = await this.eleven.synthesize(clean, v.id, localDate(this.now()));
+					await this.store.diag('voice', true, `ElevenLabs (${voiceKey})`, at);
+					return { audio, mime: 'audio/mpeg' };
+				} catch (e) {
+					errors.push(`ElevenLabs: ${String(e).replace(/^Error: /, '').slice(0, 160)}`);
+				}
+			} else errors.push('ElevenLabs: no API key');
+			voiceKey = FALLBACK_EDGE_VOICE;
+			v = VOICES[voiceKey];
+		}
 		if (this.edge) {
 			try {
 				const audio = await this.edge(clean, v.id);
-				await this.store.diag('voice', true, `natural voice (${voiceKey})`, at);
+				await this.store.diag('voice', errors.length === 0, [`Microsoft voice (${voiceKey})`, ...errors].join('; '), at);
 				return { audio, mime: 'audio/mpeg' };
 			} catch (e) {
 				errors.push(`natural voice: ${String(e).slice(0, 120)}`);

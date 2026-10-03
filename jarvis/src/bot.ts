@@ -231,10 +231,9 @@ async function handleCommand(deps: Deps, store: Store, chatId: string, text: str
 				if (audio) await deps.tg.sendVoice(chatId, audio.audio, audio.mime, v.label);
 			}
 			const keys = Object.keys(VOICES);
-			return deps.tg.sendMessage(chatId, 'Which voice do you like?', [
-				keys.slice(0, 2).map((k) => ({ text: `Use ${k[0].toUpperCase()}${k.slice(1)}`, data: `v:${k}` })),
-				keys.slice(2).map((k) => ({ text: `Use ${k[0].toUpperCase()}${k.slice(1)}`, data: `v:${k}` })),
-			]);
+			const rowsOfButtons = [];
+			for (let i = 0; i < keys.length; i += 3) rowsOfButtons.push(keys.slice(i, i + 3).map((k) => ({ text: `${k[0].toUpperCase()}${k.slice(1)}`, data: `v:${k}` })));
+			return deps.tg.sendMessage(chatId, 'Which voice do you like?', rowsOfButtons);
 		}
 		case '/briefing':
 			return runBriefing(deps, store, chatId, now);
