@@ -70,9 +70,25 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 		}
 		return converse(deps, store, chatId, heard, true, { listen: Date.now() - tl });
 	}
-	if (msg.photo || msg.document || msg.sticker || msg.video) {
+	const imageFileId = msg.photo?.length ? msg.photo[msg.photo.length - 1].file_id : /^image\//.test(msg.document?.mime_type ?? '') ? msg.document.file_id : null;
+	if (imageFileId) {
+		await deps.tg.sendChatAction(chatId, 'typing');
+		let image: Uint8Array | null = null;
+		try {
+			image = await deps.tg.getFile(imageFileId);
+		} catch (e) {
+			console.warn('photo download failed', e);
+		}
+		if (!image) {
+			await deps.tg.sendMessage(chatId, "Couldn't load that photo, man. Mind sending it again?");
+			return;
+		}
+		const mime = msg.document?.mime_type ?? 'image/jpeg';
+		return converse(deps, store, chatId, text ? `[sent a photo] ${text}` : '[sent a photo]', false, {}, [{ mime, data: image }]);
+	}
+	if (msg.document || msg.sticker || msg.video || msg.video_note) {
 		if (!text) {
-			await deps.tg.sendMessage(chatId, "I can't look at photos or files yet, but tell me about it!");
+			await deps.tg.sendMessage(chatId, "I can't open videos or files yet, but photos work! Tell me what it is?");
 			return;
 		}
 	}
@@ -84,7 +100,34 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
  * Replying is latency-critical; remembering is not. So the reply comes from one quick call (minimal
  * thinking, plain text), goes out, and only then a second call extracts memory updates.
  */
-export async function converse(deps: Deps, store: Store, chatId: string, text: string, viaVoice: boolean, timings: Record<string, number> = {}): Promise<void> {
+export async function converse(
+	deps: Deps,
+	store: Store,
+	chatId: string,
+	text: string,
+	viaVoice: boolean,
+	timings: Record<string, number> = {},
+	images: { mime: string; data: Uint8Array }[] = [],
+): Promise<void> {
+	try {
+		await converseInner(deps, store, chatId, text, viaVoice, timings, images);
+	} catch (e) {
+		// Never leave him on read: anything unexpected still gets an answer.
+		console.error('conversation failed', e);
+		await store.diag('brain', false, `unexpected: ${String(e)}`, utc(deps.now()));
+		await deps.tg.sendMessage(chatId, 'Oops, something glitched on my side 😅 Say that again?').catch(() => undefined);
+	}
+}
+
+async function converseInner(
+	deps: Deps,
+	store: Store,
+	chatId: string,
+	text: string,
+	viaVoice: boolean,
+	timings: Record<string, number>,
+	images: { mime: string; data: Uint8Array }[],
+): Promise<void> {
 	const now = deps.now();
 	const t0 = Date.now();
 	await Promise.all([store.addMessage('user', text, 'chat', utc(now)), deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing')]);
@@ -96,7 +139,7 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 	let reply: string;
 	const tl = Date.now();
 	try {
-		reply = await replyTo(deps, store, now);
+		reply = await replyTo(deps, store, now, images);
 	} catch (e) {
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
@@ -127,6 +170,14 @@ const STYLE_TAIL = `Reply with just your message to him: plain spoken words in y
 If he tells you how a plan went, react like a friend. If he asks to be reminded, confirm casually with the time.
 If he asks what you know about him, sum it up warmly. If he says "forget that", say you've forgotten it.
 Never claim you did something you cannot do (send an email, book something).
+When you can't do something yourself (book tickets, pay, call someone), never stop at "I can't": offer the next best thing,
+like searching the options and prices, the quickest way to do it, or offering a reminder at a sensible time.
+Don't repeat the same nudge (an unbooked ticket, a pending task) more than once in a conversation unless he brings it up.
+His messages are often voice transcriptions, so words and Indian place names can be misheard: work out the likely meaning
+(e.g. "Hodi" is probably Hoodi in Bengaluru) instead of saying you don't know a place.
+He travels; for weather or places use where he says he is now, not just his home city. You can't see live traffic or his GPS:
+for routes, give the typical travel time and say Maps will show live traffic.
+If he sends a photo, actually look at it and react to what's in it like a friend would.
 You can look things up with Google Search: use it for facts, news, scores, prices, weather, places, recommendations he asks for,
 how-tos, anything current or anything you're unsure of. Search instead of saying "I don't know". Answer in your own words in
 your buddy voice; never read out links, sources or citations.`;
@@ -137,10 +188,10 @@ function emailNote(deps: Deps): string {
 		: `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`;
 }
 
-async function replyTo(deps: Deps, store: Store, now: Date): Promise<string> {
+async function replyTo(deps: Deps, store: Store, now: Date, images: { mime: string; data: Uint8Array }[] = []): Promise<string> {
 	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
 	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${STYLE_TAIL}`;
-	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true, search: true });
+	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true, search: true, images });
 	const reply = cleanReply(text);
 	if (!reply) throw new LlmError('empty reply', 'bad_response');
 	return reply;

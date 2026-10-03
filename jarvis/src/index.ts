@@ -11,8 +11,8 @@ import type { Deps, Env } from './types';
 export function makeDeps(env: Env): Deps {
 	const store = new Store(env.DB);
 	const llm = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
-		get: () => store.get('llm_model'),
-		set: (m) => store.set('llm_model', m),
+		get: () => store.get('llm_health'),
+		set: (h) => store.set('llm_health', h),
 	});
 	const now = () => new Date();
 	return {
@@ -83,7 +83,7 @@ export default {
 				date: r.k.slice(7),
 				...JSON.parse(r.v),
 			}));
-			return Response.json({ since, messages, reviews, diags: await store.diags(), model: await store.get('llm_model') });
+			return Response.json({ since, messages, reviews, diags: await store.diags(), models: await store.get('llm_health') });
 		}
 		if (req.method === 'POST' && url.pathname === '/telegram') {
 			if (req.headers.get('x-telegram-bot-api-secret-token') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) {

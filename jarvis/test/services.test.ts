@@ -258,23 +258,35 @@ describe('fast replies', () => {
 		expect(thinkingFor('gemini-3.8-flash')).toEqual({ thinkingLevel: 'minimal' });
 	});
 
-	it('retries without the thinking setting if a model rejects it, and remembers the model that worked', async () => {
-		const bodies: any[] = [];
-		const { f, calls } = fakeFetch((url, init) => {
+	it('retries without the thinking setting if a model rejects it', async () => {
+		const { f } = fakeFetch((_url, init) => {
 			const b = JSON.parse(String(init!.body));
-			bodies.push(b);
-			if (url.includes('/a:')) return new Response('not found', { status: 404 });
-			if (b.generationConfig.thinkingConfig) return new Response('Unknown field thinking_level', { status: 400 });
-			return ok('hey!');
+			return b.generationConfig.thinkingConfig ? new Response('Unknown field thinking_level', { status: 400 }) : ok('hey!');
+		});
+		expect(await new Gemini('k', 'b', f, noSleep).generate({ system: '', turns: [{ role: 'user', text: 'hi' }], fast: true })).toBe('hey!');
+	});
+
+	it('benches missing models for a day and over-quota models for 10 minutes, then retries the best one', async () => {
+		let quotaUp = true;
+		const { f, calls } = fakeFetch((url) => {
+			if (url.includes('/gone:')) return new Response('not found', { status: 404 });
+			if (url.includes('/best:') && quotaUp) return new Response('quota', { status: 429 });
+			return ok(url.includes('/best:') ? 'smart' : 'lite');
 		});
 		let saved: string | null = null;
-		const memo = { get: async () => saved, set: async (m: string) => void (saved = m) };
-		const g = new Gemini('k', 'a,b', f, noSleep, memo);
-		expect(await g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }], fast: true })).toBe('hey!');
-		expect(saved).toBe('b');
+		let clock = 1_000_000;
+		const memo = { get: async () => saved, set: async (h: string) => void (saved = h) };
+		const g = new Gemini('k', 'gone,best,lite', f, noSleep, memo, () => clock);
+		const ask = () => g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] });
+		expect(await ask()).toBe('lite');
+		expect(Object.keys(JSON.parse(saved!))).toEqual(['gone', 'best']);
 		calls.length = 0;
-		await g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] });
-		expect(calls[0].url).toContain('/b:'); // skips the dead model next time
+		quotaUp = false;
+		expect(await ask()).toBe('lite'); // both still benched
+		expect(calls.map((c) => c.url.split('/models/')[1].split(':')[0])).toEqual(['lite']);
+		clock += 11 * 60_000; // quota cooldown over: the better model is tried again
+		expect(await ask()).toBe('smart');
+		expect(Object.keys(JSON.parse(saved!))).toEqual(['gone']);
 	});
 });
 

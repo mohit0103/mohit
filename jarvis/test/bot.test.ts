@@ -290,3 +290,37 @@ describe('email on request, status and voices', () => {
 		expect(rows(w, "SELECT v FROM kv WHERE k = 'tts_voice'")[0].v).toBe('prabhat');
 	});
 });
+
+describe('photos and safety net', () => {
+	it('looks at photos he sends and reacts to them', async () => {
+		const w = makeWorld();
+		w.tg.files.set('p1', new Uint8Array([0xff, 0xd8, 1, 2]));
+		onChat(w, () => ({ reply: 'That sunset shot is fire, post it!' }));
+		await handleUpdate(w.deps, { update_id: 9001, message: { message_id: 1, chat: { id: Number(OWNER) }, caption: 'Can I post this?', photo: [{ file_id: 'small' }, { file_id: 'p1' }] } });
+		const req = w.llm.calls.find((c) => c.system.includes('Reply with just your message'))!;
+		expect(req.images?.[0].mime).toBe('image/jpeg');
+		expect([...req.images![0].data]).toEqual([0xff, 0xd8, 1, 2]);
+		expect(req.turns.at(-1)!.text).toContain('[sent a photo] Can I post this?');
+		expect(w.tg.visible().at(-1)!.text).toMatch(/sunset shot is fire/);
+	});
+
+	it('never leaves him without an answer when something unexpected breaks', async () => {
+		const w = makeWorld();
+		onChat(w, () => ({ reply: 'hi' }));
+		w.deps.speech.synthesize = async () => {
+			throw new Error('boom');
+		};
+		const realSay = w.tg.sendMessage.bind(w.tg);
+		let first = true;
+		w.tg.sendMessage = async (c, t, b) => {
+			if (first) {
+				first = false;
+				throw new Error('telegram hiccup');
+			}
+			return realSay(c, t, b);
+		};
+		w.tg.failNext = 0;
+		await handleUpdate(w.deps, textUpdate('yo'));
+		expect(w.tg.visible().map((s) => s.text).join(' ')).toMatch(/hi|glitched/);
+	});
+});

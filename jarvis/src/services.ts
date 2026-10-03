@@ -92,8 +92,12 @@ export class Gemini implements Llm {
 		models: string | undefined,
 		private fetcher: typeof fetch = (input, init) => fetch(input, init),
 		private sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
-		/** Remembers the model that last answered, so later requests skip dead ones. */
-		private memo?: { get(): Promise<string | null>; set(model: string): Promise<void> },
+		/**
+		 * Shared model health (JSON {model: {until, why}}): models that were missing or over quota sit out
+		 * for a while, then the best model is tried again, so one bad minute never pins us to a weaker model.
+		 */
+		private memo?: { get(): Promise<string | null>; set(health: string): Promise<void> },
+		private clock: () => number = Date.now,
 	) {
 		this.models = models
 			? models
@@ -136,11 +140,21 @@ export class Gemini implements Llm {
 
 	private async tryModels(req: LlmRequest): Promise<string> {
 		if (!this.key) throw new LlmError('GEMINI_API_KEY is not set', 'config');
-		const preferred = await this.memo?.get().catch(() => null);
-		const order = preferred && this.models.includes(preferred) ? [preferred, ...this.models.filter((m) => m !== preferred)] : this.models;
+		const health = parseHealth(await this.memo?.get().catch(() => null));
+		const startHealth = JSON.stringify(health);
+		const now = this.clock();
+		const available = this.models.filter((m) => !(health[m]?.until > now));
+		const order = available.length ? available : this.models;
+		const benched = (model: string, minutes: number, why: string) => (health[model] = { until: now + minutes * 60_000, why });
+		const save = async () => {
+			if (JSON.stringify(health) !== startHealth) await this.memo?.set(JSON.stringify(health)).catch(() => undefined);
+		};
 		const contents = req.turns.map((t, i) => {
 			const parts: any[] = [{ text: t.text }];
-			if (req.audio && i === req.turns.length - 1) parts.push({ inline_data: { mime_type: req.audio.mime, data: toBase64(req.audio.data) } });
+			if (i === req.turns.length - 1) {
+				if (req.audio) parts.push({ inline_data: { mime_type: req.audio.mime, data: toBase64(req.audio.data) } });
+				for (const img of req.images ?? []) parts.push({ inline_data: { mime_type: img.mime, data: toBase64(img.data) } });
+			}
 			return { role: t.role, parts };
 		});
 		const body: any = {
@@ -179,7 +193,8 @@ export class Gemini implements Llm {
 						.join('')
 						.trim();
 					if (text) {
-						if (model !== preferred) await this.memo?.set(model).catch(() => undefined);
+						delete health[model];
+						await save();
 						return text;
 					}
 					lastKind = 'bad_response';
@@ -189,6 +204,7 @@ export class Gemini implements Llm {
 				lastMsg = `${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`;
 				if (res.status === 429) {
 					lastKind = 'quota';
+					benched(model, 10, 'free quota hit');
 					break; // each model has its own free quota, so move on
 				}
 				if (res.status === 400 && search && /tool|search|ground/i.test(lastMsg)) {
@@ -202,7 +218,10 @@ export class Gemini implements Llm {
 					continue;
 				}
 				if (res.status === 404 || res.status === 400) {
-					if (res.status === 404) lastMsg = `${model} not found`;
+					if (res.status === 404) {
+						lastMsg = `${model} not found`;
+						benched(model, 24 * 60, 'not found');
+					}
 					lastKind = res.status === 400 && /API key/i.test(lastMsg) ? 'config' : 'bad_response';
 					if (lastKind === 'config') throw new LlmError(lastMsg, 'config');
 					break;
@@ -212,7 +231,17 @@ export class Gemini implements Llm {
 				await this.sleep(800 * (attempt + 1));
 			}
 		}
+		await save();
 		throw new LlmError(lastMsg || 'all models failed', lastKind);
+	}
+}
+
+export function parseHealth(raw: string | null | undefined): Record<string, { until: number; why: string }> {
+	try {
+		const v = JSON.parse(raw ?? '{}');
+		return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+	} catch {
+		return {}; // older format (a bare model name) or garbage: start fresh
 	}
 }
 
@@ -262,6 +291,9 @@ export function parseJsonLoose(text: string): unknown {
 const AURA = '@cf/deepgram/aura-2-en';
 const MELO = '@cf/myshell-ai/melotts';
 const WHISPER = '@cf/openai/whisper-large-v3-turbo';
+/** Primes speech recognition with names it would otherwise mishear (Indian English, local places). */
+const WHISPER_HINT =
+	'Hey Jarvis, it is Mohit. Bengaluru, Bangalore, Nagpur, Hoodi, Whitefield, Koramangala, Indiranagar, Rajajinagar, HSR Layout, Hebbal, Marathahalli, Electronic City, Jayanagar, Yelahanka, Majestic, Futala, Sitabuldi, Dharampeth, mandir, yaar.';
 
 export class WorkersSpeech implements Speech {
 	constructor(
@@ -277,7 +309,7 @@ export class WorkersSpeech implements Speech {
 
 	async transcribe(audio: Uint8Array, mime: string): Promise<string> {
 		try {
-			const res: any = await (this.ai as any).run(WHISPER, { audio: toBase64(audio), language: 'en', vad_filter: true });
+			const res: any = await (this.ai as any).run(WHISPER, { audio: toBase64(audio), language: 'en', vad_filter: true, initial_prompt: WHISPER_HINT });
 			const text = String(res?.text ?? '').trim();
 			if (text) return text;
 		} catch (e) {

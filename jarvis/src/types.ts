@@ -43,6 +43,8 @@ export interface LlmRequest {
 	schema?: Schema;
 	temperature?: number;
 	audio?: { mime: string; data: Uint8Array };
+	/** Images attached to the last turn (photos he sends). */
+	images?: { mime: string; data: Uint8Array }[];
 	/** Latency-sensitive: turn model thinking down to the minimum. */
 	fast?: boolean;
 	/** Let the model use Google Search for current or factual questions. */
