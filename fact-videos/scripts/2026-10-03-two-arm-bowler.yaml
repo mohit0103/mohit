@@ -1,0 +1,56 @@
+channel: factloop
+kicker: 03 Oct · Cricket rules
+voice: en-US-AndrewMultilingualNeural
+rate: "+10%"
+pronounce:
+  T20: T twenty
+scenes:
+  - say: A Sri Lankan bowler just took two Indian wickets. With two different arms.
+    highlight: [two, arms]
+    bg: ink
+    layers:
+      - {type: photo, openverse: a8a3dc58-f73b-4e34-9cbf-dbacbdf21e68, frame: full, treatment: duotone, focus: 0.5, dim: 0.38}
+      - {type: headline, text: "2 arms", y: 820, size: 230, accent: ["2"]}
+      - {type: stamp, text: "2 wickets", at: different, y: 1110, size: 125, rotate: -7}
+
+  - say: Left arm spin bowled Sanju Samson. Then right arm off spin got Shivam Dube.
+    highlight: [Left, right]
+    bg: ink
+    transition: wipe
+    layers:
+      - {type: split, y: 880, left: {openverse: 53234a74-4a0c-440c-a1ff-288bb5a0d848, label: "Left arm", sub: "Samson", treatment: color}, right: {openverse: 07873f9c-c176-448b-b284-a26a33a798fb, label: "Right arm", sub: "Dube", treatment: color, accent: true}}
+
+  - say: Nobody had ever done that in a T20 international.
+    highlight: [ever]
+    bg: red
+    layers:
+      - {type: ghost, text: "1st", y: 1250}
+      - {type: stamp, text: "First ever", at: Nobody, y: 880, size: 150, rotate: -7, color: [17, 17, 19]}
+
+  - say: But here's the catch. To switch arms, he must tell the umpire first, and the umpire warns the batter.
+    highlight: [catch, umpire]
+    bg: paper
+    layers:
+      - {type: photo, openverse: 67753e11-3e6d-4a45-a913-68cb3bbf9a3d, frame: print, treatment: duotone, y: 800, w: 760, h: 860, tilt: -3}
+      - {type: stamp, text: "Law 21.1", at: umpire, y: 1200, size: 120, rotate: -6}
+
+  - say: Batters? They can switch hit without telling anyone.
+    highlight: [anyone]
+    bg: ink
+    layers:
+      - {type: photo, openverse: c8a11577-1085-49b7-8b31-71e78a5a4c43, frame: full, treatment: duotone, focus: 0.4, dim: 0.2}
+      - {type: stamp, text: "No warning", at: without, y: 1080, size: 125, rotate: -7}
+
+  - say: So is that fair? Should bowlers get the same freedom? Yes or no?
+    highlight: [fair]
+    bg: ink
+    layers:
+      - {type: photo, openverse: ce58fce8-154c-4137-bcab-fb1d267050fe, frame: full, treatment: duotone, focus: 0.4, dim: 0.55}
+      - {type: split, y: 960, at: Should, left: {icon: check, label: "Yes"}, right: {icon: x, label: "No"}}
+
+post_caption: "Left arm to Samson. Right arm to Dube. 🤯 First bowler EVER to take T20I wickets with both arms. But he has to warn the umpire before switching — batters don't. Fair? Yes or no 👇"
+hashtags: ["#AsianGames2026", "#INDvSL", "#cricket", "#TharinduRatnayake", "#cricketrules", "#reels"]
+sources:
+  - "Times Now, LatestLY, Aaj Tak, News18 (1 Oct 2026): Asian Games semi-final, India vs Sri Lanka, Nisshin; Tharindu Ratnayake dismissed Sanju Samson with left-arm spin and Shivam Dube with right-arm off-spin; first bowler to take T20I wickets with both arms; figures 2/32"
+  - "MCC Laws of Cricket, Law 21.1 (Mode of delivery): bowler must notify the umpire of a change of arm; the umpire informs the striker; otherwise it is a no-ball"
+  - "Switch-hitting by batters is permitted under the Laws (MCC ruling, 2012)"
