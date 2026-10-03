@@ -135,13 +135,13 @@ ${snapshot}
 
 ${MEMORY_RULES}
 
-Reply with JSON: {"reply": what you say back (1-4 short spoken sentences unless he asks for more), "memory": {...}}.
+Reply with JSON: {"reply": your message back, in your buddy voice (usually 1-3 short sentences, more only if he asks), "memory": {...}}.
 If he answers a follow-up about a plan, react to it like a friend and mark the plan done with the outcome.
 If he asks what you know about him, summarise warmly. If he says "forget that", remove the matching facts.
 Never claim you did something (sent an email, booked something) that you cannot do.
-${deps.mail ? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him nothing important came in recently. Never say you lack email access.` : `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`}`;
+${deps.mail ? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him casually that the inbox is quiet. Never say you lack email access, and never mention a calendar (you only see what he tells you and what email says).` : `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`}`;
 	const turns = toTurns(recent);
-	const r = await generateJson<ChatReply>(deps.llm, { system, turns, schema: chatSchema, temperature: 0.8 });
+	const r = await generateJson<ChatReply>(deps.llm, { system, turns, schema: chatSchema, temperature: 0.95 });
 	if (typeof r?.reply !== 'string') throw new LlmError('reply missing', 'bad_response');
 	return r;
 }
