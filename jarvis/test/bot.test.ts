@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handleUpdate } from '../src/bot';
+import { handleUpdate, isSmallTalk } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { LlmError } from '../src/types';
 import { OWNER, buttonUpdate, emptyMemory, makeWorld, onChat, rows, textUpdate, voiceUpdate } from './harness';
@@ -97,6 +97,9 @@ describe('conversation', () => {
 		w.llm.failWith = null;
 		onChat(w, () => ({ reply: "Sorry for the wait! I'll remind you at 8.", memory: { ...emptyMemory, reminders_add: [{ text: 'Call mom', due_at: '2026-10-03T20:00:00+05:30' }] } }));
 		w.clock.advance(5);
+		await tick(w.deps); // still inside the 15-minute retry back-off: no call
+		expect(w.tg.visible().some((s) => /remind you at 8/.test(s.text))).toBe(false);
+		w.clock.advance(10);
 		await tick(w.deps);
 		expect(w.tg.visible().some((s) => /remind you at 8/.test(s.text))).toBe(true);
 		expect(rows(w, 'SELECT text FROM reminders')).toEqual([{ text: 'Call mom' }]);
@@ -322,5 +325,71 @@ describe('photos and safety net', () => {
 		w.tg.failNext = 0;
 		await handleUpdate(w.deps, textUpdate('yo'));
 		expect(w.tg.visible().map((s) => s.text).join(' ')).toMatch(/hi|glitched/);
+	});
+});
+
+describe('memory saving', () => {
+	it('skips the memory call for small talk, catches up later, and retries saves that failed', async () => {
+		const w = makeWorld();
+		let memoryCalls = 0;
+		let memoryDown = false;
+		w.llm.on((r) => r.system.includes('Reply with just your message'), () => 'haha nice');
+		w.llm.on((r) => r.system.includes('You maintain the long-term memory'), (r) => {
+			memoryCalls++;
+			if (memoryDown) throw new LlmError('429', 'quota');
+			return r.turns[0].text.includes('dentist') ? { ...emptyMemory, plans_add: [{ title: 'Dentist', starts_at: '2026-10-09T17:00:00+05:30', all_day: false, followup_question: 'How was it?', followup_at: '' }] } : emptyMemory;
+		});
+		await handleUpdate(w.deps, textUpdate('haha'));
+		expect(memoryCalls).toBe(0);
+
+		memoryDown = true;
+		await handleUpdate(w.deps, textUpdate('dentist on Friday at 5pm'));
+		expect(memoryCalls).toBe(1);
+		expect(rows(w, 'SELECT count(*) AS c FROM plans')[0].c).toBe(0);
+
+		memoryDown = false;
+		w.clock.advance(15);
+		await tick(w.deps); // retries the failed batch, including the earlier small talk
+		expect(rows(w, 'SELECT title FROM plans')).toEqual([{ title: 'Dentist' }]);
+		await tick(w.deps);
+		expect(memoryCalls).toBe(2); // nothing left to process
+	});
+});
+
+describe('small talk detection', () => {
+	it('recognises throwaway replies but not real content', () => {
+		for (const t of ['ok', 'haha', 'Yeah!', 'thanks', '👍', 'good night']) expect(isSmallTalk(t)).toBe(true);
+		for (const t of ['remind me at 8', 'I went to the gym', 'my sister is visiting', 'no, cancel the battery reminder']) expect(isSmallTalk(t)).toBe(false);
+	});
+});
+
+describe('photo albums', () => {
+	const photo = (id: number, fileId: string, group?: string, caption?: string) => ({
+		update_id: 20000 + id,
+		message: { message_id: id, chat: { id: Number(OWNER) }, photo: [{ file_id: fileId }], media_group_id: group, caption },
+	});
+
+	it('answers an album plus a follow-up question once, looking at every photo', async () => {
+		const w = makeWorld();
+		w.tg.files.set('a', new Uint8Array([1]));
+		w.tg.files.set('b', new Uint8Array([2]));
+		onChat(w, (r) => ({ reply: `Seeing ${r.images?.length ?? 0} photos` }));
+		await Promise.all([
+			handleUpdate(w.deps, photo(501, 'a', 'album1')),
+			handleUpdate(w.deps, photo(502, 'b', 'album1')),
+			handleUpdate(w.deps, { update_id: 20503, message: { message_id: 503, chat: { id: Number(OWNER) }, text: 'Which one should I post?' } }),
+		]);
+		const replies = w.tg.visible();
+		expect(replies.length).toBe(1);
+		expect(replies[0].text).toBe('Seeing 2 photos');
+	});
+
+	it('answers an album without a question once, after gathering it', async () => {
+		const w = makeWorld();
+		w.tg.files.set('a', new Uint8Array([1]));
+		w.tg.files.set('b', new Uint8Array([2]));
+		onChat(w, (r) => ({ reply: `Seeing ${r.images?.length ?? 0} photos` }));
+		await Promise.all([handleUpdate(w.deps, photo(601, 'a', 'album2')), handleUpdate(w.deps, photo(602, 'b', 'album2'))]);
+		expect(w.tg.visible().map((s) => s.text)).toEqual(['Seeing 2 photos']);
 	});
 });

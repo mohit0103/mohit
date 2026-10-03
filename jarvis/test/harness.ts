@@ -218,6 +218,7 @@ export function makeWorld(startIso = '2026-10-03T10:00:00+05:30', opts: { paired
 			return seed / 2147483647;
 		},
 		config: { pairCode: 'secret-code', name: 'Mohit', city: 'Bengaluru' },
+		sleep: (ms: number) => new Promise((r) => setTimeout(r, Math.min(ms, 30))),
 	};
 	if (opts.paired !== false) db.raw.prepare("INSERT INTO kv (k, v) VALUES ('owner_chat_id', ?)").run(OWNER);
 	return { deps, db, tg, llm, speech, mail, clock };
@@ -246,8 +247,13 @@ export function onChat(w: World, fn: (req: LlmRequest) => { reply: string; memor
 		return typeof out === 'string' ? out : out.reply;
 	});
 	w.llm.on((r) => r.system.includes('You maintain the long-term memory'), (r) => {
-		// Show the script only the latest message, as the reply call sees it.
-		const latest = /Latest message from \w+: "([\s\S]*?)"\nJarvis replied/.exec(r.turns.at(-1)!.text)?.[1] ?? '';
+		// Show the script only what he said in the batch being processed.
+		const block = /New messages to process[^\n]*\n([\s\S]*?)\n\nReturn the memory updates/.exec(r.turns.at(-1)!.text)?.[1] ?? '';
+		const latest = block
+			.split('\n')
+			.filter((l) => !l.startsWith('Jarvis'))
+			.map((l) => l.replace(/^\w+ \([^)]*\): /, ''))
+			.join('\n');
 		const out = fn({ ...r, turns: [{ role: 'user', text: latest }] });
 		return typeof out === 'string' ? emptyMemory : { ...emptyMemory, ...(out.memory ?? {}) };
 	});

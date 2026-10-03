@@ -83,7 +83,8 @@ export function splitText(text: string, max: number): string[] {
 
 // ---------- Gemini ----------
 
-export const DEFAULT_MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+// Each model has its own free daily quota, so a longer list means more free capacity. Unknown names sit out for a day.
+export const DEFAULT_MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 
 export class Gemini implements Llm {
 	private models: string[];
@@ -144,7 +145,9 @@ export class Gemini implements Llm {
 		const startHealth = JSON.stringify(health);
 		const now = this.clock();
 		const available = this.models.filter((m) => !(health[m]?.until > now));
-		const order = available.length ? available : this.models;
+		// Every model is resting (quota or missing): fail fast instead of burning requests.
+		if (!available.length) throw new LlmError('all Gemini models are resting (free quota used up)', 'quota');
+		const order = req.tier === 'light' ? [...available.filter((m) => m.includes('lite')), ...available.filter((m) => !m.includes('lite'))] : available;
 		const benched = (model: string, minutes: number, why: string) => (health[model] = { until: now + minutes * 60_000, why });
 		const save = async () => {
 			if (JSON.stringify(health) !== startHealth) await this.memo?.set(JSON.stringify(health)).catch(() => undefined);
@@ -523,4 +526,45 @@ export function decodeEntities(s: string): string {
 		.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
 		.replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
 		.replace(/&amp;/g, '&');
+}
+
+// ---------- Backup brain: Cloudflare Workers AI ----------
+
+const BACKUP_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+
+/** An open model on Cloudflare's free allowance, used when every Gemini model is out of free quota. Text only. */
+export class WorkersLlm implements Llm {
+	constructor(private ai: Ai) {}
+
+	async generate(req: LlmRequest): Promise<string> {
+		const system = req.schema
+			? `${req.system}\n\nRespond with ONLY a JSON object matching this schema (no prose, no code fences):\n${JSON.stringify(req.schema)}`
+			: req.system;
+		const messages = [{ role: 'system', content: system }, ...req.turns.map((t) => ({ role: t.role === 'model' ? 'assistant' : 'user', content: t.text }))];
+		const res: any = await (this.ai as any).run(BACKUP_MODEL, { messages, max_tokens: req.schema ? 1200 : 400, temperature: req.temperature ?? 0.7 });
+		const text = typeof res?.response === 'string' ? res.response : JSON.stringify(res?.response ?? '');
+		if (!text.trim()) throw new LlmError('backup model returned nothing', 'bad_response');
+		return text.trim();
+	}
+}
+
+/** Gemini first; when it is out of quota or down, the backup answers so Jarvis never goes silent. */
+export class FallbackLlm implements Llm {
+	constructor(
+		private primary: Llm,
+		private backup: Llm | null,
+		private onBackup?: (why: string) => Promise<void>,
+	) {}
+
+	async generate(req: LlmRequest): Promise<string> {
+		try {
+			return await this.primary.generate(req);
+		} catch (e) {
+			const kind = e instanceof LlmError ? e.kind : 'unavailable';
+			// Audio and images need Gemini; config errors need the owner to fix the key.
+			if (!this.backup || kind === 'config' || req.audio || req.images?.length) throw e;
+			await this.onBackup?.(String(e)).catch(() => undefined);
+			return this.backup.generate(req);
+		}
+	}
 }

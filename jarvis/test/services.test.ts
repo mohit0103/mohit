@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ElevenLabs } from '../src/eleven';
 import worker, { webhookSecret } from '../src/index';
-import { Gemini, TelegramApi, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText, thinkingFor } from '../src/services';
+import { FallbackLlm, Gemini, TelegramApi, WorkersLlm, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText, thinkingFor } from '../src/services';
 import { Store } from '../src/store';
 import { LlmError } from '../src/types';
 import { fakeD1 } from './harness';
@@ -305,5 +305,34 @@ describe('web search', () => {
 		// Never combined with JSON output.
 		await g.generate({ system: '', turns: [{ role: 'user', text: 'x' }], search: true, schema: { type: 'OBJECT' } });
 		expect(bodies.at(-1).tools).toBeUndefined();
+	});
+});
+
+describe('never going silent', () => {
+	it('fails fast without network calls when every model is resting, and the backup brain answers', async () => {
+		const { f, calls } = fakeFetch(() => new Response('quota', { status: 429 }));
+		let saved: string | null = null;
+		const memo = { get: async () => saved, set: async (h: string) => void (saved = h) };
+		const g = new Gemini('k', 'a,b', f, noSleep, memo, () => 1000);
+		await expect(g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] })).rejects.toMatchObject({ kind: 'quota' });
+		const before = calls.length;
+		await expect(g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] })).rejects.toMatchObject({ kind: 'quota' });
+		expect(calls.length).toBe(before); // no wasted requests while resting
+
+		const backupRuns: any[] = [];
+		const ai = { run: async (_m: string, input: any) => (backupRuns.push(input), { response: 'Backup here, still got you!' }) } as unknown as Ai;
+		const used: string[] = [];
+		const llm = new FallbackLlm(g, new WorkersLlm(ai), async (why) => void used.push(why));
+		expect(await llm.generate({ system: 'be a buddy', turns: [{ role: 'user', text: 'hi' }] })).toBe('Backup here, still got you!');
+		expect(backupRuns[0].messages[0]).toEqual({ role: 'system', content: 'be a buddy' });
+		expect(used.length).toBe(1);
+		// Photos need Gemini, so they don't go to the text-only backup.
+		await expect(llm.generate({ system: '', turns: [{ role: 'user', text: 'pic' }], images: [{ mime: 'image/jpeg', data: new Uint8Array([1]) }] })).rejects.toMatchObject({ kind: 'quota' });
+	});
+
+	it('starts background work on the Lite models', async () => {
+		const { f, calls } = fakeFetch(() => ok('{}'));
+		await new Gemini('k', 'gemini-3.8-flash,gemini-3.5-flash-lite', f, noSleep).generate({ system: '', turns: [{ role: 'user', text: 'x' }], tier: 'light' });
+		expect(calls[0].url).toContain('gemini-3.5-flash-lite');
 	});
 });

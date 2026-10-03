@@ -82,6 +82,7 @@ export async function extractEmails(deps: Deps, messages: MailMessage[], now: Da
 		turns: [{ role: 'user', text: `Today is ${isoLocal(now)}. Triage these ${messages.length} emails:\n\n${blocks.join('\n\n')}` }],
 		schema: { type: 'OBJECT', properties: { items: { type: 'ARRAY', items: itemSchema } }, required: ['items'] },
 		temperature: 0,
+		tier: 'light',
 	});
 	const known = new Set(messages.map((m) => m.uid));
 	return (r.items ?? []).filter((i) => known.has(i.uid));

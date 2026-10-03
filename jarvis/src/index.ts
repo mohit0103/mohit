@@ -2,7 +2,7 @@
 import { handleUpdate } from './bot';
 import { ImapMail, gmailSocket } from './email/imap';
 import { tick } from './scheduler';
-import { Gemini, PublicFeeds, TelegramApi, WorkersSpeech } from './services';
+import { FallbackLlm, Gemini, PublicFeeds, TelegramApi, WorkersLlm, WorkersSpeech } from './services';
 import { Store } from './store';
 import { ElevenLabs } from './eleven';
 import { edgeSynthesize } from './edge';
@@ -10,10 +10,13 @@ import type { Deps, Env } from './types';
 
 export function makeDeps(env: Env): Deps {
 	const store = new Store(env.DB);
-	const llm = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
+	const gemini = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
 		get: () => store.get('llm_health'),
 		set: (h) => store.set('llm_health', h),
 	});
+	const llm = new FallbackLlm(gemini, env.AI ? new WorkersLlm(env.AI) : null, (why) =>
+		store.diag('backup brain', true, `used Cloudflare backup model (${why.slice(0, 120)})`, new Date().toISOString()),
+	);
 	const now = () => new Date();
 	return {
 		db: env.DB,

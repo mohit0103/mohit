@@ -71,21 +71,7 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 		return converse(deps, store, chatId, heard, true, { listen: Date.now() - tl });
 	}
 	const imageFileId = msg.photo?.length ? msg.photo[msg.photo.length - 1].file_id : /^image\//.test(msg.document?.mime_type ?? '') ? msg.document.file_id : null;
-	if (imageFileId) {
-		await deps.tg.sendChatAction(chatId, 'typing');
-		let image: Uint8Array | null = null;
-		try {
-			image = await deps.tg.getFile(imageFileId);
-		} catch (e) {
-			console.warn('photo download failed', e);
-		}
-		if (!image) {
-			await deps.tg.sendMessage(chatId, "Couldn't load that photo, man. Mind sending it again?");
-			return;
-		}
-		const mime = msg.document?.mime_type ?? 'image/jpeg';
-		return converse(deps, store, chatId, text ? `[sent a photo] ${text}` : '[sent a photo]', false, {}, [{ mime, data: image }]);
-	}
+	if (imageFileId) return handlePhoto(deps, store, chatId, msg, imageFileId, text);
 	if (msg.document || msg.sticker || msg.video || msg.video_note) {
 		if (!text) {
 			await deps.tg.sendMessage(chatId, "I can't open videos or files yet, but photos work! Tell me what it is?");
@@ -93,7 +79,81 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 		}
 	}
 	if (!text) return;
-	return converse(deps, store, chatId, text, false);
+	// A question right after photos ("which one should I post?") gets to see them.
+	const photos = await takeRecentPhotos(store, deps.now(), null);
+	return converse(deps, store, chatId, text, false, {}, await downloadPhotos(deps, photos));
+}
+
+interface PendingPhoto {
+	fileId: string;
+	mime: string;
+	at: number;
+	group: string | null;
+	msgId: number;
+}
+
+const PHOTO_WINDOW_MS = 3 * 60_000;
+
+/** Photos not yet replied to, one kv row each (photo:<message id>) so concurrent album updates never clash. */
+async function loadPhotos(store: Store, now: Date): Promise<PendingPhoto[]> {
+	const rows = await store.withPrefix('photo:');
+	const out: PendingPhoto[] = [];
+	for (const r of rows) {
+		try {
+			const p = JSON.parse(r.v) as PendingPhoto;
+			if (now.getTime() - p.at < PHOTO_WINDOW_MS) out.push(p);
+			else await store.del(r.k);
+		} catch {
+			await store.del(r.k);
+		}
+	}
+	return out;
+}
+
+/** Claims photos (one album, or all recent ones). Only photos this call managed to claim are returned. */
+async function takeRecentPhotos(store: Store, now: Date, group: string | null): Promise<PendingPhoto[]> {
+	const list = (await loadPhotos(store, now)).filter((p) => !group || p.group === group);
+	const taken: PendingPhoto[] = [];
+	for (const p of list) if (await store.take(`photo:${p.msgId}`)) taken.push(p);
+	return taken.sort((a, b) => a.msgId - b.msgId).slice(-4);
+}
+
+async function downloadPhotos(deps: Deps, photos: PendingPhoto[]): Promise<{ mime: string; data: Uint8Array }[]> {
+	const out: { mime: string; data: Uint8Array }[] = [];
+	for (const p of photos) {
+		try {
+			out.push({ mime: p.mime, data: await deps.tg.getFile(p.fileId) });
+		} catch (e) {
+			console.warn('photo download failed', e);
+		}
+	}
+	return out;
+}
+
+/**
+ * Albums arrive as one update per photo, often followed by a text question. Wait a moment, then reply once:
+ * the last photo of an album answers for all of them, and a following text message takes over entirely.
+ */
+async function handlePhoto(deps: Deps, store: Store, chatId: string, msg: any, fileId: string, caption: string): Promise<void> {
+	const now = deps.now();
+	const group: string | null = msg.media_group_id ?? null;
+	const me: PendingPhoto = { fileId, mime: msg.document?.mime_type ?? 'image/jpeg', at: now.getTime(), group, msgId: msg.message_id ?? 0 };
+	await store.set(`photo:${me.msgId}`, JSON.stringify(me));
+	await deps.tg.sendChatAction(chatId, 'typing');
+	if (group || !caption) await (deps.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms))))(2500);
+	const current = await loadPhotos(store, now);
+	const mine = current.find((p) => p.fileId === fileId);
+	if (!mine) return; // a text message already answered with this photo
+	if (group && current.some((p) => p.group === group && p.msgId > mine.msgId)) return; // a later album photo will answer
+	const photos = await takeRecentPhotos(store, now, group);
+	if (!photos.length) return; // claimed by a text message in the meantime
+	const images = await downloadPhotos(deps, photos);
+	if (!images.length) {
+		await deps.tg.sendMessage(chatId, "Couldn't load that photo, man. Mind sending it again?");
+		return;
+	}
+	const label = images.length > 1 ? `[sent ${images.length} photos]` : '[sent a photo]';
+	return converse(deps, store, chatId, caption ? `${label} ${caption}` : label, false, {}, images);
 }
 
 /**
@@ -163,7 +223,7 @@ async function converseInner(
 	await store.del('pending_reply');
 	await store.diag('brain', true, 'replying normally', utc(now));
 	await store.diag('latency', true, Object.entries(timings).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', '), utc(now));
-	await rememberExchange(deps, store, now, text, reply);
+	if (!isSmallTalk(text) || images.length) await processMemory(deps, store, now);
 }
 
 const STYLE_TAIL = `Reply with just your message to him: plain spoken words in your buddy voice, usually 1-3 short sentences (more only if he asks).
@@ -214,26 +274,47 @@ export function cleanReply(text: string): string {
 		.trim();
 }
 
-/** Second, unhurried call: what from this exchange should be remembered? Failures are logged, never shown. */
-async function rememberExchange(deps: Deps, store: Store, now: Date, said: string, reply: string): Promise<void> {
+/** Small talk with nothing to remember; saved for the next batch instead of spending a call now. */
+export function isSmallTalk(text: string): boolean {
+	const t = text.trim().toLowerCase();
+	return t.length < 25 && /^(ok(ay)?|k|haha+|lol|lmao|yeah?|yes|yep|no|nope|nice|cool|great|thanks|thank you|thx|hmm+|hi|hey|hello|yo|good night|gn|good morning|gm|😂|👍|❤️|🙏)[\s!.?😂👍❤️🙏]*$/u.test(t);
+}
+
+/**
+ * Turns the messages since the last successful run into memory updates. Runs right after a reply (unless it was
+ * small talk) and from the scheduler; if it fails (e.g. quota), the pointer stays put and the next run retries,
+ * so nothing he said is ever silently dropped.
+ */
+export async function processMemory(deps: Deps, store: Store, now: Date): Promise<'done' | 'nothing' | 'failed'> {
+	let last = Number(await store.get('mem_processed_id'));
+	if (!Number.isFinite(last) || (await store.get('mem_processed_id')) === null) {
+		// First run after this feature shipped: older history was already handled the old way.
+		const recent = await store.recentMessages(2);
+		last = recent.length ? recent[0].id - 1 : 0;
+	}
+	const pending = await store.messagesAfter(last, 30);
+	if (!pending.some((m) => m.role === 'user')) {
+		if (pending.length) await store.set('mem_processed_id', String(pending[pending.length - 1].id));
+		return 'nothing';
+	}
 	try {
-		const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(12)]);
-		const transcript = recent.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'}: ${m.text}`).join('\n');
+		const snapshot = await memorySnapshot(store, now);
+		const transcript = pending.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'} (${human(new Date(m.at))}): ${m.text}`).join('\n');
 		const ops = await generateJson<MemoryOps>(deps.llm, {
 			system: `You maintain the long-term memory of ${deps.config.name}'s AI buddy, Jarvis.\n\n${timeContext(now)}\n\nWHAT IS ALREADY KNOWN:\n${snapshot}\n\n${MEMORY_RULES}`,
-			turns: [
-				{
-					role: 'user',
-					text: `Recent conversation:\n${transcript}\n\nLatest message from ${deps.config.name}: "${said}"\nJarvis replied: "${reply}"\n\nReturn the memory updates for this latest exchange as JSON.`,
-				},
-			],
+			turns: [{ role: 'user', text: `New messages to process (resolve relative dates against when each was said):\n${transcript}\n\nReturn the memory updates as JSON.` }],
 			schema: memorySchema,
 			temperature: 0.2,
+			tier: 'light',
 		});
 		await applyMemory(store, ops, now);
+		await store.set('mem_processed_id', String(pending[pending.length - 1].id));
+		await store.diag('memory', true, `saved from ${pending.length} messages`, utc(now));
+		return 'done';
 	} catch (e) {
 		console.error('memory update failed', e);
-		await store.diag('memory', false, String(e), utc(now));
+		await store.diag('memory', false, `will retry: ${String(e).slice(0, 200)}`, utc(now));
+		return 'failed';
 	}
 }
 
@@ -394,6 +475,10 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 		await store.del('pending_reply');
 		return;
 	}
+	// Retry every 15 minutes, not every tick, so a quota outage isn't made worse.
+	const lastTry = Number((await store.get('pending_reply_try')) ?? 0);
+	if (now.getTime() - lastTry < 15 * 60_000) return;
+	await store.set('pending_reply_try', String(now.getTime()));
 	let reply: string;
 	try {
 		reply = await replyTo(deps, store, now);
@@ -401,7 +486,6 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 		return; // still down; try again next tick
 	}
 	await store.del('pending_reply');
-	const said = (await store.recentMessages(5)).filter((m) => m.role === 'user').at(-1)?.text ?? '';
 	await say(deps, chatId, reply, { voice: false, kind: 'chat' });
-	await rememberExchange(deps, store, now, said, reply);
+	await processMemory(deps, store, now);
 }

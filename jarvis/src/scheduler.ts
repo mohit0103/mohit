@@ -6,7 +6,7 @@ import { Store, type Plan } from './store';
 import { addDays, atLocal, human, local, localDate, localMinutes, utc } from './time';
 import type { Deps } from './types';
 import { syncEmail } from './email/sync';
-import { retryPendingReply } from './bot';
+import { processMemory, retryPendingReply } from './bot';
 
 export const BRIEFING_AT = 7 * 60; // 07:00
 export const CHECKIN_AT = 19 * 60; // 19:00
@@ -36,6 +36,12 @@ export async function tick(deps: Deps): Promise<string[]> {
 	});
 	await step('pending reply', () => retryPendingReply(deps, store, chatId));
 	await step('reminders', () => sendDueReminders(deps, store, chatId, now, log));
+	await step('memory', async () => {
+		// Catch up on small talk saved for later and on any save that failed earlier.
+		const last = Number((await store.get('mem_processed_id')) ?? 0);
+		const pending = await store.messagesAfter(last, 1);
+		if (pending.length && now.getTime() - new Date(pending[0].at).getTime() > 10 * 60_000) log.push(`memory: ${await processMemory(deps, store, now)}`);
+	});
 
 	const pausedUntil = await store.get('paused_until');
 	const paused = pausedUntil && new Date(pausedUntil) > now;
@@ -362,6 +368,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 			required: ['send', 'message'],
 		},
 		temperature: 1,
+		tier: 'light',
 	});
 	if (!r.send || !r.message?.trim()) return false;
 	await say(deps, chatId, r.message.trim(), { voice: false, kind: 'nudge' });
@@ -391,6 +398,7 @@ async function writeDiary(deps: Deps, store: Store, date: string): Promise<void>
 			required: ['summary', 'mood_label', 'mood_score'],
 		},
 		temperature: 0.3,
+		tier: 'light',
 	});
 	const score = r.mood_score >= 1 && r.mood_score <= 5 ? Math.round(r.mood_score) : null;
 	await store.setDiarySummary(date, (r.summary ?? '').slice(0, 800), (r.mood_label ?? '').slice(0, 30), score);
@@ -465,6 +473,7 @@ ${transcript}`,
 			required: ['score', 'summary', 'issues'],
 		},
 		temperature: 0.2,
+		tier: 'light',
 	});
 	const review = { score: Number(r.score) || 0, summary: String(r.summary ?? ''), issues: (r.issues ?? []).slice(0, 20) };
 	await store.set(`review:${date}`, JSON.stringify(review));

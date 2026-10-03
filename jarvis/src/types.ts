@@ -47,6 +47,8 @@ export interface LlmRequest {
 	images?: { mime: string; data: Uint8Array }[];
 	/** Latency-sensitive: turn model thinking down to the minimum. */
 	fast?: boolean;
+	/** 'light' background work starts on the Lite models, which have their own (bigger) free quota. */
+	tier?: 'best' | 'light';
 	/** Let the model use Google Search for current or factual questions. */
 	search?: boolean;
 }
@@ -102,6 +104,8 @@ export interface Deps {
 	mail: MailSource | null;
 	now: () => Date;
 	random: () => number;
+	/** Pause (used to gather photo albums). Tests pass an instant one. */
+	sleep?: (ms: number) => Promise<void>;
 	config: {
 		ownerChatId?: string;
 		pairCode?: string;

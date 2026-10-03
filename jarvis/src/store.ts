@@ -120,6 +120,13 @@ export class Store {
 	async del(k: string): Promise<void> {
 		await run(this.db, 'DELETE FROM kv WHERE k = ?', k);
 	}
+	/** Deletes a key and reports whether this call was the one that removed it (safe under concurrency). */
+	async take(k: string): Promise<boolean> {
+		return (await run(this.db, 'DELETE FROM kv WHERE k = ?', k)) > 0;
+	}
+	async withPrefix(prefix: string): Promise<{ k: string; v: string }[]> {
+		return all<{ k: string; v: string }>(this.db, "SELECT k, v FROM kv WHERE k >= ? AND k < ? ORDER BY k", prefix, `${prefix}\uffff`);
+	}
 
 	/** Records the latest outcome of a subsystem (shown by /status). Never throws. */
 	async diag(name: string, ok: boolean, info: string, at: string): Promise<void> {
@@ -143,6 +150,13 @@ export class Store {
 	async recentMessages(limit: number): Promise<Message[]> {
 		const rows = await all<Message>(this.db, 'SELECT * FROM messages ORDER BY id DESC LIMIT ?', limit);
 		return rows.reverse();
+	}
+	async messagesAfter(id: number, limit: number): Promise<Message[]> {
+		return all<Message>(this.db, 'SELECT * FROM messages WHERE id > ? ORDER BY id LIMIT ?', id, limit);
+	}
+	async lastMessageId(): Promise<number> {
+		const r = await first<{ id: number }>(this.db, 'SELECT max(id) AS id FROM messages');
+		return Number(r?.id ?? 0);
 	}
 	async messagesBetween(fromUtc: string, toUtc: string): Promise<Message[]> {
 		return all<Message>(this.db, 'SELECT * FROM messages WHERE at >= ? AND at < ? ORDER BY id', fromUtc, toUtc);
