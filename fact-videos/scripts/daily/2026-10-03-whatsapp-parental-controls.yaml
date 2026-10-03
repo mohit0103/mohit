@@ -1,0 +1,126 @@
+channel: factloop
+kicker: OCT 2024 · WHATSAPP UPDATE
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  WhatsApp: Wots-app
+  Meta: Metta
+  AI: Ay-Eye
+scenes:
+- say: Parents now have WhatsApp controls. But they CANNOT read your chats!
+  highlight:
+  - CANNOT read
+  bg: red
+  layers:
+  - type: photo
+    query: concerned teenager looking at phone, adult watching over shoulder
+    frame: full
+    treatment: duotone
+    dim: 0.25
+  - type: headline
+    text: PARENT CONTROL
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - CONTROL
+  - type: stamp
+    text: NO CHATS!
+    at: CANNOT
+    y: 1080
+    rotate: -8
+- say: Meta introduced optional tools for parents, focusing on teen online safety.
+  highlight:
+  - online safety
+  bg: ink
+  layers:
+  - type: photo
+    query: parent and teenager talking on phone, blurred background
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: icon
+    name: shield
+    label: Teen Safety
+    size: 300
+    y: 900
+- say: They can get alerts for group joins, and manage profile photo privacy.
+  highlight:
+  - group joins
+  - profile photo privacy
+  bg: paper
+  layers:
+  - type: photo
+    query: phone screen showing whatsapp group chat interface
+    frame: print
+    treatment: color
+    y: 900
+  - type: icon
+    name: alert-triangle
+    label: Group Alerts
+    size: 250
+    y: 560
+- say: 'But here''s the twist: chats and calls remain end-to-end encrypted. No one can read them.'
+  highlight:
+  - No one can read
+  bg: red
+  layers:
+  - type: photo
+    query: padlock icon over phone message app screen
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: stamp
+    text: PRIVATE!
+    at: No one
+    y: 1080
+    rotate: 5
+- say: Parents can also manage privacy for Status, Channels, and Meta AI chats.
+  highlight:
+  - Status
+  - Channels
+  bg: paper
+  layers:
+  - type: photo
+    query: phone screen showing whatsapp status and channels interface
+    frame: strip
+    treatment: color
+    y: 800
+  - type: icon
+    name: eye
+    label: See Settings
+    size: 200
+    y: 560
+- say: Should parents have this much control over teen WhatsApp? Yes or no?
+  highlight:
+  - control
+  - Yes or no
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: WhatsApp's new optional parental controls are here. Are they a step too far for teen privacy, or a much-needed
+  safety net? What do you think? Drop your answer in the comments!
+hashtags:
+- '#WhatsApp'
+- '#ParentalControls'
+- '#TechFacts'
+- '#TeenSafety'
+- '#DigitalIndia'
+- '#PrivacyDebate'
+sources:
+- 'WhatsApp Help Center: About parental controls for teens'
+- 'The Economic Times: WhatsApp changes for parents'
+- 'Hindustan Times: WhatsApp adds parental controls for teen accounts'
+- 'Business Standard: WhatsApp parental controls for teenagers'
+- 'Jagran Josh: Meta Launches Optional WhatsApp Parental Controls'
+- 'Croma Unboxed: WhatsApp adds parental controls for teenagers'
+- 'Business Today: WhatsApp is giving parents more control over Teen Accounts'
+topic: WhatsApp Parental Controls
