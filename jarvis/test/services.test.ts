@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ElevenLabs } from '../src/eleven';
 import worker, { webhookSecret } from '../src/index';
-import { Gemini, TelegramApi, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText } from '../src/services';
+import { Gemini, TelegramApi, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText, thinkingFor } from '../src/services';
 import { Store } from '../src/store';
 import { LlmError } from '../src/types';
 import { fakeD1 } from './harness';
@@ -249,5 +249,31 @@ describe('ElevenLabs voice', () => {
 		await expect(el.synthesize('hi', 'Will', '2026-10-04')).rejects.toThrow(/quota used up/);
 		expect(calls.filter((c) => c.startsWith('POST')).length).toBe(1);
 		await expect(el.synthesize('hi', 'Will', '2026-11-01')).rejects.toThrow(/ElevenLabs 402/); // new month, tries again
+	});
+});
+
+describe('fast replies', () => {
+	it('asks for minimal thinking in the right form per model generation', () => {
+		expect(thinkingFor('gemini-2.5-flash')).toEqual({ thinkingBudget: 0 });
+		expect(thinkingFor('gemini-3.8-flash')).toEqual({ thinkingLevel: 'minimal' });
+	});
+
+	it('retries without the thinking setting if a model rejects it, and remembers the model that worked', async () => {
+		const bodies: any[] = [];
+		const { f, calls } = fakeFetch((url, init) => {
+			const b = JSON.parse(String(init!.body));
+			bodies.push(b);
+			if (url.includes('/a:')) return new Response('not found', { status: 404 });
+			if (b.generationConfig.thinkingConfig) return new Response('Unknown field thinking_level', { status: 400 });
+			return ok('hey!');
+		});
+		let saved: string | null = null;
+		const memo = { get: async () => saved, set: async (m: string) => void (saved = m) };
+		const g = new Gemini('k', 'a,b', f, noSleep, memo);
+		expect(await g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }], fast: true })).toBe('hey!');
+		expect(saved).toBe('b');
+		calls.length = 0;
+		await g.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] });
+		expect(calls[0].url).toContain('/b:'); // skips the dead model next time
 	});
 });

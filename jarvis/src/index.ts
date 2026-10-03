@@ -10,7 +10,10 @@ import type { Deps, Env } from './types';
 
 export function makeDeps(env: Env): Deps {
 	const store = new Store(env.DB);
-	const llm = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS);
+	const llm = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
+		get: () => store.get('llm_model'),
+		set: (m) => store.set('llm_model', m),
+	});
 	const now = () => new Date();
 	return {
 		db: env.DB,

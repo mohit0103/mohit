@@ -1,7 +1,7 @@
 // Handles incoming Telegram updates: pairing, commands, buttons, and conversation.
 import { MEMORY_RULES, applyMemory, memorySchema, type MemoryOps } from './memory';
 import { memorySnapshot, persona, planLine, timeContext } from './context';
-import { generateJson } from './services';
+import { generateJson, parseJsonLoose } from './services';
 import { ownerChat, say } from './say';
 import { Store } from './store';
 import { addDays, atLocal, human, localDate, utc } from './time';
@@ -57,6 +57,7 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 	if (voice?.file_id) {
 		await deps.tg.sendChatAction(chatId, 'typing');
 		let heard = '';
+		const tl = Date.now();
 		try {
 			const audio = await deps.tg.getFile(voice.file_id);
 			heard = await deps.speech.transcribe(audio, voice.mime_type ?? 'audio/ogg');
@@ -67,7 +68,7 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 			await deps.tg.sendMessage(chatId, "Sorry, I couldn't catch that voice note. Could you try again or type it?");
 			return;
 		}
-		return converse(deps, store, chatId, heard, true);
+		return converse(deps, store, chatId, heard, true, { listen: Date.now() - tl });
 	}
 	if (msg.photo || msg.document || msg.sticker || msg.video) {
 		if (!text) {
@@ -79,26 +80,23 @@ export async function handleUpdate(deps: Deps, update: any): Promise<void> {
 	return converse(deps, store, chatId, text, false);
 }
 
-interface ChatReply {
-	reply: string;
-	memory: MemoryOps;
-}
-
-const chatSchema = {
-	type: 'OBJECT',
-	properties: { reply: { type: 'STRING' }, memory: memorySchema },
-	required: ['reply', 'memory'],
-};
-
-/** One LLM call produces both the reply and the memory updates. */
-export async function converse(deps: Deps, store: Store, chatId: string, text: string, viaVoice: boolean): Promise<void> {
+/**
+ * Replying is latency-critical; remembering is not. So the reply comes from one quick call (minimal
+ * thinking, plain text), goes out, and only then a second call extracts memory updates.
+ */
+export async function converse(deps: Deps, store: Store, chatId: string, text: string, viaVoice: boolean, timings: Record<string, number> = {}): Promise<void> {
 	const now = deps.now();
-	await store.addMessage('user', text, 'chat', utc(now));
-	await deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing');
-	if (deps.mail && /\b(e-?mails?|inbox|gmail|mails?)\b/i.test(text)) await checkMailNow(deps, store, now);
-	let result: ChatReply;
+	const t0 = Date.now();
+	await Promise.all([store.addMessage('user', text, 'chat', utc(now)), deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing')]);
+	if (deps.mail && /\b(e-?mails?|inbox|gmail|mails?)\b/i.test(text)) {
+		const tm = Date.now();
+		await checkMailNow(deps, store, now, 8_000);
+		timings.email = Date.now() - tm;
+	}
+	let reply: string;
+	const tl = Date.now();
 	try {
-		result = await think(deps, store, now);
+		reply = await replyTo(deps, store, now);
 	} catch (e) {
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
@@ -113,37 +111,75 @@ export async function converse(deps: Deps, store: Store, chatId: string, text: s
 		await deps.tg.sendMessage(chatId, sorry);
 		return;
 	}
+	timings.brain = Date.now() - tl;
+	const ts = Date.now();
+	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat' });
+	timings.send = Date.now() - ts;
+	timings.total = Date.now() - t0 + (timings.listen ?? 0);
 	await store.del('pending_reply');
 	await store.diag('brain', true, 'replying normally', utc(now));
-	try {
-		await applyMemory(store, result.memory, now);
-	} catch (e) {
-		console.error('memory update failed', e);
-	}
-	const reply = (result.reply ?? '').trim() || 'Got it 👍';
-	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat' });
+	await store.diag('latency', true, Object.entries(timings).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', '), utc(now));
+	await rememberExchange(deps, store, now, text, reply);
 }
 
-async function think(deps: Deps, store: Store, now: Date): Promise<ChatReply> {
+const STYLE_TAIL = `Reply with just your message to him: plain spoken words in your buddy voice, usually 1-3 short sentences (more only if he asks).
+If he tells you how a plan went, react like a friend. If he asks to be reminded, confirm casually with the time.
+If he asks what you know about him, sum it up warmly. If he says "forget that", say you've forgotten it.
+Never claim you did something you cannot do (send an email, book something).`;
+
+function emailNote(deps: Deps): string {
+	return deps.mail
+		? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him casually that the inbox is quiet. Never say you lack email access, and never mention a calendar (you only see what he tells you and what email says).`
+		: `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`;
+}
+
+async function replyTo(deps: Deps, store: Store, now: Date): Promise<string> {
 	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
-	const system = `${persona(deps.config.name, deps.config.city)}
+	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${STYLE_TAIL}`;
+	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true });
+	const reply = cleanReply(text);
+	if (!reply) throw new LlmError('empty reply', 'bad_response');
+	return reply;
+}
 
-${timeContext(now)}
+/** Models sometimes wrap a plain reply in quotes, a "Jarvis:" label or a JSON object; unwrap it. */
+export function cleanReply(text: string): string {
+	let t = text
+		.trim()
+		.replace(/^```\w*\s*/, '')
+		.replace(/\s*```$/, '')
+		.trim();
+	if (t.startsWith('{')) {
+		const parsed = parseJsonLoose(t) as { reply?: unknown } | undefined;
+		if (parsed && typeof parsed.reply === 'string') t = parsed.reply;
+	}
+	return t
+		.replace(/^(jarvis|you)\s*:\s*/i, '')
+		.replace(/^"([\s\S]*)"$/, '$1')
+		.trim();
+}
 
-WHAT YOU KNOW:
-${snapshot}
-
-${MEMORY_RULES}
-
-Reply with JSON: {"reply": your message back, in your buddy voice (usually 1-3 short sentences, more only if he asks), "memory": {...}}.
-If he answers a follow-up about a plan, react to it like a friend and mark the plan done with the outcome.
-If he asks what you know about him, summarise warmly. If he says "forget that", remove the matching facts.
-Never claim you did something (sent an email, booked something) that you cannot do.
-${deps.mail ? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him casually that the inbox is quiet. Never say you lack email access, and never mention a calendar (you only see what he tells you and what email says).` : `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`}`;
-	const turns = toTurns(recent);
-	const r = await generateJson<ChatReply>(deps.llm, { system, turns, schema: chatSchema, temperature: 0.95 });
-	if (typeof r?.reply !== 'string') throw new LlmError('reply missing', 'bad_response');
-	return r;
+/** Second, unhurried call: what from this exchange should be remembered? Failures are logged, never shown. */
+async function rememberExchange(deps: Deps, store: Store, now: Date, said: string, reply: string): Promise<void> {
+	try {
+		const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(12)]);
+		const transcript = recent.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'}: ${m.text}`).join('\n');
+		const ops = await generateJson<MemoryOps>(deps.llm, {
+			system: `You maintain the long-term memory of ${deps.config.name}'s AI buddy, Jarvis.\n\n${timeContext(now)}\n\nWHAT IS ALREADY KNOWN:\n${snapshot}\n\n${MEMORY_RULES}`,
+			turns: [
+				{
+					role: 'user',
+					text: `Recent conversation:\n${transcript}\n\nLatest message from ${deps.config.name}: "${said}"\nJarvis replied: "${reply}"\n\nReturn the memory updates for this latest exchange as JSON.`,
+				},
+			],
+			schema: memorySchema,
+			temperature: 0.2,
+		});
+		await applyMemory(store, ops, now);
+	} catch (e) {
+		console.error('memory update failed', e);
+		await store.diag('memory', false, String(e), utc(now));
+	}
 }
 
 /** Gemini wants alternating user/model turns that end with the user. */
@@ -278,11 +314,11 @@ async function handleButton(deps: Deps, store: Store, cq: any): Promise<void> {
 }
 
 /** Syncs Gmail right away (bounded wait). Returns an error message, or null on success. */
-async function checkMailNow(deps: Deps, store: Store, now: Date): Promise<string | null> {
+async function checkMailNow(deps: Deps, store: Store, now: Date, timeoutMs = 20_000): Promise<string | null> {
 	try {
 		const n = await Promise.race([
 			syncEmail(deps, store, now),
-			new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Gmail took too long to answer')), 20_000)),
+			new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Gmail took too long to answer')), timeoutMs)),
 		]);
 		await store.diag('email', true, `checked on request, ${n} new`, utc(now));
 		return null;
@@ -303,13 +339,14 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 		await store.del('pending_reply');
 		return;
 	}
-	let result: ChatReply;
+	let reply: string;
 	try {
-		result = await think(deps, store, now);
+		reply = await replyTo(deps, store, now);
 	} catch {
 		return; // still down; try again next tick
 	}
 	await store.del('pending_reply');
-	await applyMemory(store, result.memory, now).catch((e) => console.error('memory update failed', e));
-	await say(deps, chatId, result.reply || 'Sorry for the delay! I\'m back.', { voice: false, kind: 'chat' });
+	const said = (await store.recentMessages(5)).filter((m) => m.role === 'user').at(-1)?.text ?? '';
+	await say(deps, chatId, reply, { voice: false, kind: 'chat' });
+	await rememberExchange(deps, store, now, said, reply);
 }

@@ -92,6 +92,8 @@ export class Gemini implements Llm {
 		models: string | undefined,
 		private fetcher: typeof fetch = (input, init) => fetch(input, init),
 		private sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+		/** Remembers the model that last answered, so later requests skip dead ones. */
+		private memo?: { get(): Promise<string | null>; set(model: string): Promise<void> },
 	) {
 		this.models = models
 			? models
@@ -134,6 +136,8 @@ export class Gemini implements Llm {
 
 	private async tryModels(req: LlmRequest): Promise<string> {
 		if (!this.key) throw new LlmError('GEMINI_API_KEY is not set', 'config');
+		const preferred = await this.memo?.get().catch(() => null);
+		const order = preferred && this.models.includes(preferred) ? [preferred, ...this.models.filter((m) => m !== preferred)] : this.models;
 		const contents = req.turns.map((t, i) => {
 			const parts: any[] = [{ text: t.text }];
 			if (req.audio && i === req.turns.length - 1) parts.push({ inline_data: { mime_type: req.audio.mime, data: toBase64(req.audio.data) } });
@@ -150,14 +154,16 @@ export class Gemini implements Llm {
 		}
 		let lastKind: LlmError['kind'] = 'unavailable';
 		let lastMsg = '';
-		for (const model of this.models) {
+		for (const model of order) {
+			let thinking = req.fast ? thinkingFor(model) : undefined;
 			for (let attempt = 0; attempt < 2; attempt++) {
 				let res: Response;
+				const payload = thinking ? { ...body, generationConfig: { ...body.generationConfig, thinkingConfig: thinking } } : body;
 				try {
 					res = await this.fetcher(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
 						method: 'POST',
 						headers: { 'content-type': 'application/json', 'x-goog-api-key': this.key },
-						body: JSON.stringify(body),
+						body: JSON.stringify(payload),
 					});
 				} catch (e) {
 					lastMsg = String(e);
@@ -170,7 +176,10 @@ export class Gemini implements Llm {
 						?.map((p: any) => p.text ?? '')
 						.join('')
 						.trim();
-					if (text) return text;
+					if (text) {
+						if (model !== preferred) await this.memo?.set(model).catch(() => undefined);
+						return text;
+					}
 					lastKind = 'bad_response';
 					lastMsg = `empty answer from ${model} (${data?.candidates?.[0]?.finishReason ?? data?.promptFeedback?.blockReason ?? 'unknown'})`;
 					break; // try the next model
@@ -179,6 +188,11 @@ export class Gemini implements Llm {
 				if (res.status === 429) {
 					lastKind = 'quota';
 					break; // each model has its own free quota, so move on
+				}
+				if (res.status === 400 && thinking && /thinking/i.test(lastMsg)) {
+					thinking = undefined; // this model doesn't take that thinking setting; retry plainly
+					attempt--;
+					continue;
 				}
 				if (res.status === 404 || res.status === 400) {
 					if (res.status === 404) lastMsg = `${model} not found`;
@@ -193,6 +207,11 @@ export class Gemini implements Llm {
 		}
 		throw new LlmError(lastMsg || 'all models failed', lastKind);
 	}
+}
+
+/** Minimal thinking for quick replies: Gemini 2.x takes a token budget, Gemini 3+ a level. */
+export function thinkingFor(model: string): Record<string, unknown> {
+	return /gemini-2\./.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'minimal' };
 }
 
 /** Keeps general-purpose Flash models (no TTS, image, live, embedding or preview variants), newest version first. */

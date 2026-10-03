@@ -238,3 +238,17 @@ export function buttonUpdate(data: string, chatId = OWNER) {
 export function rows(w: World, sql: string, ...args: any[]): any[] {
 	return w.db.raw.prepare(sql).all(...args) as any[];
 }
+
+/** Scripts both chat calls from one function: the quick reply and the follow-up memory extraction. */
+export function onChat(w: World, fn: (req: LlmRequest) => { reply: string; memory?: Record<string, unknown> } | string) {
+	w.llm.on((r) => r.system.includes('Reply with just your message'), (r) => {
+		const out = fn(r);
+		return typeof out === 'string' ? out : out.reply;
+	});
+	w.llm.on((r) => r.system.includes('You maintain the long-term memory'), (r) => {
+		// Show the script only the latest message, as the reply call sees it.
+		const latest = /Latest message from \w+: "([\s\S]*?)"\nJarvis replied/.exec(r.turns.at(-1)!.text)?.[1] ?? '';
+		const out = fn({ ...r, turns: [{ role: 'user', text: latest }] });
+		return typeof out === 'string' ? emptyMemory : { ...emptyMemory, ...(out.memory ?? {}) };
+	});
+}

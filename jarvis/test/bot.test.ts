@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { LlmError } from '../src/types';
-import { OWNER, buttonUpdate, emptyMemory, makeWorld, rows, textUpdate, voiceUpdate } from './harness';
+import { OWNER, buttonUpdate, emptyMemory, makeWorld, onChat, rows, textUpdate, voiceUpdate } from './harness';
 
-const CHAT = 'Reply with JSON';
 
 describe('pairing and privacy', () => {
 	it('pairs only with the right code and then ignores strangers', async () => {
@@ -23,11 +22,11 @@ describe('pairing and privacy', () => {
 
 	it('handles a Telegram retry of the same update only once', async () => {
 		const w = makeWorld();
-		w.llm.on(CHAT, () => ({ reply: 'Hey Mohit!', memory: emptyMemory }));
+		onChat(w, () => ({ reply: 'Hey Mohit!', memory: emptyMemory }));
 		const u = textUpdate('hello');
 		await handleUpdate(w.deps, u);
 		await handleUpdate(w.deps, u);
-		expect(w.llm.calls.length).toBe(1);
+		expect(w.llm.calls.filter((c) => c.system.includes('Reply with just your message')).length).toBe(1);
 		expect(w.tg.visible().length).toBe(1);
 	});
 });
@@ -35,7 +34,7 @@ describe('pairing and privacy', () => {
 describe('conversation', () => {
 	it('mirrors the format: text in, text out; voice in, voice out', async () => {
 		const w = makeWorld();
-		w.llm.on(CHAT, () => ({ reply: 'Sounds great!', memory: emptyMemory }));
+		onChat(w, () => ({ reply: 'Sounds great!', memory: emptyMemory }));
 		await handleUpdate(w.deps, textUpdate('I had biryani today'));
 		expect(w.tg.visible().map((s) => s.type)).toEqual(['text']);
 
@@ -53,7 +52,7 @@ describe('conversation', () => {
 		w.speech.disabled = true;
 		w.speech.transcript = 'hello';
 		w.tg.files.set('f1', new Uint8Array([1]));
-		w.llm.on(CHAT, () => ({ reply: 'Hi!', memory: emptyMemory }));
+		onChat(w, () => ({ reply: 'Hi!', memory: emptyMemory }));
 		await handleUpdate(w.deps, voiceUpdate('f1'));
 		expect(w.tg.visible().map((s) => s.type)).toEqual(['text']);
 	});
@@ -69,10 +68,12 @@ describe('conversation', () => {
 
 	it('gives the model the memory, calendar and conversation history', async () => {
 		const w = makeWorld();
-		w.llm.on(CHAT, () => ({ reply: 'Noted!', memory: { ...emptyMemory, facts_add: [{ text: 'Is vegetarian', category: 'preference' }] } }));
+		onChat(w, () => ({ reply: 'Noted!', memory: { ...emptyMemory, facts_add: [{ text: 'Is vegetarian', category: 'preference' }] } }));
 		await handleUpdate(w.deps, textUpdate("I'm vegetarian by the way"));
 		await handleUpdate(w.deps, textUpdate('what should I eat tonight?'));
-		const req = w.llm.calls[1];
+		const replies = w.llm.calls.filter((c) => c.system.includes('Reply with just your message'));
+		const req = replies[1];
+		expect(req.fast).toBe(true);
 		expect(req.system).toContain('Is vegetarian');
 		expect(req.system).toContain('Saturday 2026-10-03 (today)');
 		expect(req.turns.map((t) => t.role)).toEqual(['user', 'model', 'user']);
@@ -94,7 +95,7 @@ describe('conversation', () => {
 
 		// Quota back: the saved message is answered and the reminder is created.
 		w.llm.failWith = null;
-		w.llm.on(CHAT, () => ({ reply: "Sorry for the wait! I'll remind you at 8.", memory: { ...emptyMemory, reminders_add: [{ text: 'Call mom', due_at: '2026-10-03T20:00:00+05:30' }] } }));
+		onChat(w, () => ({ reply: "Sorry for the wait! I'll remind you at 8.", memory: { ...emptyMemory, reminders_add: [{ text: 'Call mom', due_at: '2026-10-03T20:00:00+05:30' }] } }));
 		w.clock.advance(5);
 		await tick(w.deps);
 		expect(w.tg.visible().some((s) => /remind you at 8/.test(s.text))).toBe(true);
@@ -109,16 +110,16 @@ describe('conversation', () => {
 		expect(w.tg.visible()[0].text).toMatch(/GEMINI_API_KEY/);
 	});
 
-	it('keeps replying even when the model returns broken JSON', async () => {
+	it('says it had a hiccup when the model returns nothing', async () => {
 		const w = makeWorld();
-		w.llm.on(CHAT, () => 'not json at all');
+		onChat(w, () => '   ');
 		await handleUpdate(w.deps, textUpdate('hi'));
 		expect(w.tg.visible()[0].text).toMatch(/hiccup/);
 	});
 
 	it('accepts JSON wrapped in a code fence', async () => {
 		const w = makeWorld();
-		w.llm.on(CHAT, () => '```json\n{"reply":"Yo!","memory":{}}\n```');
+		onChat(w, () => '```json\n{"reply":"Yo!","memory":{}}\n```');
 		await handleUpdate(w.deps, textUpdate('hi'));
 		expect(w.tg.visible()[0].text).toBe('Yo!');
 	});
@@ -127,7 +128,7 @@ describe('conversation', () => {
 describe('the dentist story, end to end', () => {
 	it('remembers a plan, alerts the night before, nudges before, follows up after, and records the outcome', async () => {
 		const w = makeWorld('2026-10-05T21:00:00+05:30'); // Monday night
-		w.llm.on(CHAT, (req) => {
+		onChat(w, (req) => {
 			const last = req.turns[req.turns.length - 1].text;
 			if (/dentist on Friday/.test(last))
 				return {
@@ -177,7 +178,7 @@ describe('the dentist story, end to end', () => {
 
 	it('asks a midday follow-up on its own when the check-in is hours away', async () => {
 		const w = makeWorld('2026-10-09T08:00:00+05:30');
-		w.llm.on(CHAT, () => ({
+		onChat(w, () => ({
 			reply: 'ok',
 			memory: { ...emptyMemory, plans_add: [{ title: 'Job interview', starts_at: '2026-10-09T10:00:00+05:30', all_day: false, followup_question: 'How did the interview go?', followup_at: '' }] },
 		}));
@@ -255,10 +256,10 @@ describe('email on request, status and voices', () => {
 		const w = makeWorld();
 		triage(w);
 		w.mail.inbox = [{ uid: 1, from: 'Priya', subject: 'Deck', date: w.clock.now, text: 'Need the deck by 4' }];
-		w.llm.on(CHAT, () => ({ reply: 'Priya needs the deck by 4!', memory: emptyMemory }));
+		onChat(w, () => ({ reply: 'Priya needs the deck by 4!', memory: emptyMemory }));
 		await handleUpdate(w.deps, textUpdate('Any important emails today?'));
 		expect(w.mail.calls).toBe(1);
-		const chat = w.llm.calls.find((c) => c.system.includes('Reply with JSON'))!;
+		const chat = w.llm.calls.find((c) => c.system.includes('Reply with just your message'))!;
 		expect(chat.system).toContain('Priya (manager): needs the deck by 4 PM');
 		expect(chat.system).toMatch(/you DO have read-only access to his Gmail/);
 		// A non-email message doesn't hit Gmail.
