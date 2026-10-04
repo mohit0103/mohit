@@ -1,0 +1,116 @@
+channel: factloop
+kicker: MONEY · INDIA
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your ₹1 coin costs *more* than ₹1 to make.
+  highlight:
+  - more
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: ₹1 LOSS
+    at: more
+    y: 1080
+    rotate: -8
+- say: Each ₹1 coin costs ₹1.11 to mint.
+  highlight:
+  - ₹1.11
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian coins production line
+    frame: print
+    treatment: color
+    dim: 0.15
+  - type: counter
+    value: 1.11
+    suffix: ₹
+    label: Cost to Mint
+    y: 800
+- say: Since 2018, government loses money on every single ₹1 coin.
+  highlight:
+  - loses money
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian Government Mint building
+    frame: strip
+    treatment: bw
+    dim: 0.2
+  - type: chips
+    items:
+    - '2018'
+    at: '2018'
+    y: 1000
+- say: However, ₹2, ₹5, and ₹10 coins still cost *less* than their face value.
+  highlight:
+  - less
+  bg: paper
+  layers:
+  - type: photo
+    query: stack of Indian rupee coins
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹2
+      value: 1.28
+    - label: ₹5
+      value: 3.69
+    - label: ₹10
+      value: 5.54
+    unit: ₹
+    y: 900
+- say: Yet, ₹1 coins remain essential for countless daily transactions across India.
+  highlight:
+  - essential
+  bg: ink
+  layers:
+  - type: photo
+    query: people counting money India market
+    frame: print
+    treatment: color
+    dim: 0.15
+  - type: icon
+    name: users
+    label: Daily Use
+    size: 300
+    y: 900
+- say: Should India continue minting coins that cost more than their worth?
+  highlight:
+  - worth
+  bg: red
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: 'Did you know your ₹1 coin is a ''loss-making'' venture for the government? 🤔 What do you think: should we keep
+  minting them? Yes or no in the comments!'
+hashtags:
+- '#IndianFacts'
+- '#CoinValue'
+- '#Economics'
+- '#HiddenCost'
+- '#India'
+sources:
+- https://www.indiatvnews.com/news/india/how-much-does-the-govt-spend-to-mint-one-rupee-coin-check-here-2024-12-06-965768
+- https://www.angelone.in/knowledge-centre/share-market/cost-of-minting-1-rupee-coin
+- https://zeenews.india.com/hindi/zee-business/cost-of-minting-a-one-rupee-coin-is-more-than-its-face-value-the-cost-is-cost-of-making-rs-2-rs-10-rs-2000-is/2402120
+- https://finshots.in/archive/why-india-needs-a-coin-replacement-policy/
+- https://www.timesnownews.com/business/how-much-does-the-government-spend-to-mint-coins-and-print-notes-in-india-article-115682894
+- https://www.hindustantimes.com/business/one-rupee-coin-costs-more-than-its-value-to-produce-101700994196160.html
+- https://www.inshorts.com/en/news/how-much-money-does-govt-spend-to-make-%E2%82%B91-%E2%82%B92-%E2%82%B95-and-%E2%82%B910-coins-1544078893708
+topic: Coin Value
