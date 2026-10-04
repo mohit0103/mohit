@@ -70,6 +70,16 @@ export const EVAL_CASES: EvalCase[] = [
 			'Known facts: enjoys fish fry; hometown Nagpur; works at Tata Elxsi, Bhoruka Tech Park, Bangalore; travels between Nagpur and Bangalore. He is in his hometown now and goes back to Bangalore next week. PASS only if the reply gets that timeline right AND never claims a specific place, restaurant or habit that the facts do not state (e.g. "the fish fry joint on X you love" fails).',
 	},
 	{
+		name: 'respectful_tone',
+		about: 'Uses his name, no "dude"/"bro" (he asked), stays warm',
+		seed: async (s, now) => {
+			await s.addFact('Prefers to be called Mohit or sir, never "dude"', 'preference', utc(now));
+		},
+		say: () => ["Had a long day at work, I'm tired"],
+		checks: async ({ replies }) => [has('no slang names', !/\b(dude|bro|bruh|man,|buddy)\b/i.test(replies.join(' ')), replies.join(' | '))],
+		rubric: () => 'He asked not to be called "dude" and finds a teasing tone rude. PASS only if the reply is warm and respectful, uses no slang names, and does not tease or lecture him.',
+	},
+	{
 		name: 'reminder',
 		about: 'Sets a real reminder at the right time and confirms it',
 		say: () => ['remind me to call mom in 2 hours'],

@@ -360,7 +360,7 @@ const MELO = '@cf/myshell-ai/melotts';
 const WHISPER = '@cf/openai/whisper-large-v3-turbo';
 /** Primes speech recognition with names it would otherwise mishear (Indian English, local places). */
 const WHISPER_HINT =
-	'Hey Jarvis, it is Mohit. Bengaluru, Bangalore, Nagpur, Hoodi, Whitefield, Koramangala, Indiranagar, Rajajinagar, HSR Layout, Hebbal, Marathahalli, Electronic City, Jayanagar, Yelahanka, Majestic, Futala, Sitabuldi, Dharampeth, mandir, yaar.';
+	'Hey Jarvis, it is Mohit. Bengaluru, Bangalore, Nagpur, Hoodi, Whitefield, Koramangala, Indiranagar, Rajajinagar, HSR Layout, Hebbal, Marathahalli, Electronic City, Jayanagar, Yelahanka, Majestic, Futala, Sitabuldi, Dharampeth, mandir, yaar. ixigo, IndiGo, Air India, Akasa, MakeMyTrip, Goibibo, Cleartrip, IRCTC, Uber, Ola, Rapido, Swiggy, Zomato, Zepto, Blinkit, Paytm, PhonePe, HDFC, Tata Elxsi, Lubhna.';
 
 export class WorkersSpeech implements Speech {
 	constructor(

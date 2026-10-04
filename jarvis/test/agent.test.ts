@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { runAgent, type Tool } from '../src/agent/loop';
 import { TOOLS, keywords, type ToolCtx } from '../src/agent/tools';
 import { unsupportedNames, verifyReply } from '../src/agent/verify';
+import { persona } from '../src/context';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { countQueries, queriesUsed } from '../src/db';
@@ -241,6 +242,7 @@ describe('agent tools', () => {
 		expect(w.mail.searches).toEqual(['flight OR e-ticket OR PNR']);
 		expect(out.emails).toHaveLength(1);
 		expect(out.emails[0]).toMatchObject({ from: 'IndiGo <noreply@goindigo.in>', text: expect.stringContaining('departs 21:40') });
+		expect(out.next).toMatch(/save it with add_plan/);
 		expect(((await run('check_email', { query: 'zzz' })) as any).note).toMatch(/No emails match/);
 	});
 
@@ -263,6 +265,13 @@ describe('agent in conversation', () => {
 		expect(w.tg.visible().at(-1)!.text).toBe("Done, I'll ping you at 8!");
 		const memoryCall = w.llm.calls.find((c) => c.system.includes('You maintain the long-term memory'))!;
 		expect(JSON.stringify(memoryCall.schema)).not.toContain('reminders_add');
+	});
+
+	it('keeps the tone respectful: his name, no slang names, and his own preferences win', () => {
+		const p = persona('Mohit', 'Bengaluru');
+		expect(p).toMatch(/Never call him "dude", "bro"/);
+		expect(p).toMatch(/If FACTS say how he likes to be addressed or spoken to, that always wins/);
+		expect(p).not.toMatch(/Never "sir"|Tease him/);
 	});
 
 	it('tells the model to ground personal details and to decide, with every tool available', async () => {
