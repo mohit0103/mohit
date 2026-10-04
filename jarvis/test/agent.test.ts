@@ -139,6 +139,12 @@ describe('self-check', () => {
 		expect(verifyReply("I've moved it to Saturday", [t('recall', true, 'read')])).toMatch(/claims a plan change/);
 		expect(verifyReply('Forgotten, never happened 😄', [])).toMatch(/forgetting/);
 		expect(verifyReply('Haha nice, enjoy the movie!', [])).toBeNull();
+		expect(verifyReply("No more pineapple pizza, got it. I'll forget that fact about you.", [])).toMatch(/forgetting/);
+		expect(verifyReply('Consider that memory officially deleted, dude.', [t('forget', true)])).toBeNull();
+	});
+	it('flags promises to look something up later, since there is no later', () => {
+		for (const d of ['Wait, seriously? Let me check that for you.', 'Mumbai tomorrow! Let me check the weather for you.', "One sec, I'll look it up"]) expect(verifyReply(d, [])).toMatch(/promises to check/);
+		expect(verifyReply("It's Satya Nadella, dude.", [t('web_search', true, 'read')])).toBeNull();
 	});
 	it('flags a failed action the reply glosses over', () => {
 		const failed = [t('set_reminder', false, 'write', { error: 'time is in the past' })];
@@ -319,6 +325,23 @@ describe('brains with tools', () => {
 			{ role: 'assistant', content: 'hm', tool_calls: [{ id: 'c0', type: 'function', function: { name: 'recall', arguments: '{"query":"a"}' } }] },
 			{ role: 'tool', tool_call_id: 'c0', content: '{"found":[]}' },
 		]);
+	});
+
+	it('Groq waits out a short rate limit on its best model, and rests a model with a long one', async () => {
+		let n = 0;
+		const waits: number[] = [];
+		const { f, calls } = fetchOf((_u, body) => {
+			n++;
+			if (n === 1) return new Response('slow down', { status: 429, headers: { 'retry-after': '2' } });
+			if (n === 3) return new Response('slow down', { status: 429, headers: { 'retry-after': '30' } });
+			return Response.json({ choices: [{ message: { content: `hi from ${body.model}` } }] });
+		});
+		const g = new GroqLlm('k', undefined, f, async (ms) => void waits.push(ms));
+		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'hi from openai/gpt-oss-120b', by: 'groq:gpt-oss-120b(waited 2s)' });
+		expect(waits).toEqual([2000]);
+		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'hi from llama-3.3-70b-versatile' });
+		await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools });
+		expect(calls.at(-1)!.body.model).toBe('llama-3.3-70b-versatile'); // gpt-oss is resting for 30s
 	});
 
 	it('Groq looks things up with its web-search model when asked to search', async () => {

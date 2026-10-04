@@ -97,7 +97,11 @@ export default {
 				reminders: (await store.upcomingReminders(now.toISOString(), 20)).map((r) => ({ id: r.id, text: r.text, due_at: r.due_at })),
 				goals: (await store.goals()).map((g) => g.title),
 			};
-			return Response.json({ since, messages, reviews, memory, diags: await store.diags(), models: await store.get('llm_health') });
+			const evals = (await env.DB.prepare("SELECT v FROM kv WHERE k LIKE 'eval:%'").all<{ v: string }>()).results.map((r) => {
+				const e = JSON.parse(r.v);
+				return { case: e.case, pass: e.pass, at: e.at, failed: e.checks.filter((c: { pass: boolean }) => !c.pass), transcript: e.transcript, tools: e.tools, meta: e.meta };
+			});
+			return Response.json({ since, messages, reviews, memory, evals, diags: await store.diags(), models: await store.get('llm_health') });
 		}
 		if (req.method === 'GET' && url.pathname === '/eval') {
 			// Live evals on the scratch database: GET /eval lists cases; GET /eval?case=x&step=n runs one message.

@@ -18,7 +18,7 @@ const I = (description: string): Schema => ({ type: 'INTEGER', description });
 const B = (description: string): Schema => ({ type: 'BOOLEAN', description });
 const params = (properties: Record<string, Schema>, required: string[] = Object.keys(properties)): Schema => ({ type: 'OBJECT', properties, required });
 
-const ISO = 'ISO 8601 local time with +05:30, e.g. 2026-10-09T17:00:00+05:30. Resolve "tomorrow", "Friday", "in 2 hours" from the current time.';
+const ISO = 'ISO time with +05:30, e.g. 2026-10-09T17:00:00+05:30 (resolve "Friday", "in 2 hours" from the current time).';
 
 const STOP = new Set(
 	'the a an and or but of to in on at for with about from that this what which who whom when where why how did do does was were is are am be been my me i you your his her it its we our they them their there here have has had any some just really very can could would should will shall tell remember know last first name thing stuff place again ever'.split(
@@ -56,7 +56,7 @@ export const recall: Tool<ToolCtx> = {
 	spec: {
 		name: 'recall',
 		description:
-			'Search everything you remember about him: facts, people, past and future plans, diary, old conversations and emails. Use it BEFORE mentioning any specific past detail (a place he went, a person, what he said earlier) that is not already in WHAT YOU KNOW, and whenever he asks "remember when…", "what was that…", "did I tell you…".',
+			'Search all memory: facts, people, past/future plans, diary, old chats, emails. Use before mentioning any past detail not in WHAT YOU KNOW, and for "remember when / what was that".',
 		parameters: params({ query: S('Key words to look for, e.g. "brewery Rahul" or "dentist"') }),
 	},
 	async run({ query }, { deps, now }) {
@@ -108,7 +108,8 @@ export const remember: Tool<ToolCtx> = {
 	confirm: (r) => (r.saved ? `Noted: ${r.fact}.` : null),
 	spec: {
 		name: 'remember',
-		description: 'Save a lasting fact about him (a preference, routine, detail of his life) when he tells you something worth keeping or asks you to remember it. Short third-person sentence.',
+		description:
+			'Save a lasting fact about him (preference, routine, life detail). Short third-person sentence.',
 		parameters: params({ fact: S('e.g. "Prefers window seats"'), category: { type: 'STRING', enum: ['personal', 'preference', 'work', 'health', 'money', 'routine', 'other'] } }, ['fact']),
 	},
 	async run({ fact, category }, { store, now }) {
@@ -124,7 +125,8 @@ export const forget: Tool<ToolCtx> = {
 	confirm: (r) => (r.forgotten ? 'Forgotten.' : null),
 	spec: {
 		name: 'forget',
-		description: 'Forget a fact (by its id from FACTS or recall) because it is wrong or he asked you to forget it.',
+		description:
+			'Forget a fact by id (from FACTS or recall) when wrong or he asks.',
 		parameters: params({ fact_id: I('The fact id') }),
 	},
 	async run({ fact_id }, { store, now }) {
@@ -139,7 +141,8 @@ export const notePerson: Tool<ToolCtx> = {
 	confirm: (r) => `Saved ${r.name}.`,
 	spec: {
 		name: 'note_person',
-		description: 'Save or update someone in his life (friend, family, colleague): relation, what you learned, birthday.',
+		description:
+			'Save/update someone in his life: relation, notes, birthday.',
 		parameters: params({ name: S('Their name'), relation: S('e.g. "college friend", or ""'), notes: S('What you learned, or ""'), birthday: S('MM-DD or ""') }, ['name']),
 	},
 	async run({ name, relation, notes, birthday }, { store, now }) {
@@ -156,7 +159,7 @@ export const setReminder: Tool<ToolCtx> = {
 	spec: {
 		name: 'set_reminder',
 		description:
-			'Set a reminder that you will send him at a given time (with snooze buttons). Only when he asks to be reminded, or agrees to your offer. Never for things you already do yourself (the 7 AM briefing, 7 PM check-in, plan follow-ups).',
+			'Remind him at a time (with snooze buttons). Only when he asks or agrees. Not for your own 7 AM briefing, 7 PM check-in or follow-ups.',
 		parameters: params({ text: S('What to remind him about, e.g. "Call mom"'), due_at: S(ISO) }),
 	},
 	async run({ text, due_at }, { store, now }) {
@@ -179,7 +182,8 @@ export const cancelReminder: Tool<ToolCtx> = {
 	confirm: (r) => (r.cancelled ? `Cancelled the reminder "${r.text}".` : null),
 	spec: {
 		name: 'cancel_reminder',
-		description: 'Cancel a reminder by its id (from REMINDERS SET).',
+		description:
+			'Cancel a reminder by id (from REMINDERS SET).',
 		parameters: params({ reminder_id: I('The reminder id') }),
 	},
 	async run({ reminder_id }, { store }) {
@@ -196,7 +200,7 @@ export const addPlan: Tool<ToolCtx> = {
 	spec: {
 		name: 'add_plan',
 		description:
-			'Save a future event or plan he mentions (appointment, trip, flight, meeting, exam, party, deadline). You will then give him a heads-up before it and ask how it went after. Check PLANS first so you do not add a duplicate; to change an existing plan use update_plan.',
+			'Save a future event (appointment, trip, flight, meeting, deadline); you then give a heads-up before and ask how it went. Check PLANS first; to change one use update_plan.',
 		parameters: params(
 			{
 				title: S('Short title, e.g. "Dentist appointment"'),
@@ -240,7 +244,7 @@ export const updatePlan: Tool<ToolCtx> = {
 	spec: {
 		name: 'update_plan',
 		description:
-			'Change a saved plan (id from PLANS): mark it done with how it went, cancel it, or move it to a new time (including corrections like "not tomorrow, it is Sunday").',
+			'Change a plan by id: done (with outcome), cancelled, or rescheduled to a new time (incl. corrections).',
 		parameters: params(
 			{
 				plan_id: I('The plan id'),
@@ -272,7 +276,8 @@ export const addGoal: Tool<ToolCtx> = {
 	confirm: (r) => (r.title ? `Tracking "${r.title}" now.` : null),
 	spec: {
 		name: 'track_goal',
-		description: 'Start tracking a goal or habit he wants to keep (you will cheer him on and keep a streak). Only when he agrees to track it.',
+		description:
+			'Start tracking a goal/habit he agreed to (keeps a streak).',
 		parameters: params({ title: S('e.g. "Gym 3x a week"'), cadence: { type: 'STRING', enum: ['daily', 'weekly', 'once'] } }),
 	},
 	async run({ title, cadence }, { store, now }) {
@@ -288,7 +293,8 @@ export const logGoal: Tool<ToolCtx> = {
 	confirm: (r) => (r.stopped ? `Stopped tracking ${r.stopped}.` : `Logged ${r.goal}, streak ${r.streak}.`),
 	spec: {
 		name: 'log_goal',
-		description: 'Record that he did a tracked goal/habit today (goal id from GOALS), or stop tracking it.',
+		description:
+			'He did a tracked goal today, or stop tracking it (goal id from GOALS).',
 		parameters: params({ goal_id: I('The goal id'), action: { type: 'STRING', enum: ['did_it', 'stop_tracking'] }, note: S('Short note, or ""') }, ['goal_id', 'action']),
 	},
 	async run({ goal_id, action, note }, { store, now }) {
@@ -309,7 +315,8 @@ export const logGoal: Tool<ToolCtx> = {
 export const checkEmail: Tool<ToolCtx> = {
 	spec: {
 		name: 'check_email',
-		description: 'Check his Gmail inbox right now (read-only) and get summaries of recent emails, optionally filtered by sender or topic. Use whenever he asks about mail, a delivery, a bill, a booking or a message from someone.',
+		description:
+			'Check his Gmail now (read-only): summaries of recent mail, optionally filtered by sender/topic. For any question about mail, deliveries, bills, bookings.',
 		parameters: params({ query: S('Sender or topic to filter by, or "" for everything'), days: I('How many days back (1-14)') }, []),
 	},
 	async run({ query, days }, { deps, store, now }) {
@@ -343,7 +350,7 @@ export const webSearch: Tool<ToolCtx> = {
 	spec: {
 		name: 'web_search',
 		description:
-			'Look something up on the web (Google). Use for anything factual or current you are not sure of: news, scores, prices, places, restaurants, opening hours, events, how-tos, people, products, travel times. Search instead of guessing or saying "I don\'t know". Ask a specific question.',
+			'Google it: news, scores, prices, places, restaurants, hours, events, how-tos, facts. Use instead of guessing or "I don\'t know". Ask a specific question.',
 		parameters: params({ query: S('A specific search question, e.g. "best biryani near Hoodi Bengaluru open now"') }),
 	},
 	async run({ query }, { deps, now }) {
@@ -363,7 +370,8 @@ export const webSearch: Tool<ToolCtx> = {
 export const getWeather: Tool<ToolCtx> = {
 	spec: {
 		name: 'get_weather',
-		description: 'Weather forecast for any city or area, today or a date up to 2 weeks ahead. Use the place he is in or going to.',
+		description:
+			'Forecast for any place, today or up to 2 weeks ahead. Use where he is or is going.',
 		parameters: params({ place: S('City or area, e.g. "Mumbai" or "Hoodi, Bengaluru"'), date: S('YYYY-MM-DD local date, or "" for today') }, ['place']),
 	},
 	async run({ place, date }, { deps }) {

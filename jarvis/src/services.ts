@@ -649,7 +649,7 @@ export class WorkersLlm implements Llm {
 		const toolHelp =
 			req.toolChoice === 'none'
 				? 'Answer him now in plain words.'
-				: `TOOLS you can use:\n${req.tools.map((t) => `- ${t.name}: ${t.description} Args: ${JSON.stringify(toJsonSchema(t.parameters))}`).join('\n')}\n\nTo use a tool, reply with ONLY one JSON object like {"tool": "name", "args": {...}} and nothing else. Otherwise reply to him in plain words.`;
+				: `TOOLS you can use:\n${req.tools.map((t) => `- ${t.name}: ${t.description} Args: ${JSON.stringify(toJsonSchema(t.parameters))}`).join('\n')}\n\nTo use a tool, your whole reply must be ONLY one JSON object, e.g. {"tool": "web_search", "args": {"query": "..."}}. You'll get the result, then you can reply to him. Use a tool whenever you need a fact, the weather, his past or to actually do something (remind, save, forget); never say "let me check" or "I'll do it" without the tool. Otherwise reply to him in plain words.`;
 		const turns = flattenAgent(req.messages);
 		const text = await this.generate({ system: `${req.system}\n\n${toolHelp}`, turns, temperature: req.temperature });
 		const parsed = req.toolChoice === 'none' ? undefined : (parseJsonLoose(text) as { tool?: unknown; args?: unknown } | undefined);
@@ -747,10 +747,14 @@ export const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'l
 
 export class GroqLlm implements Llm {
 	private models: string[];
+	/** Models that hit a rate limit, resting until the time Groq gave (per invocation). */
+	private resting = new Map<string, number>();
 	constructor(
 		private key: string,
 		models?: string,
 		private fetcher: typeof fetch = (input, init) => fetch(input, init),
+		private sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+		private clock: () => number = Date.now,
 	) {
 		this.models = models
 			? models
@@ -812,7 +816,8 @@ export class GroqLlm implements Llm {
 		let lastMsg = '';
 		let lastKind: LlmError['kind'] = 'unavailable';
 		const skipped: string[] = [];
-		for (const model of models) {
+		const awake = models.filter((m) => !((this.resting.get(m) ?? 0) > this.clock()));
+		for (const [i, model] of (awake.length ? awake : models).entries()) {
 			let res: Response;
 			try {
 				res = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
@@ -840,6 +845,30 @@ export class GroqLlm implements Llm {
 			if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
 			lastKind = res.status === 429 ? 'quota' : 'unavailable';
 			skipped.push(`${model.split('/').pop()}:${res.status}`);
+			if (res.status === 429) {
+				// Per-minute limits clear in seconds: for the best model, a short wait beats a weaker model.
+				const wait = Number(res.headers.get('retry-after')) || 20;
+				if (i === 0 && wait <= 3 && !skipped.slice(0, -1).length) {
+					await this.sleep(wait * 1000);
+					try {
+						const again = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
+							method: 'POST',
+							headers: { 'content-type': 'application/json', authorization: `Bearer ${this.key}` },
+							body: JSON.stringify(build(model)),
+						});
+						if (again.ok) {
+							const out = parse(((await again.json().catch(() => null)) as any)?.choices?.[0]?.message);
+							if (out !== undefined) {
+								if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `groq:${model.split('/').pop()}(waited ${wait}s)`;
+								return out;
+							}
+						}
+					} catch {
+						// fall through to the next model
+					}
+				}
+				this.resting.set(model, this.clock() + wait * 1000);
+			}
 		}
 		throw new LlmError(lastMsg || 'groq failed', lastKind);
 	}

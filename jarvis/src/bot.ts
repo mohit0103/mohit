@@ -280,7 +280,7 @@ export async function replyTo(
 	images: { mime: string; data: Uint8Array }[] = [],
 	chatId?: string,
 ): Promise<{ text: string; trace: TraceEntry[]; by?: string; flags?: string[]; timeline?: string }> {
-	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
+	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(14)]);
 	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${AGENT_RULES}\n\n${STYLE_TAIL}`;
 	const out = await runAgent(deps.llm, {
 		system,
