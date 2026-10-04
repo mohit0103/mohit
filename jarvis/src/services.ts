@@ -706,12 +706,14 @@ export class FallbackLlm implements Llm {
 
 	async generate(req: LlmRequest): Promise<string> {
 		const hasMedia = Boolean(req.audio || req.images?.length);
-		const usable = this.chain.filter((b) => b.media || !hasMedia);
+		// Background work goes to the backups first, saving Gemini's small daily quota for live chat and photos.
+		const ordered = req.tier === 'light' && this.chain.length > 1 ? [...this.chain.slice(1, -1), this.chain[0], ...this.chain.slice(-1)] : this.chain;
+		const usable = ordered.filter((b) => b.media || !hasMedia);
 		let lastError: unknown;
 		for (let i = 0; i < usable.length; i++) {
 			try {
 				const text = await usable[i].llm.generate(req);
-				if (i > 0) await this.onBackup?.(`answered by ${usable[i].name} (${String(lastError).slice(0, 100)})`).catch(() => undefined);
+				if (i > 0 && req.tier !== 'light') await this.onBackup?.(`answered by ${usable[i].name} (${String(lastError).slice(0, 100)})`).catch(() => undefined);
 				return text;
 			} catch (e) {
 				lastError = e;
@@ -809,6 +811,7 @@ export class GroqLlm implements Llm {
 	private async chat<T>(models: string[], build: (model: string) => Record<string, unknown>, parse: (msg: any) => T | undefined): Promise<T> {
 		let lastMsg = '';
 		let lastKind: LlmError['kind'] = 'unavailable';
+		const skipped: string[] = [];
 		for (const model of models) {
 			let res: Response;
 			try {
@@ -824,7 +827,11 @@ export class GroqLlm implements Llm {
 			if (res.ok) {
 				const data: any = await res.json().catch(() => null);
 				const out = parse(data?.choices?.[0]?.message);
-				if (out !== undefined) return out;
+				if (out !== undefined) {
+					// Say which model answered and which were skipped (rate limits), for the review timeline.
+					if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `groq:${model.split('/').pop()}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
+					return out;
+				}
 				lastMsg = `groq ${model}: empty answer`;
 				lastKind = 'bad_response';
 				continue;
@@ -832,6 +839,7 @@ export class GroqLlm implements Llm {
 			lastMsg = `groq ${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 160)}`;
 			if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
 			lastKind = res.status === 429 ? 'quota' : 'unavailable';
+			skipped.push(`${model.split('/').pop()}:${res.status}`);
 		}
 		throw new LlmError(lastMsg || 'groq failed', lastKind);
 	}

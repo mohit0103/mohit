@@ -311,7 +311,7 @@ describe('brains with tools', () => {
 		const { f, calls } = fetchOf(() => Response.json({ choices: [{ message: { content: null, tool_calls: [{ id: 'c1', type: 'function', function: { name: 'recall', arguments: '{"query":"Toit"}' } }] } }] }));
 		const g = new GroqLlm('k', undefined, f);
 		const out = await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }, { role: 'model', text: 'hm', calls: [call('recall', { query: 'a' }, 'c0')] }, { role: 'tool', results: [{ id: 'c0', name: 'recall', result: { found: [] } }] }], tools });
-		expect(out).toEqual({ text: '', calls: [{ id: 'c1', name: 'recall', args: { query: 'Toit' } }], by: 'groq' });
+		expect(out).toEqual({ text: '', calls: [{ id: 'c1', name: 'recall', args: { query: 'Toit' } }], by: 'groq:gpt-oss-120b' });
 		const body = calls[0].body;
 		expect(body.model).toBe('openai/gpt-oss-120b');
 		expect(body.tools[0].function.parameters).toEqual({ type: 'object', properties: { query: { type: 'string' } }, required: ['query'] });
@@ -349,5 +349,16 @@ describe('brains with tools', () => {
 			type: 'object',
 			properties: { a: { type: 'array', items: { type: 'integer' } }, b: { type: 'string', enum: ['X'] } },
 		});
+	});
+});
+
+describe('quota routing', () => {
+	it('sends background work to the backups first, saving Gemini for live chat', async () => {
+		const order: string[] = [];
+		const brain = (name: string): Llm => ({ generate: async () => (order.push(name), name) });
+		const fb = new FallbackLlm(brain('gemini'), [{ name: 'groq', llm: brain('groq') }, { name: 'cloudflare', llm: brain('cloudflare') }]);
+		expect(await fb.generate({ system: 's', turns: [], tier: 'light' })).toBe('groq');
+		expect(await fb.generate({ system: 's', turns: [] })).toBe('gemini');
+		expect(await fb.generate({ system: 's', turns: [], tier: 'light', images: [{ mime: 'image/jpeg', data: new Uint8Array(1) }] })).toBe('gemini');
 	});
 });

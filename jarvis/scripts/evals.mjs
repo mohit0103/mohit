@@ -34,6 +34,7 @@ for (const c of cases.filter((c) => !only.length || only.includes(c.name))) {
 	console.log(`${result.pass ? 'PASS' : 'FAIL'}  ${c.name} (${(result.ms / 1000).toFixed(1)}s) - ${c.about}`);
 	for (const t of result.transcript) console.log(`      Mohit:  ${t.mohit}\n      Jarvis: ${t.jarvis.replace(/\n/g, ' / ')}`);
 	if (result.tools.length) console.log(`      tools: ${result.tools.join(', ')}`);
+	for (const m of result.meta ?? []) console.log(`      meta: ${m}`);
 	for (const ch of result.checks.filter((x) => !x.pass)) {
 		console.log(`      x ${ch.name}${ch.detail ? `: ${ch.detail}` : ''}`);
 		if (process.env.GITHUB_ACTIONS) console.log(`::warning::eval ${c.name}: ${ch.name}${ch.detail ? ` (${ch.detail.slice(0, 150)})` : ''}`);

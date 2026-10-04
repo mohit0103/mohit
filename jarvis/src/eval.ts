@@ -36,6 +36,8 @@ export interface EvalResult {
 	checks: Check[];
 	transcript: { mohit: string; jarvis: string }[];
 	tools: string[];
+	/** Timings and brains per reply, from the message log. */
+	meta: string[];
 	ms: number;
 	at: string;
 }
@@ -220,7 +222,7 @@ export async function runEvalStep(base: Deps, evalDb: D1Database, name: string, 
 		checks.push(has('checks ran', false, String(e)));
 	}
 	if (c.rubric) checks.push(await grade(base, c.rubric(now), transcript));
-	return { case: name, step, result: { case: name, pass: checks.every((x) => x.pass), checks, transcript, tools, ms: state.ms + Date.now() - t0, at: utc(now) } };
+	return { case: name, step, result: { case: name, pass: checks.every((x) => x.pass), checks, transcript, tools, meta: msgs.filter((m) => m.role !== 'user' && m.meta).map((m) => m.meta), ms: state.ms + Date.now() - t0, at: utc(now) } };
 }
 
 async function grade(deps: Deps, rubric: string, transcript: { mohit: string; jarvis: string }[]): Promise<Check> {

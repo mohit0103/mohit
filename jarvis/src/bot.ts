@@ -198,9 +198,10 @@ async function converseInner(
 	let trace: TraceEntry[] = [];
 	let by: string | undefined;
 	let flags: string[] = [];
+	let timeline = '';
 	const tl = Date.now();
 	try {
-		({ text: reply, trace, by, flags = [] } = await replyTo(deps, store, now, images, chatId));
+		({ text: reply, trace, by, flags = [], timeline = '' } = await replyTo(deps, store, now, images, chatId));
 	} catch (e) {
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
@@ -222,6 +223,7 @@ async function converseInner(
 		...(by ? [`by=${by}`] : []),
 		...(trace.length ? [`tools=${trace.map((t) => `${t.tool}${t.ok ? '' : '!'}`).join(',')}`] : []),
 		...(flags.length ? [`agent=${flags.join(',')}`] : []),
+		...(timeline ? [`steps=${timeline}`] : []),
 	].join(' ');
 	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat', meta });
 	timings.send = Date.now() - ts;
@@ -277,7 +279,7 @@ export async function replyTo(
 	now: Date,
 	images: { mime: string; data: Uint8Array }[] = [],
 	chatId?: string,
-): Promise<{ text: string; trace: TraceEntry[]; by?: string; flags?: string[] }> {
+): Promise<{ text: string; trace: TraceEntry[]; by?: string; flags?: string[]; timeline?: string }> {
 	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
 	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${AGENT_RULES}\n\n${STYLE_TAIL}`;
 	const out = await runAgent(deps.llm, {
@@ -295,7 +297,8 @@ export async function replyTo(
 	const reply = cleanReply(out.text);
 	if (!reply) throw new LlmError('empty reply', 'bad_response');
 	const flags = [...(out.recovered ? ['recovered'] : []), ...(out.revised?.length ? ['revised'] : [])];
-	return { text: reply, trace: out.trace, by: out.by, flags };
+	const timeline = out.timeline.map((t) => `${t.by ?? '?'}:${t.ms}`).join(',');
+	return { text: reply, trace: out.trace, by: out.by, flags, timeline };
 }
 
 /** Models sometimes wrap a plain reply in quotes, a "Jarvis:" label or a JSON object; unwrap it. */

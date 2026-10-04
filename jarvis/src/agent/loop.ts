@@ -37,6 +37,8 @@ export interface AgentResult {
 	recovered?: boolean;
 	/** Problems the self-check found in a draft (and that the model then fixed). */
 	revised?: string[];
+	/** Each model step: which brain answered and how long it took (for review). */
+	timeline: { by?: string; ms: number }[];
 }
 
 export interface AgentOptions<C> {
@@ -71,13 +73,16 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 	const done = new Map<string, unknown>();
 	let by: string | undefined;
 	let forceAnswer = false;
+	const timeline: { by?: string; ms: number }[] = [];
 
 	const step = async (toolChoice: 'auto' | 'none'): Promise<AgentStepResult> => {
 		const req: AgentStepRequest = { system: o.system, messages, tools: specs, toolChoice, temperature: o.temperature, fast: true, images: o.images };
+		const t0 = clock();
 		const res = llm.agentStep
 			? await llm.agentStep(req)
 			: { text: await llm.generate({ system: o.system, turns: flattenAgent(messages), temperature: o.temperature, fast: true, images: o.images }), calls: [] };
 		by = res.by ?? by;
+		timeline.push({ by: res.by, ms: clock() - t0 });
 		return res;
 	};
 
@@ -95,7 +100,7 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 					continue;
 				}
 				const problem = revised.length === 0 && n < maxSteps - 1 ? o.verify?.(draft, trace) : null;
-				if (!problem) return { text: draft, trace, steps: n + 1, by, ...(revised.length ? { revised } : {}) };
+				if (!problem) return { text: draft, trace, steps: n + 1, by, timeline, ...(revised.length ? { revised } : {}) };
 				// Self-check: show the model its own draft and what's wrong with it, and let it fix things (tools allowed).
 				revised.push(problem);
 				messages.push({ role: 'model', text: draft, calls: [], raw: res.raw, by: res.by });
@@ -110,11 +115,11 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 		}
 	} catch (e) {
 		const recovered = recoverReply(trace, byName);
-		if (recovered) return { text: recovered, trace, steps: -1, by, recovered: true };
+		if (recovered) return { text: recovered, trace, steps: -1, by, timeline, recovered: true };
 		throw e;
 	}
 	const recovered = recoverReply(trace, byName);
-	if (recovered) return { text: recovered, trace, steps: maxSteps, by, recovered: true };
+	if (recovered) return { text: recovered, trace, steps: maxSteps, by, timeline, recovered: true };
 	throw new LlmError('the agent finished without an answer', 'bad_response');
 
 	async function execute(c: ToolCall): Promise<{ id: string; name: string; result: unknown }> {
