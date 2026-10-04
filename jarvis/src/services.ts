@@ -746,7 +746,7 @@ export class FallbackLlm implements Llm {
 
 // ---------- Groq (OpenAI-compatible, very fast, generous free tier) ----------
 
-export const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'llama-3.1-8b-instant'];
+export const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
 
 export class GroqLlm implements Llm {
 	private models: string[];

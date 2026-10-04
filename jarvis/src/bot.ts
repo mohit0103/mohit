@@ -225,7 +225,8 @@ async function converseInner(
 		...(flags.length ? [`agent=${flags.join(',')}`] : []),
 		...(timeline ? [`steps=${timeline}`] : []),
 	].join(' ');
-	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat', meta });
+	// A voice note takes a few seconds to make; if this turn is already slow, text gets there faster and safer.
+	await say(deps, chatId, reply, { voice: viaVoice && Date.now() - t0 < 25_000, kind: 'chat', meta });
 	timings.send = Date.now() - ts;
 	timings.total = Date.now() - t0 + (timings.listen ?? 0);
 	await store.del('pending_reply');
@@ -290,7 +291,7 @@ export async function replyTo(
 		temperature: 0.8,
 		images,
 		maxSteps: 6,
-		budgetMs: 25_000,
+		budgetMs: 28_000,
 		verify: (draft, trace) => verifyReply(draft, trace, `${system}\n${recent.map((m) => m.text).join('\n')}`),
 		onTools: chatId ? () => deps.tg.sendChatAction(chatId, 'typing') : undefined,
 	});
@@ -512,9 +513,20 @@ async function checkMailNow(deps: Deps, store: Store, now: Date, timeoutMs = 20_
 
 /** Retries a reply that failed earlier (e.g. Gemini quota). Called from the scheduler. */
 export async function retryPendingReply(deps: Deps, store: Store, chatId: string): Promise<void> {
+	const now = deps.now();
+	// Watchdog: whatever happened (a cut-off run, a crash, an outage), a message of his left unanswered for two
+	// minutes gets answered now.
+	const [last] = await store.recentMessages(1);
+	if (last?.role === 'user' && last.kind === 'chat') {
+		const age = now.getTime() - new Date(last.at).getTime();
+		if (age > 2 * 60_000 && age < 6 * 3600_000 && !(await store.get('pending_reply'))) {
+			await store.set('pending_reply', last.at);
+			await store.del('pending_reply_try');
+			await store.diag('brain', false, 'a message went unanswered; answering it from the watchdog', utc(now));
+		}
+	}
 	const pending = await store.get('pending_reply');
 	if (!pending) return;
-	const now = deps.now();
 	if (now.getTime() - new Date(pending).getTime() > 6 * 3600_000) {
 		await store.del('pending_reply');
 		return;

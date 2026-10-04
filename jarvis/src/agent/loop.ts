@@ -50,7 +50,10 @@ export interface AgentOptions<C> {
 	temperature?: number;
 	images?: { mime: string; data: Uint8Array }[];
 	toolTimeoutMs?: number;
-	/** Wall-clock budget: once spent, the model is asked to answer with what it has. */
+	/**
+	 * Hard wall-clock budget for the whole turn. Each model step and tool gets only what is left, and near the end
+	 * the model must answer with what it has; past it, completed actions are reported or the error surfaces.
+	 */
 	budgetMs?: number;
 	/** Checks a draft against the trace; returns what's wrong (to be fixed) or null when it's fine. */
 	verify?: (draft: string, trace: TraceEntry[]) => string | null;
@@ -74,13 +77,16 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 	let by: string | undefined;
 	let forceAnswer = false;
 	const timeline: { by?: string; ms: number }[] = [];
+	const budget = o.budgetMs ?? 30_000;
+	const remaining = () => budget - (clock() - started);
 
 	const step = async (toolChoice: 'auto' | 'none'): Promise<AgentStepResult> => {
 		const req: AgentStepRequest = { system: o.system, messages, tools: specs, toolChoice, temperature: o.temperature, fast: true, images: o.images };
 		const t0 = clock();
-		const res = llm.agentStep
-			? await llm.agentStep(req)
-			: { text: await llm.generate({ system: o.system, turns: flattenAgent(messages), temperature: o.temperature, fast: true, images: o.images }), calls: [] };
+		const call = llm.agentStep
+			? llm.agentStep(req)
+			: llm.generate({ system: o.system, turns: flattenAgent(messages), temperature: o.temperature, fast: true, images: o.images }).then((text) => ({ text, calls: [] }) as AgentStepResult);
+		const res = await withTimeout(call, Math.max(remaining(), 1_000), 'thinking');
 		by = res.by ?? by;
 		timeline.push({ by: res.by, ms: clock() - t0 });
 		return res;
@@ -88,7 +94,7 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 
 	try {
 		for (let n = 0; n < maxSteps; n++) {
-			const last = n === maxSteps - 1 || forceAnswer || clock() - started > (o.budgetMs ?? 30_000);
+			const last = n === maxSteps - 1 || forceAnswer || remaining() < budget * 0.35;
 			const res = await step(last ? 'none' : 'auto');
 			const calls = last ? [] : res.calls.slice(0, MAX_CALLS_PER_STEP);
 
@@ -141,7 +147,7 @@ export async function runAgent<C>(llm: Llm, o: AgentOptions<C>): Promise<AgentRe
 				result = { ok: true, note: 'Already done earlier in this turn; same result.', result: done.get(key) };
 			} else {
 				try {
-					const out = await withTimeout(tool.run(checked.args, o.ctx), o.toolTimeoutMs ?? 15_000, c.name);
+					const out = await withTimeout(tool.run(checked.args, o.ctx), Math.min(o.toolTimeoutMs ?? 15_000, Math.max(remaining() - budget * 0.3, 1_000)), c.name);
 					ok = !(out && typeof out === 'object' && (out as { ok?: unknown }).ok === false);
 					result = out && typeof out === 'object' && !Array.isArray(out) ? { ok, ...(out as object) } : { ok, result: out };
 					if (ok) done.set(key, result);

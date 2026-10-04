@@ -123,10 +123,12 @@ export default {
 			}
 			const update = await req.json().catch(() => null);
 			if (update) {
-				// Answer Telegram right away; the reply is produced in the background.
-				ctx.waitUntil(
-					handleUpdate(makeDeps(env), update).catch((e) => console.error('update failed', e)),
-				);
+				// Work on the reply while Telegram waits (up to 25 s), then let the rest finish in the background:
+				// background work gets only 30 s after the response, so waiting first gives a slow turn ~55 s in total.
+				// Telegram retries are harmless: each update is claimed once.
+				const work = handleUpdate(makeDeps(env), update).catch((e) => console.error('update failed', e));
+				ctx.waitUntil(work);
+				await Promise.race([work, new Promise((r) => setTimeout(r, 25_000))]);
 			}
 			return new Response('ok');
 		}

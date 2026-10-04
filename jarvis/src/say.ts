@@ -24,7 +24,7 @@ export async function say(deps: Deps, chatId: string, text: string, opts: SayOpt
 	if (opts.voice) {
 		try {
 			await deps.tg.sendChatAction(chatId, 'record_voice');
-			const audio = await deps.speech.synthesize(text);
+			const audio = await Promise.race([deps.speech.synthesize(text), new Promise<null>((r) => setTimeout(() => r(null), 12_000))]);
 			if (audio) {
 				const caption = text.length <= 1000 && !opts.details ? text : undefined;
 				await deps.tg.sendVoice(chatId, audio.audio, audio.mime, caption);

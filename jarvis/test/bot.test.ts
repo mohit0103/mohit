@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { handleUpdate, isSmallTalk } from '../src/bot';
+import { Store } from '../src/store';
 import { tick } from '../src/scheduler';
 import { LlmError } from '../src/types';
 import { OWNER, buttonUpdate, emptyMemory, makeWorld, onChat, rows, textUpdate, toolResults, voiceUpdate } from './harness';
@@ -360,6 +361,22 @@ describe('memory saving', () => {
 		expect(rows(w, 'SELECT text FROM facts')).toEqual([{ text: 'Goes to Dr. Rao for dental care' }]);
 		await tick(w.deps);
 		expect(memoryCalls).toBe(2); // nothing left to process
+	});
+});
+
+describe('watchdog', () => {
+	it('answers a message whose reply never went out (e.g. the run was cut off)', async () => {
+		const w = makeWorld();
+		new Store(w.db).addMessage('user', 'What time is my flight?', 'chat', w.clock.now.toISOString());
+		onChat(w, () => 'Your flight is at 9:40 PM on Sunday!');
+		await tick(w.deps);
+		expect(w.tg.visible()).toEqual([]); // too soon: it may still be on its way
+		w.clock.advance(3);
+		await tick(w.deps);
+		expect(w.tg.visible().map((m) => m.text)).toEqual(['Your flight is at 9:40 PM on Sunday!']);
+		w.clock.advance(5);
+		await tick(w.deps);
+		expect(w.tg.visible()).toHaveLength(1); // answered once
 	});
 });
 

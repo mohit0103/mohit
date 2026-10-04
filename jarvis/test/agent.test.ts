@@ -117,6 +117,16 @@ describe('agent loop', () => {
 		expect((await runAgent(llm, { ...base, tools: [echo], budgetMs: 30_000, clock: () => t })).text).toBe('forced=none');
 	});
 
+	it('enforces a hard deadline on slow thinking and tools, keeping what was done', async () => {
+		const slowBrain: Llm = { generate: async () => '', agentStep: () => new Promise(() => {}) };
+		await expect(runAgent(slowBrain, { ...base, tools: [echo], budgetMs: 50 })).rejects.toThrow(/thinking took too long/);
+		const write: Tool<null> = { ...echo, effect: 'write', run: async () => ({ when: '8 PM' }), confirm: (r) => `Reminder set for ${r.when}.` };
+		let n = 0;
+		const thenStuck: Llm = { generate: async () => '', agentStep: () => (n++ === 0 ? Promise.resolve({ text: '', calls: [call('echo', { x: 1 })] }) : new Promise(() => {})) };
+		const out = await runAgent(thenStuck, { ...base, tools: [write], budgetMs: 80 });
+		expect(out).toMatchObject({ recovered: true, text: expect.stringMatching(/^Reminder set for 8 PM\./) });
+	});
+
 	it('times out a stuck tool', async () => {
 		const slow: Tool<null> = { ...echo, run: () => new Promise((r) => setTimeout(r, 1000)) };
 		const llm = stepper([{ text: '', calls: [call('echo')] }, { text: 'ok', calls: [] }]);
