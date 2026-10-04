@@ -30,9 +30,11 @@ Inter Display.
 The score is a warm D-major felt-piano and pad bed at 100 bpm. It runs on **one continuous
 beat grid** (phase `GRID0`) whose groove density follows a smooth curve, so it never
 restarts or cuts at a section change. Soft lifts build into the full-bleed, Google
-and portrait moments, each landing on a warm bloom. The sound design is micro-sounds only:
-picker ticks for each carousel step, soft taps, bells, pebble pops as tiles land,
-four bell notes as the G draws, and a button click.
+and portrait moments, each landing on a warm bloom. The sound design is tactile
+and ASMR-like, with no air or whoosh sounds: lens-ring detents for each carousel step, a grainy
+card-on-paper slide, card pats as the stack lands, a paper riffle as it fans out,
+focus-ring ratchets into each big moment, pebble pops as tiles land, bell notes as
+the G draws, and a button click.
 
 ```bash
 node render.js --page reel.html      # -> out/reel.mp4 (~7 min on 4 cores)
