@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mohit Bhaisare — Reel</title>
+<link rel="stylesheet" href="assets/fonts/local.css">
+<style>
+  :root {
+    --paper: #fbfaf7; --ink: #141210; --ink2: #211f1c; --muted: #8d8780; --amber: #ad6e52; --amber-hi: #e3a27d;
+    --display: 'Fraunces', serif; --mono: 'Geist Mono', monospace; --sig: 'Mrs Saint Delafield', cursive;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000; overflow: hidden; }
+  body.preview { display: grid; place-items: center; height: 100vh; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); color: var(--paper);
+    transform-origin: 0 0; -webkit-font-smoothing: antialiased; font-family: var(--mono); }
+  .layer { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+  .shot { position: absolute; inset: 0; overflow: hidden; }
+  .shot img, .ph { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+  .mono { font-family: var(--mono); font-size: 17px; letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; }
+  .serif { font-family: var(--display); font-variation-settings: 'opsz' 144, 'SOFT' 50; font-weight: 330; letter-spacing: -.02em; white-space: nowrap; }
+  .it { font-style: italic; }
+  .c { left: 0; width: 1080px; text-align: center; }
+  .m { display: inline-block; overflow: hidden; vertical-align: top; padding: .08em .02em .18em; margin: -.08em -.02em -.18em; }
+  .mi { display: inline-block; }
+  svg { position: absolute; left: 0; top: 0; overflow: visible; }
+  #grain { position: absolute; inset: 0; width: 1080px; height: 1920px; mix-blend-mode: overlay; opacity: .1; pointer-events: none; }
+  #vig { background: radial-gradient(ellipse 90% 70% at 50% 50%, transparent 50%, rgba(0,0,0,.5) 100%); }
+  #flash { background: #fff; opacity: 0; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="mbY" x="0" y="-15%" width="100%" height="130%"><feGaussianBlur id="mbYb" stdDeviation="0 0"/></filter>
+  <filter id="mbX" x="-15%" y="0" width="130%" height="100%"><feGaussianBlur id="mbXb" stdDeviation="0 0"/></filter>
+  <filter id="rgb" x="-5%" y="0" width="110%" height="100%" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/>
+    <feOffset id="rgbR" in="r" dx="0" dy="0" result="ro"/>
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b"/>
+    <feOffset id="rgbB" in="b" dx="0" dy="0" result="bo"/>
+    <feBlend in="ro" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="bo" mode="screen"/>
+  </filter>
+</svg>
+
+<div id="stage">
+  <div class="layer" id="world">
+    <!-- A · cold open -->
+    <div class="layer" id="A">
+      <div class="abs mono c" id="aSub" style="top:900px;font-size:14px;color:var(--muted)"></div>
+      <div class="abs mono c" id="aMain" style="top:936px;font-size:24px;letter-spacing:.5em"></div>
+      <div class="abs" id="aLine" style="top:990px;height:2px;background:var(--amber)"></div>
+    </div>
+
+    <!-- montage shots (built in JS) -->
+    <div class="layer" id="shots"></div>
+
+    <!-- C · break -->
+    <div class="layer" id="C">
+      <div class="abs serif it c" id="cMain" style="top:890px;font-size:66px">chasing the last light</div>
+      <div class="abs mono c" id="cSub" style="top:1000px;font-size:14px;color:var(--muted)"></div>
+    </div>
+
+    <!-- D · bands → grid → push in -->
+    <div class="layer" id="D"><div class="layer" id="grid" style="transform-origin:0 0"></div><div class="layer" id="bands"></div></div>
+
+    <!-- F · recognition -->
+    <div class="layer" id="F">
+      <div class="layer" id="fBgWrap" style="overflow:hidden"><img class="ph" id="fBg" src="assets/photos/photo-16.jpg"></div>
+      <div class="layer" id="fBody">
+        <div class="abs mono c" id="fKick" style="top:770px;font-size:15px;color:#c9c2b9"></div>
+        <div class="abs serif c" id="fNum" style="top:800px;font-size:190px;line-height:1.1"></div>
+        <div class="abs c" id="fCap" style="top:1030px;font-family:Inter;font-size:27px;font-weight:350;letter-spacing:.01em">views on a single frame</div>
+        <div class="abs mono c" id="fBrand" style="top:1100px;font-size:15px;color:var(--amber-hi)"></div>
+      </div>
+    </div>
+
+    <!-- G · photographer -->
+    <div class="layer" id="G" style="background:var(--paper);color:var(--ink2)">
+      <div class="layer" id="gPhotoWrap"><img class="ph" id="gPhoto" src="assets/photos/mohit-portrait.png"></div>
+      <svg id="gSvg" width="1080" height="1920">
+        <circle id="gRing" cx="540" cy="760" r="410" fill="none" stroke="#211f1c" stroke-width="1.5"/>
+        <defs><path id="gPath" d="M 540 760 m -462 0 a 462 462 0 1 1 924 0 a 462 462 0 1 1 -924 0"/></defs>
+        <g id="gBadge"><text font-family="Geist Mono" font-size="17" letter-spacing="7" fill="#6c6864"><textPath href="#gPath">THIRD_EYEF1.7 • PHOTOGRAPHER • BANGALORE • THIRD_EYEF1.7 • PHOTOGRAPHER • BANGALORE • THIRD_EYEF1.7 • PHOTOGRAPHER • BANGALORE • THIRD_EYEF1.7 •</textPath></text></g>
+      </svg>
+      <div class="abs serif c" id="gName" style="top:1290px;font-size:96px">Mohit <span class="it">Bhaisare</span></div>
+      <div class="abs mono c" id="gRole" style="top:1430px;font-size:16px;color:#6c6864"></div>
+      <div class="abs mono c" id="gFeat" style="top:1600px;font-size:13px;color:var(--amber)"></div>
+    </div>
+
+    <!-- H · end -->
+    <div class="layer" id="H">
+      <div class="abs c" id="hSig" style="top:780px;font-family:var(--sig);font-size:150px;color:var(--paper)">Mohit Bhaisare</div>
+      <div class="abs" id="hLine" style="top:1010px;height:1.5px;background:var(--amber)"></div>
+      <div class="abs mono c" id="hHandle" style="top:1046px;font-size:18px"></div>
+      <div class="abs mono c" id="hUrl" style="top:1086px;font-size:14px;color:var(--muted)"></div>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div class="layer" id="hud">
+    <svg width="1080" height="1920"><g id="hudC" fill="none" stroke="#fbfaf7" stroke-width="1.6">
+      <path d="M 48 92 L 48 56 L 84 56"/><path d="M 996 56 L 1032 56 L 1032 92"/>
+      <path d="M 48 1828 L 48 1864 L 84 1864"/><path d="M 996 1864 L 1032 1864 L 1032 1828"/></g></svg>
+    <div class="abs mono" style="left:104px;top:48px;font-size:14px"><span id="rec" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e0573a;margin-right:10px;vertical-align:1px"></span><span id="tc"></span></div>
+    <div class="abs mono" style="right:104px;top:48px;font-size:14px">F1.7 · 1/250</div>
+    <div class="abs mono" id="cap" style="left:104px;top:1852px;font-size:14px"></div>
+    <div class="abs mono" id="cnt" style="right:104px;top:1852px;font-size:14px"></div>
+  </div>
+  <div class="layer" id="flash"></div>
+  <div class="layer" id="vig"></div>
+  <canvas id="grain" width="540" height="960"></canvas>
+</div>
+
+<script>
+'use strict';
+const W = 1080, H = 1920, FPS = 60;
+window.STAGE = { w: W, h: H };
+window.SCORE = 'reel_score.py';
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const E = {
+  lin: x => x, outCubic: x => 1 - (1 - x) ** 3, inCubic: x => x ** 3,
+  inOutCubic: x => x < .5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2,
+  outQuart: x => 1 - (1 - x) ** 4, inOutQuart: x => x < .5 ? 8 * x ** 4 : 1 - (-2 * x + 2) ** 4 / 2,
+  inOutQuint: x => x < .5 ? 16 * x ** 5 : 1 - (-2 * x + 2) ** 5 / 2,
+  outExpo: x => x >= 1 ? 1 : 1 - 2 ** (-10 * x), inExpo: x => x <= 0 ? 0 : 2 ** (10 * x - 10),
+  inOutExpo: x => x <= 0 ? 0 : x >= 1 ? 1 : x < .5 ? 2 ** (20 * x - 10) / 2 : (2 - 2 ** (-20 * x + 10)) / 2,
+  outBack: x => 1 + 2.4 * (x - 1) ** 3 + 1.4 * (x - 1) ** 2, inOutSine: x => -(Math.cos(Math.PI * x) - 1) / 2,
+};
+const EP = (t, a, b, e = E.inOutCubic) => e(P(t, a, b));
+const show = (el, on) => { (typeof el === 'string' ? $(el) : el).style.display = on ? '' : 'none'; };
+function S(el, o) {
+  if (typeof el === 'string') el = $(el);
+  for (const k in o) { const v = o[k];
+    if (k === 'o') el.style.opacity = v; else if (k === 'tf') el.style.transform = v;
+    else if (k === 'clip') el.style.clipPath = v; else el.style[k] = v; }
+}
+const hash = (a, b) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; };
+const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#/_—·+*';
+let FRAME = 0;
+// decode-style text reveal: settled characters + a short tail of random glyphs
+function scramble(el, text, p, tail = 5) {
+  const n = text.length, k = Math.floor(p * (n + tail));
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    if (text[i] === ' ') { s += i < k ? ' ' : ' '; continue; }
+    if (i < k - tail) s += text[i];
+    else if (i < k) s += GLYPHS[Math.floor(hash(i + 7, Math.floor(FRAME / 2)) * GLYPHS.length)];
+    else s += ' ';
+  }
+  if (el.textContent !== s) el.textContent = s;
+}
+function split(el, mode = 'c') {
+  const out = [];
+  const walk = (node, target) => {
+    for (const ch of [...node.childNodes]) {
+      if (ch.nodeType === 3) {
+        const parts = mode === 'c' ? [...ch.textContent] : ch.textContent.split(/(\s+)/);
+        for (const p of parts) {
+          if (/^\s+$/.test(p)) { target.appendChild(document.createTextNode(p)); continue; }
+          const m = document.createElement('span'); m.className = 'm';
+          const i = document.createElement('span'); i.className = 'mi'; i.textContent = p;
+          m.appendChild(i); target.appendChild(m); out.push(i);
+        }
+      } else { const c = ch.cloneNode(false); target.appendChild(c); walk(ch, c); }
+    }
+  };
+  const f = document.createElement('div'); walk(el, f); el.innerHTML = ''; while (f.firstChild) el.appendChild(f.firstChild);
+  return out;
+}
+function rise(pieces, t, a, st = .025, dur = .5, b = Infinity, bd = .25) {
+  pieces.forEach((el, i) => {
+    const pin = E.outExpo(P(t, a + i * st, a + i * st + dur)), pout = E.inCubic(P(t, b + i * st * .5, b + i * st * .5 + bd));
+    el.style.transform = `translate3d(0,${(1 - pin) * 110 - pout * 110}%,0)`;
+  });
+}
+// cover-fit an <img> into a w×h box; m = extra zoom; (fx,fy) = which part stays in view
+function cover(img, w, h, m = 1, fx = .5, fy = .5, dx = 0, dy = 0) {
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const s = Math.max(w / iw, h / ih) * m;
+  const x = (w - iw * s) * fx + dx, y = (h - ih * s) * fy + dy;
+  img.style.transform = `translate(${x}px,${y}px) scale(${s})`;
+}
+
+/* ───────────── timeline: 120 bpm, cuts on half / quarter / eighth beats ───────────── */
+const SHOTS = [
+  { src: 'photo-31.jpg', at: 1.0, tin: 'iris', cap: 'N°01 — Blue hour', fy: .62 },
+  { src: 'photo-28.jpg', at: 1.5, tin: 'whipUp', cap: 'N°02 — Amber horizon', fy: .64 },
+  { src: 'photo-04.jpg', at: 2.0, tin: 'zoom', cap: 'N°03 — Twilight', fy: .55 },
+  { src: 'photo-23.jpg', at: 2.5, tin: 'stripes', cap: 'N°04 — City fog' },
+  { src: 'photo-22.jpg', at: 3.0, tin: 'flash', cap: 'N°05 — Platform' },
+  { src: 'photo-10.jpg', at: 3.5, tin: 'whipLeft', cap: 'N°06 — Street' },
+  { src: 'photo-30.jpg', at: 4.0, tin: 'diag', cap: 'N°07 — Ritual' },
+  { src: 'photo-26.jpg', at: 4.5, tin: 'glitch', cap: 'N°08 — Canopy' },
+  { src: null, at: 5.0, tin: 'cut' },
+  { src: 'featured-pixel-03.jpg', at: 8.5, tin: 'cut', cap: 'Featured — Google Pixel' },
+  { src: 'featured-pixel-01.jpg', at: 9.0, tin: 'whipUp', cap: 'Featured — Google Pixel' },
+  { src: 'photo-14.jpg', at: 9.25, tin: 'punch', cap: 'N°09 — Bloom', fx: .52 },
+  { src: 'featured-pixel-02.jpg', at: 9.5, tin: 'flash', cap: 'Featured — Google India' },
+  { src: 'photo-33.jpg', at: 9.75, tin: 'punch', cap: 'N°10 — Wild' },
+  { src: 'photo-25.jpg', at: 10.0, tin: 'whipLeft', cap: 'N°11 — Stillness' },
+  { src: 'photo-15.jpg', at: 10.25, tin: 'punch', cap: 'N°12 — Golden', fx: .5 },
+  { src: 'photo-02.jpg', at: 10.5, tin: 'glitch', cap: 'N°13 — Night & astro' },
+  { src: 'photo-16.jpg', at: 10.75, tin: 'punch', cap: 'N°14 — Last light', fx: .57 },
+  { src: 'photo-32.jpg', at: 11.0, tin: 'flash', cap: 'N°15 — Heritage' },
+  { src: 'photo-01.jpg', at: 11.125, tin: 'cut', cap: 'N°16 — Holi', fx: .55 },
+  { src: 'photo-05.jpg', at: 11.25, tin: 'cut', cap: 'N°17 — Moon' },
+  { src: 'photo-18.jpg', at: 11.375, tin: 'cut', cap: 'N°18 — Ganesha', fy: .3 },
+  { src: 'photo-20.jpg', at: 11.5, tin: 'cut', cap: 'N°19 — Konark' },
+  { src: 'photo-07.jpg', at: 11.625, tin: 'cut', cap: 'N°20 — Troop' },
+  { src: 'photo-13.jpg', at: 11.75, tin: 'cut', cap: 'N°21 — Lake' },
+  { src: 'photo-29.jpg', at: 11.875, tin: 'cut', cap: 'N°22 — Haze' },
+  { src: null, at: 12.0, tin: 'cut' },
+  { src: 'photo-31.jpg', at: 17.0, tin: 'cut', cap: 'Third_eyef1.7' },
+  { src: 'featured-pixel-03.jpg', at: 17.125, tin: 'cut', cap: 'Third_eyef1.7' },
+  { src: 'photo-16.jpg', at: 17.25, tin: 'cut', cap: 'Third_eyef1.7', fx: .57 },
+  { src: 'photo-26.jpg', at: 17.375, tin: 'cut', cap: 'Third_eyef1.7' },
+  { src: null, at: 17.5, tin: 'cut' },
+];
+// transition length (s) and how much of it happens before the cut point
+const TR = { cut: [0, 0], punch: [0, 0], iris: [.32, 0], whipUp: [.2, .5], whipLeft: [.2, .5], zoom: [.3, .5], stripes: [.34, .25], flash: [.16, .1], diag: [.28, .4], glitch: [.14, .5] };
+const T = { breakC: 5.0, D: 6.0, grid: 7.0, push: 7.7, F: 12.0, G: 14.0, recap: 17.0, H: 17.5 };
+window.DURATION = 19.6;
+window.SECTIONS = { intro: [0, 1], m1: [1, 5], brk: [5, 6], bands: [6, 9], m2: [9, 12], recog: [12, 14], portrait: [14, 17], end: [17, 19.6] };
+
+/* sound cues */
+window.CUES = [];
+const cue = (type, at, gain = 1) => window.CUES.push({ type, at: +at.toFixed(4), gain });
+const TR_SFX = { iris: ['shutter', 'boom'], whipUp: ['whoosh'], whipLeft: ['whoosh'], zoom: ['zoom'], stripes: ['stripes'],
+  flash: ['flash'], diag: ['swish'], glitch: ['glitch'], punch: ['hit'], cut: ['tick'] };
+SHOTS.forEach((s, i) => { if (!s.src || i === 0) return; (TR_SFX[s.tin] || []).forEach(x => cue(x, s.at)); });
+cue('shutter', 1.0); cue('boom', 1.0, 1.1); cue('type', .08); cue('type', .3, .6); cue('riser', 1.0);
+for (let k = 0; k < 8; k++) cue('strobe', 11 + k * .125, .7 + k * .05);
+cue('riser', 12.0, 1.1); cue('braam', 5.0); cue('type', 5.1, .7); cue('reverse', 6.0); cue('boom', 6.0, .9);
+[0, .08, .16].forEach(d => cue('whoosh', 6.0 + d, .7));
+[0, .06, .12].forEach(d => cue('swish', 6.5 + d, .6));
+[0, .08, .16].forEach(d => cue('whoosh', 7.0 + d, .6));
+[0, .1, .2, .3].forEach(d => cue('pop', 7.05 + d, .8));
+cue('type', 7.3, .6); cue('riser', 8.5, .9); cue('zoom', 8.4, .9); cue('boom', 8.5, .9); cue('type', 9.05, .4);
+cue('braam', 12.0, 1.1); cue('drop', 12.0); cue('type', 12.1, .7); cue('counter', 12.15); cue('type', 12.9, .6);
+cue('reverse', 14.0, .8); cue('shutter', 14.0); cue('boom', 14.0, .8); cue('type', 14.9, .5); cue('type', 15.3, .5); cue('whoosh', 16.85, .9);
+cue('riser', 17.0, .8); cue('boom', 17.5, 1.2); cue('braam', 17.5, .9); cue('scribble', 17.55, .8); cue('type', 18.0, .6); cue('type', 18.2, .5);
+
+/* ───────────── build ───────────── */
+const shotEls = SHOTS.map((s, i) => {
+  if (!s.src) return null;
+  const d = document.createElement('div'); d.className = 'shot';
+  const img = document.createElement('img'); img.src = `assets/photos/${s.src}`;
+  d.appendChild(img); $('shots').appendChild(d);
+  return { d, img };
+});
+const photoIdx = []; let pc = 0; SHOTS.forEach((s, i) => { photoIdx[i] = s.src ? ++pc : pc; });
+const cMain = split($('cMain'));
+const gName = split($('gName'));
+// bands
+const BANDS = [['photo-20.jpg', 'photo-30.jpg'], ['photo-18.jpg', 'photo-22.jpg'], ['photo-07.jpg', 'photo-10.jpg']];
+const bandEls = BANDS.map((pair, i) => {
+  const b = document.createElement('div'); b.className = 'abs';
+  b.style.cssText = `left:0;top:${i * 640}px;width:1080px;height:640px;overflow:hidden`;
+  const imgs = pair.map(src => { const w = document.createElement('div'); w.className = 'abs'; w.style.cssText = 'inset:0;overflow:hidden';
+    const im = document.createElement('img'); im.className = 'ph'; im.src = `assets/photos/${src}`; w.appendChild(im); b.appendChild(w); return { w, im }; });
+  const lab = document.createElement('div'); lab.className = 'abs mono'; lab.style.cssText = 'left:48px;bottom:28px;font-size:13px';
+  lab.textContent = `0${i + 1} / 03`; b.appendChild(lab);
+  $('bands').appendChild(b); return { b, imgs, lab };
+});
+// grid of featured work
+const GRID = ['featured-pixel-01.jpg', 'featured-pixel-02.jpg', 'photo-33.jpg', 'featured-pixel-03.jpg'];
+const CW = 492, CH = 760, GX = 36, GY = 188, GAP = 24;
+const gridEls = GRID.map((src, i) => {
+  const c = document.createElement('div'); c.className = 'abs';
+  const x = GX + (i % 2) * (CW + GAP), y = GY + Math.floor(i / 2) * (CH + GAP);
+  c.style.cssText = `left:${x}px;top:${y}px;width:${CW}px;height:${CH}px;overflow:hidden;transform-origin:50% 50%`;
+  const im = document.createElement('img'); im.className = 'ph'; im.src = `assets/photos/${src}`; c.appendChild(im);
+  const lab = document.createElement('div'); lab.className = 'abs mono'; lab.style.cssText = 'left:22px;top:22px;font-size:12px;text-shadow:0 1px 8px rgba(0,0,0,.4)';
+  lab.textContent = ['Pixel', 'India', 'Wild', 'Pixel'][i]; c.appendChild(lab);
+  $('grid').appendChild(c); return { c, im, cx: x + CW / 2, cy: y + CH / 2, lab };
+});
+// grain
+const grainFrames = []; { let sd = 9; const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
+  const g = $('grain').getContext('2d'); for (let f = 0; f < 6; f++) { const id = g.createImageData(540, 960);
+    for (let i = 0; i < id.data.length; i += 4) { const v = 128 + (r() - .5) * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; } grainFrames.push(id); } }
+
+/* ───────────── shots + transitions ───────────── */
+function shotMove(i, t) {
+  const s = SHOTS[i], el = shotEls[i], lt = t - s.at;
+  const fast = (SHOTS[i + 1] ? SHOTS[i + 1].at - s.at : 1) <= .26;
+  const punch = s.tin === 'punch' ? .22 : fast ? .12 : .1;
+  const m = 1 + punch * (1 - E.outExpo(clamp(lt / .45))) + .05 * clamp(lt, 0, 2);
+  return { el, m, fx: s.fx ?? .5, fy: s.fy ?? .5 };
+}
+function drawShot(i, t, o = {}) {
+  const { el, m, fx, fy } = shotMove(i, t);
+  el.d.style.display = '';
+  cover(el.img, W, H, m * (o.m || 1), fx, fy, o.dx || 0, o.dy || 0);
+  el.d.style.transform = o.tf || '';
+  el.d.style.clipPath = o.clip || 'none';
+  el.d.style.zIndex = o.z || 0;
+  el.img.style.filter = o.filter || 'none';
+  el.d.style.opacity = o.op ?? 1;
+}
+function renderShots(t) {
+  shotEls.forEach(e => e && (e.d.style.display = 'none'));
+  $('shots').style.filter = 'none';
+  let flash = 0;
+  // current shot
+  let c = -1; for (let i = 0; i < SHOTS.length; i++) if (t >= SHOTS[i].at) c = i;
+  // a transition into shot k is live in [at - D*a, at + D*(1-a)]
+  let k = -1, p = 0;
+  for (let i = 1; i < SHOTS.length; i++) {
+    const [D, a] = TR[SHOTS[i].tin] || [0, 0]; if (!D) continue;
+    const s0 = SHOTS[i].at - D * a;
+    if (t >= s0 && t < s0 + D) { k = i; p = (t - s0) / D; }
+  }
+  const sY = $('mbYb'), sX = $('mbXb'); sY.setAttribute('stdDeviation', '0 0'); sX.setAttribute('stdDeviation', '0 0');
+  if (k < 0) { if (c >= 0 && SHOTS[c].src) drawShot(c, t); return flash; }
+  const N = k, Pv = k - 1, ty = SHOTS[N].tin;
+  const hasP = SHOTS[Pv] && SHOTS[Pv].src, hasN = !!SHOTS[N].src;
+  const drawP = o => hasP && drawShot(Pv, t, { z: 0, ...o }), drawN = o => hasN && drawShot(N, t, { z: 1, ...o });
+  if (ty === 'iris') {
+    const r = lerp(0, 1150, E.outExpo(p));
+    drawP({}); drawN({ clip: `circle(${r}px at 540px 960px)`, m: lerp(1.25, 1, E.outCubic(p)) });
+  } else if (ty === 'whipUp' || ty === 'whipLeft') {
+    const e = E.inOutQuart(p), bl = Math.sin(Math.PI * p) * 70, up = ty === 'whipUp';
+    const f = up ? 'url(#mbY)' : 'url(#mbX)';
+    (up ? sY : sX).setAttribute('stdDeviation', up ? `0 ${bl}` : `${bl} 0`);
+    const tf = d => up ? `translateY(${d}px)` : `translateX(${d}px)`;
+    drawP({ tf: tf(-e * (up ? H : W)), filter: f });
+    drawN({ tf: tf((1 - e) * (up ? H : W)), filter: f });
+  } else if (ty === 'zoom') {
+    const a = E.inExpo(clamp(p / .5)), b = E.outExpo(clamp((p - .5) / .5));
+    if (p < .5) drawP({ m: lerp(1, 2.6, a), filter: `blur(${a * 14}px) brightness(${1 + a * .5})` });
+    else drawN({ m: lerp(.55, 1, b), filter: `blur(${(1 - b) * 14}px) brightness(${1 + (1 - b) * .5})` });
+    flash = Math.max(0, 1 - Math.abs(p - .5) * 6) * .3;
+  } else if (ty === 'stripes') {
+    const n = 6, sw = W / n; let pts = [[0, 0], [W, 0]];
+    const hs = [...Array(n)].map((_, j) => H * E.inOutQuart(clamp((p - j * .07) / (1 - .07 * (n - 1)))));
+    for (let j = n - 1; j >= 0; j--) { pts.push([(j + 1) * sw, hs[j]]); pts.push([j * sw, hs[j]]); }
+    drawP({ m: 1 + p * .06 });
+    drawN({ clip: `polygon(${pts.map(([x, y]) => `${x}px ${y}px`).join(',')})`, dy: (1 - E.outCubic(p)) * -120 });
+  } else if (ty === 'flash') {
+    if (p < .1 / .16 * .6) drawP({}); else drawN({});
+    flash = Math.max(0, 1 - Math.abs(p - .1 / .16 * .6) * 3.2);
+  } else if (ty === 'diag') {
+    const e = E.inOutQuart(p), c0 = lerp(-900, W + 900, e);
+    drawP({ dx: -e * 140 });
+    drawN({ clip: `polygon(${c0 - 900}px 0px, ${c0}px 0px, ${c0 - 600}px ${H}px, ${c0 - 1500}px ${H}px)`, dx: (1 - e) * 200 });
+    const blur = Math.sin(Math.PI * p) * 30; sX.setAttribute('stdDeviation', `${blur} 0`);
+    if (hasN) shotEls[N].img.style.filter = 'url(#mbX)';
+  } else if (ty === 'glitch') {
+    const g = Math.sin(Math.PI * p);
+    const jit = (hash(FRAME, 3) - .5) * 120 * g;
+    if (p < .5) drawP({ dx: jit }); else drawN({ dx: jit * .6 });
+    $('shots').style.filter = 'url(#rgb)';
+    $('rgbR').setAttribute('dx', 26 * g); $('rgbB').setAttribute('dx', -26 * g);
+    $('rgbR').setAttribute('dy', (hash(FRAME, 9) - .5) * 14 * g);
+  } else { if (hasN) drawN({}); }
+  return flash;
+}
+
+/* ───────────── render ───────────── */
+function render(t) {
+  FRAME = Math.floor(t * FPS + 1e-6);
+  let flash = 0;
+
+  /* A · cold open */
+  show('A', t < 1.05);
+  if (t < 1.05) {
+    scramble($('aSub'), 'A visual by', P(t, .02, .32));
+    scramble($('aMain'), 'THIRD_EYEF1.7', P(t, .1, .55));
+    const col = EP(t, .8, .98, E.inExpo);
+    S('aMain', { letterSpacing: `${lerp(.5, .05, col)}em`, o: 1 - col });
+    S('aSub', { o: 1 - col });
+    const lw = 240 * EP(t, .35, .72, E.outExpo) * (1 - EP(t, .82, .97, E.inExpo));
+    S('aLine', { left: `${540 - lw / 2}px`, width: `${Math.max(lw, 2)}px`, o: t < .35 ? 0 : 1, height: lw < 4 ? '4px' : '2px', borderRadius: lw < 4 ? '50%' : '0' });
+  }
+
+  /* montage shots */
+  flash = Math.max(flash, renderShots(t));
+
+  /* C · break */
+  show('C', t >= T.breakC && t < T.D);
+  if (t >= T.breakC && t < T.D) {
+    rise(cMain, t, 5.04, .022, .45, 5.72, .22);
+    scramble($('cSub'), '— Third_eyef1.7', P(t, 5.25, 5.55));
+    S('cSub', { o: 1 - EP(t, 5.75, 5.95) });
+    S('C', { tf: `scale(${lerp(1, 1.06, P(t, 5, 6))})` });
+  }
+
+  /* D · bands → grid → push */
+  show('D', t >= T.D && t < 8.55);
+  if (t >= T.D && t < 8.55) {
+    bandEls.forEach((bd, i) => {
+      const a = T.D + i * .08, dir = i % 2 ? -1 : 1;
+      const pin = E.outExpo(P(t, a, a + .45));
+      const pout = E.inExpo(P(t, T.grid - .2 + i * .08, T.grid + .1 + i * .08));
+      const x = (1 - pin) * W * dir - pout * W * dir;
+      bd.b.style.transform = `translateX(${x}px)`;
+      bd.b.style.display = pout >= 1 ? 'none' : '';
+      const sw = E.inOutQuart(P(t, 6.5 + i * .06, 6.82 + i * .06));
+      bd.imgs.forEach((im, j) => {
+        cover(im.im, W, 640, 1.15 + .08 * P(t, T.D, T.grid), .5, .5, -x * .35, 0);
+        im.w.style.transform = j === 0 ? `translateY(${-sw * 100}%)` : `translateY(${(1 - sw) * 100}%)`;
+      });
+      bd.lab.style.opacity = pin;
+    });
+    // grid
+    const gin = t >= T.grid - .1;
+    $('grid').style.display = gin ? '' : 'none';
+    if (gin) {
+      const e = E.inOutExpo(P(t, T.push, 8.5));
+      const S4 = Math.max(W / CW, H / CH), card = gridEls[3];
+      const s = lerp(1, S4, e), fx = lerp(540, card.cx, e), fy = lerp(960, card.cy, e);
+      $('grid').style.transform = `translate(${540 - fx * s}px, ${960 - fy * s}px) scale(${s})`;
+      gridEls.forEach((g, i) => {
+        const pin = E.outBack(P(t, T.grid + .05 + i * .1, T.grid + .5 + i * .1));
+        g.c.style.transform = `scale(${lerp(.4, 1, clamp(pin, 0, 1.2))})`;
+        g.c.style.opacity = clamp(P(t, T.grid + .05 + i * .1, T.grid + .2 + i * .1));
+        cover(g.im, CW, CH, 1 + .12 * (1 - E.outCubic(P(t, T.grid, T.push))), .5, .5);
+        g.lab.style.opacity = 1 - e;
+      });
+      $('grid').style.filter = e > 0 && e < 1 ? `blur(${Math.sin(Math.PI * e) * 5}px)` : 'none';
+    }
+  }
+
+  /* F · recognition */
+  show('F', t >= T.F && t < T.G);
+  if (t >= T.F && t < T.G) {
+    cover($('fBg'), W, H, lerp(1.25, 1.4, P(t, T.F, T.G)), .57, .5);
+    $('fBg').style.filter = `blur(${lerp(8, 26, EP(t, T.F, T.F + .4))}px) brightness(.5) saturate(1.2)`;
+    scramble($('fKick'), 'Recognition', P(t, 12.08, 12.35));
+    const n = Math.round(300 * EP(t, 12.15, 12.85, E.outQuart));
+    $('fNum').innerHTML = `${n}<span class="it" style="color:var(--amber-hi)">K+</span>`;
+    S('fNum', { o: EP(t, 12.1, 12.2), tf: `translateY(${(1 - EP(t, 12.1, 12.5, E.outExpo)) * 60}px)` });
+    S('fCap', { o: EP(t, 12.6, 12.85), tf: `translateY(${(1 - EP(t, 12.6, 12.95, E.outExpo)) * 30}px)` });
+    scramble($('fBrand'), 'Google Pixel · Google India', P(t, 12.9, 13.3));
+    const out = EP(t, 13.55, 14.0, E.inExpo);
+    S('fBody', { tf: `scale(${lerp(1, .8, out)})`, o: 1 - out, filter: `blur(${out * 10}px)` });
+    S('F', { clip: `circle(${lerp(1200, 0, out)}px at 540px 960px)` });
+  }
+
+  /* G · photographer */
+  show('G', t >= T.G && t < T.recap);
+  if (t >= T.G && t < T.recap) {
+    const LENS = [383, 345], C = [540, 760], R = 410;
+    const open = EP(t, T.G, T.G + .35, E.outExpo);
+    const pull = EP(t, T.G, T.G + 1.0, E.inOutQuint);
+    const s = lerp(9, 1.5, pull);
+    $('gPhoto').style.transform = `translate(${C[0] - LENS[0] * s}px, ${C[1] - LENS[1] * s}px) scale(${s})`;
+    S('gPhotoWrap', { clip: `circle(${R * open}px at ${C[0]}px ${C[1]}px)` });
+    const rl = 2 * Math.PI * R, rp = EP(t, T.G + .2, T.G + .9, E.inOutQuart);
+    $('gRing').setAttribute('stroke-dasharray', `${rl} ${rl}`); $('gRing').setAttribute('stroke-dashoffset', rl * (1 - rp));
+    $('gBadge').setAttribute('transform', `rotate(${(t - T.G) * 22 - 30} 540 760)`);
+    $('gBadge').style.opacity = EP(t, T.G + .6, T.G + 1.0);
+    rise(gName, t, T.G + .55, .03, .55);
+    scramble($('gRole'), 'Photographer · Bangalore', P(t, 14.9, 15.3));
+    scramble($('gFeat'), 'Featured by Google Pixel & Google India', P(t, 15.3, 15.9));
+    // exit: whip up
+    const ex = E.inOutQuart(P(t, 16.75, 17.0));
+    S('G', { tf: `translateY(${-ex * H}px)`, filter: ex > 0 ? 'url(#mbY)' : 'none' });
+    if (ex > 0) $('mbYb').setAttribute('stdDeviation', `0 ${Math.sin(Math.PI * ex) * 70}`);
+  }
+
+  /* H · end */
+  show('H', t >= T.H);
+  if (t >= T.H) {
+    const sg = EP(t, 17.55, 18.35, E.inOutSine);
+    S('hSig', { clip: `inset(-30% ${(1 - sg) * 100}% -30% 0)` });
+    const lw = 160 * EP(t, 18.0, 18.4, E.outExpo);
+    S('hLine', { left: `${540 - lw / 2}px`, width: `${lw}px` });
+    scramble($('hHandle'), '@third_eyef1.7', P(t, 18.05, 18.4));
+    scramble($('hUrl'), 'mohit-bhaisare.vercel.app', P(t, 18.25, 18.7));
+    const fo = EP(t, 19.15, 19.6);
+    S('H', { o: 1 - fo, tf: `scale(${lerp(1, 1.04, P(t, T.H, 19.6))})` });
+  }
+
+  /* HUD */
+  const hudOn = (t >= 1.0 && t < T.breakC) || (t >= 8.5 && t < T.F) || (t >= T.recap && t < T.H);
+  show('hud', hudOn);
+  if (hudOn) {
+    let c = 0; for (let i = 0; i < SHOTS.length; i++) if (t >= SHOTS[i].at) c = i;
+    const s = SHOTS[c];
+    const capP = P(t, s.at, s.at + .18);
+    scramble($('cap'), s.cap || '', capP, 3);
+    $('cnt').textContent = `${String(photoIdx[c]).padStart(2, '0')} / ${String(pc).padStart(2, '0')}`;
+    const f = FRAME, sec = Math.floor(f / FPS);
+    $('tc').textContent = `00:${String(sec).padStart(2, '0')}:${String(f % FPS).padStart(2, '0')}`;
+    $('rec').style.opacity = Math.floor(t * 2) % 2 ? .3 : 1;
+    const hin = t < 1.4 ? EP(t, 1.0, 1.35, E.outExpo) : 1;
+    $('hud').style.opacity = hin;
+  }
+
+  /* flashes on hard section changes */
+  [[T.breakC, 1], [T.D, .6], [8.5, .8], [T.F, .8], [T.H, .8]].forEach(([h, g]) => { if (t >= h) flash = Math.max(flash, g * (1 - P(t, h, h + .13))); });
+  S('flash', { o: clamp(flash) });
+  S('vig', { o: (t > 1 && t < T.breakC) || (t > 8.4 && t < T.G) || (t > T.recap && t < T.H) ? 1 : (t >= T.G && t < T.recap) ? 0 : .4 });
+  $('grain').getContext('2d').putImageData(grainFrames[FRAME % grainFrames.length], 0, 0);
+}
+
+window.seek = t => render(t);
+window.ready = (async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  render(0); return true;
+})();
+const params = new URLSearchParams(location.search);
+if (!params.has('render')) {
+  document.body.classList.add('preview');
+  const fit = () => { const k = Math.min(innerWidth / W, innerHeight / H); $('stage').style.transform = `scale(${k})`; $('stage').style.marginRight = `${W * (k - 1)}px`; $('stage').style.marginBottom = `${H * (k - 1)}px`; };
+  addEventListener('resize', fit); fit();
+  window.ready.then(() => {
+    if (params.has('t')) { render(+params.get('t')); return; }
+    const t0 = performance.now();
+    const loop = now => { render(((now - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+}
+</script>
+</body>
+</html>

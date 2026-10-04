@@ -5,9 +5,38 @@ system of [mohit-bhaisare.vercel.app](https://mohit-bhaisare.vercel.app):
 warm paper `#fbfaf7`, ink `#211f1c`, amber `#ad6e52`, Fraunces display serif,
 Inter, Geist Mono and the Mrs Saint Delafield signature script.
 
-Rendered film: `out/intro.mp4`
+Rendered films:
 
-## The story (figures → photos)
+* **`out/reel.mp4`**: 9:16 vertical trailer (1080×1920, 60 fps, 19.6 s) for Reels/Shorts. Fast cuts, heavy SFX.
+* `out/intro.mp4`: 16:9 long-form intro (1920×1080, 60 fps, 50.7 s).
+
+## The reel (`reel.html` + `reel_score.py`)
+
+Cut at 120 bpm on half, quarter and eighth beats. It uses 10 kinds of transitions
+(iris snap, whip pans with directional motion blur, zoom-through, strip skyline reveal,
+flash cut, diagonal wipe, RGB-split glitch, punch-ins, split-band choreography, and a
+camera push into a grid card) with tiny mono captions that decode in.
+
+| time | beat |
+|---|---|
+| 0–1s | Black. *THIRD_EYEF1.7* decodes, an amber line collapses to a dot, and the iris snaps open |
+| 1–5s | 8 shots at half-beat, each with a different transition |
+| 5–6s | Break: *chasing the last light* |
+| 6–9s | Three split bands slide in and swap, a 2×2 grid of featured work, push into the Pixel shot |
+| 9–12s | 8 shots at quarter-beat, then an 8-shot eighth-note strobe on a snare roll |
+| 12–14s | Drop to near silence: braam, sub dive, **300K+** counter |
+| 14–17s | Pull out of his camera lens to the portrait and name |
+| 17–19.6s | Strobe recap, braam, the signature writes, @third_eyef1.7 |
+
+The score is a D-minor trailer pulse (side-chained bass, stabs, claps, hats, snare roll)
+with a sound for every cut: panned whooshes, zoom risers, glitch zaps, camera-flash
+snaps, booms, braams, sub drops, and typing ticks for every decoding caption.
+
+```bash
+node render.js --page reel.html      # -> out/reel.mp4 (~8 min on 4 cores)
+```
+
+## The 16:9 intro: story (figures → photos)
 
 | time | scene |
 |---|---|
