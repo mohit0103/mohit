@@ -179,22 +179,9 @@ def tap():                                    # soft wooden tock
     return (np.sin(2 * np.pi * 210 * t) * np.exp(-t * 32) + np.sin(2 * np.pi * 620 * t) * np.exp(-t * 60) * .25) * .8
 
 
-def softswipe(d=.32):                         # barely-there air
-    t = tt(d)
-    x = lp(hp(rng.standard_normal(len(t)), 400), 2200)
-    return x * np.sin(np.pi * t / d) ** 2 * .35
-
-
 def bell(f=1760.0, d=1.6):
     t = tt(d)
     return sum(np.sin(2 * np.pi * f * m * t) * np.exp(-t * (3 + m * 1.6)) / m ** 1.3 for m in (1, 2.0, 3.0)) * .16
-
-
-def swell(d=1.4):
-    t = tt(d)
-    v = sum(np.sin(2 * np.pi * hz(n) * t) for n in (74, 78, 81)) * .05
-    air = lp(rng.standard_normal(len(t)), 1500) * .05
-    return (v + air) * np.sin(np.pi * np.clip(t / d, 0, 1)) ** 1.5
 
 
 def pebble():
@@ -213,21 +200,6 @@ def shutter():
     return o * .7
 
 
-def lift(d=1.0):                              # soft build: rising filtered air + rising tones, lands on the cue
-    t = tt(d)
-    air = np.zeros(len(t))
-    blk = 512
-    zi = np.zeros(2)
-    src = rng.standard_normal(len(t))
-    for k in range(0, len(t), blk):
-        fc = 250 * (14 ** (k / len(t)))
-        b, a = signal.butter(2, fc / (SR / 2))
-        o, zi = signal.lfilter(b, a, src[k:k + blk], zi=zi)
-        air[k:k + blk] = o
-    tones = sum(np.sin(2 * np.pi * np.cumsum(hz(n) * (1 + .5 * (t / d) ** 2)) / SR) for n in (69, 76)) * .05
-    return (air * .5 + tones) * (t / d) ** 2.2
-
-
 def bloom(d=1.6):                             # warm landing: low chord + bell, no hard transient
     t = tt(d)
     low = sum(np.sin(2 * np.pi * hz(n) * t) for n in (38, 45, 50)) * .18
@@ -240,6 +212,58 @@ def sparkle():
         b_ = bell(hz(n), 1.0) * (.5 + j * .06)
         i = int(j * .06 * SR)
         o[i:i + len(b_)] += b_
+    return o
+
+
+def detent():                                 # lens-ring click: crisp transient + tiny metallic ring
+    t = tt(.05)
+    body = hp(rng.standard_normal(len(t)), 2500) * np.exp(-t * 420)
+    ring = np.sin(2 * np.pi * 4100 * t) * np.exp(-t * 140) * .25 + np.sin(2 * np.pi * 2650 * t) * np.exp(-t * 180) * .18
+    return (body * .7 + ring) * .9
+
+
+def grains(d, density, lo, hi, decay):
+    """Sparse crackle: tiny filtered impulses, the texture of paper and card."""
+    n = int(d * SR)
+    x = np.zeros(n)
+    k = int(density * d)
+    idx = rng.integers(0, n, k)
+    x[idx] = rng.uniform(-1, 1, k) * rng.uniform(.3, 1, k)
+    b, a = signal.butter(2, [lo / (SR / 2), hi / (SR / 2)], "band")
+    return signal.lfilter(b, a, x) * decay
+
+
+def slide(d=.2):                              # card gliding over paper: grainy friction, no air
+    t = tt(d)
+    e = np.sin(np.pi * np.clip(t / d, 0, 1)) ** 1.2
+    tex = grains(d, 2600, 1800, 7000, e) * 2.2
+    hush = lp(hp(rng.standard_normal(len(t)), 3000), 8000) * e * .05
+    return tex + hush
+
+
+def pat():                                    # card landing on a felt table
+    t = tt(.12)
+    thud = np.sin(2 * np.pi * 150 * t) * np.exp(-t * 55) * .6
+    paper = lp(hp(rng.standard_normal(len(t)), 900), 4500) * np.exp(-t * 90) * .5
+    return thud + paper
+
+
+def riffle(d=.34, n=11):                      # flicking through the edges of a stack
+    o = np.zeros(int((d + .05) * SR))
+    for j in range(n):
+        f = grains(.03, 9000, 2500, 9000, np.exp(-tt(.03) * 120)) * 1.6
+        i = int(d * (j / n) ** 1.15 * SR)
+        o[i:i + len(f)] += f
+    return o
+
+
+def ratchet(d=.6, n=9):                       # focus ring turning faster into the moment
+    o = np.zeros(int((d + .06) * SR))
+    for j in range(n):
+        tj = d * (1 - (1 - j / n) ** 1.8)
+        c = detent() * (.45 + .55 * j / n)
+        i = int(tj * SR)
+        o[i:i + len(c)] += c[:len(o) - i]
     return o
 
 
@@ -266,12 +290,8 @@ for c in spec["cues"]:
         place(fx, tick(), at, .32 * g, pan)
     elif ty == "tap":
         place(fx, tap(), at, .3 * g)
-    elif ty == "softswipe":
-        place(fx, softswipe(), at - .12, .22 * g, pan)
     elif ty == "bell":
         place(fx, bell(hz(rng.choice([86, 88, 90, 93]))), at, .3 * g, pan)
-    elif ty == "swell":
-        place(fx, swell(), at - .2, .5 * g)
     elif ty == "pebble":
         place(fx, pebble(), at, .25 * g, float(rng.uniform(-.6, .6)))
     elif ty == "gdraw":
@@ -281,8 +301,16 @@ for c in spec["cues"]:
         place(fx, counter(), at, .3 * g)
     elif ty == "shutter":
         place(fx, shutter(), at, .35 * g)
-    elif ty == "lift":
-        place(fx, lift(), at - 1.0, .45 * g)
+    elif ty == "detent":
+        place(fx, detent(), at, .3 * g, pan)
+    elif ty == "slide":
+        place(fx, slide(), at - .04, .32 * g, pan)
+    elif ty == "pat":
+        place(fx, pat(), at, .38 * g, float(rng.uniform(-.35, .35)))
+    elif ty == "riffle":
+        place(fx, riffle(), at, .4 * g)
+    elif ty == "ratchet":
+        place(fx, ratchet(), at - .62, .32 * g)
     elif ty == "bloom":
         place(fx, bloom(), at, .55 * g)
     elif ty == "sparkle":

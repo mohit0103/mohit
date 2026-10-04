@@ -19,11 +19,11 @@ Inter Display.
 
 | time | scene |
 |---|---|
-| 0–1.4s | *third_eyef1.7* sharpens out of a blur, then settles into the eyebrow |
-| 1.4–6s | **Selected work** carousel: cards spring in, glide on the beat with inner parallax, captions slide and blur, the active dot stretches into a pill |
+| 0–1.4s | Hook: photo cards drop onto a stack from the first frame, fan out like a hand of cards and glide into the carousel while *third_eyef1.7* sharpens in |
+| 1.4–6s | **Selected work** carousel: cards glide on the beat with inner parallax, captions slide and blur, the active dot stretches into a pill |
 | 6–8s | The last card expands to full bleed: *Chasing the last light.* |
-| 8–10.6s | It shrinks back into the first tile of a masonry grid; tiles spring in, the grid scrolls under a frosted header, the mood-chip highlight glides |
-| 10.6–13.6s | **Google × photo**: the featured tile glides into the card, the G draws on, the carousel swipes through the featured shots, 300K+ counter |
+| 8–10.6s | It shrinks back into the first tile of a masonry grid; tiles spring in, the columns scroll at slightly different speeds under a frosted header, the mood-chip highlight glides |
+| 10.6–13.6s | **Google × photo**: the featured tile glides into the card, the G draws on, one shared spring moves the featured cards like the main carousel, 300K+ counter |
 | 13.6–15.8s | The card's corners round off into a circle around his portrait; the ring draws, the name sets |
 | 15.8–18.4s | The circle shrinks into an avatar above *third_eyef1.7*, the URL and a *Follow* button that gets pressed |
 

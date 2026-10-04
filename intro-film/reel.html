@@ -36,7 +36,7 @@
 
   <!-- intro / eyebrow -->
   <div class="abs c head" id="brand" style="top:0;font-size:46px;transform-origin:540px 0"></div>
-  <div class="abs c body" id="brandSub" style="top:968px;font-size:24px;color:var(--label3)">Photography</div>
+  <div class="abs c body" id="brandSub" style="top:400px;font-size:24px;color:var(--label3)">Photography</div>
 
   <!-- carousel chrome -->
   <div class="abs c body" id="secLabel" style="top:300px;font-size:24px;font-weight:600;color:var(--label3)">Selected work</div>
@@ -145,11 +145,11 @@ function card(key, src) {
 }
 // geometry + cover-fit image with focus, zoom and parallax
 function setCard(c, g) {
-  const { x, y, w, h, r = 0, fx = .5, fy = .5, zoom = 1, px = 0, py = 0, o = 1, sh = 1, z = 0, sc = 1 } = g;
+  const { x, y, w, h, r = 0, fx = .5, fy = .5, zoom = 1, px = 0, py = 0, o = 1, sh = 1, z = 0, sc = 1, rot = 0 } = g;
   const d = c.d, img = c.img;
   d.style.display = '';
   d.style.width = `${w}px`; d.style.height = `${h}px`;
-  d.style.transform = `translate(${x}px,${y}px) translate(${w / 2}px,${h / 2}px) scale(${sc}) translate(${-w / 2}px,${-h / 2}px)`;
+  d.style.transform = `translate(${x}px,${y}px) translate(${w / 2}px,${h / 2}px) rotate(${rot}deg) scale(${sc}) translate(${-w / 2}px,${-h / 2}px)`;
   d.style.borderRadius = typeof r === 'string' ? r : `${r}px`;
   d.style.opacity = o; d.style.zIndex = z;
   d.style.boxShadow = sh > 0 ? `0 ${24 * sh}px ${70 * sh}px rgba(0,0,0,${.16 * sh}), 0 ${4 * sh}px ${14 * sh}px rgba(0,0,0,${.06 * sh})` : 'none';
@@ -175,6 +175,8 @@ const CAR = [
   ['photo-28.jpg', 'Amber horizon', 'Twilight', .5, .62],
 ];
 const CW = 700, CH = 940, CX = 190, CY = 430, PITCH = 650;
+const ROT0 = [-7, 5, -3, 8, -9, 3, -2];
+const landT = i => -.05 + i * .07;                  // first card is already falling on frame one
 CAR.forEach(([src], i) => card(`car${i}`, src));
 const caps = CAR.map(([, title, mood]) => {
   const d = document.createElement('div'); d.className = 'abs c';
@@ -196,7 +198,7 @@ const tiles = [];
 GRID.forEach((col, ci) => { let y = GY0; col.forEach(([src, h, fx = .5, fy = .5], ri) => {
   const key = src === 'photo-28.jpg' ? 'car6' : `g${ci}${ri}`;     // the amber-horizon card becomes the first tile
   if (key !== 'car6') card(key, src);
-  tiles.push({ key, x: GX + ci * (GW + GG), y, w: GW, h, fx, fy, order: ri * 3 + ci });
+  tiles.push({ key, x: GX + ci * (GW + GG), y, w: GW, h, fx, fy, order: ri * 3 + ci, col: ci });
   y += h + GG; }); });
 const tileFp03 = tiles.find(t => t.key === 'g11');
 
@@ -219,20 +221,18 @@ const gL1 = words($('gL1'), 'Featured on');
 window.SECTIONS = { intro: [0, 1.35], carousel: [1.35, 6.0], full: [6.0, 8.0], grid: [8.0, 10.6], google: [10.6, 13.6], portrait: [13.6, 15.8], end: [15.8, 18.4] };
 window.CUES = [];
 const cue = (type, at, gain = 1) => window.CUES.push({ type, at: +at.toFixed(4), gain });
-cue('bell', .15, .5); cue('tap', T.carIn + .1, .7);
-T.steps.forEach(s => { cue('tick', s, .8); cue('softswipe', s, .5); });
-cue('tap', T.expand, .9); cue('swell', T.expand, .6); cue('bell', T.fbText + .1, .6);
-cue('tap', T.shrink + .1, .8); T.chips.forEach(s => cue('tick', s, .6));
+for (let i = 0; i < CAR.length; i++) cue('pat', landT(i) + .16, .75 - i * .04);   // cards landing on the stack
+cue('riffle', .56, .8);                                                              // the hand fans out
+cue('bell', .25, .35); cue('tap', 1.25, .6);
+T.steps.forEach(s => { cue('detent', s, .9); cue('slide', s + .02, .55); });
+cue('ratchet', T.expand, .8); cue('bloom', T.expand, .8); cue('tap', T.expand, .7); cue('bell', T.fbText + .1, .5);
+cue('tap', T.shrink + .1, .7); T.chips.forEach(s => cue('detent', s, .6));
 for (let i = 0; i < 12; i++) cue('pebble', T.shrink + .4 + i * .05, .35);
-cue('tap', T.google, .8); cue('gdraw', 11.02, .8); cue('bell', 11.5, .5); cue('counter', 11.65, .5);
-cue('softswipe', T.swap1, .6); cue('tick', T.swap1 + .3, .6); cue('softswipe', T.swap2, .6); cue('tick', T.swap2 + .3, .6);
-cue('tap', T.portrait, .8); cue('shutter', T.portrait + .55, .45); cue('bell', 14.3, .5);
-cue('tap', T.end, .7); cue('bell', T.end + .3, .6); cue('click', 17.05, .9);
-// soft lifts into the three big moments, landing on a warm bloom
-cue('lift', T.expand, .9); cue('bloom', T.expand, .9);
-cue('lift', T.google, 1); cue('bloom', T.google, 1); cue('sparkle', 11.0, .8);
-cue('lift', T.portrait, .7); cue('bloom', T.portrait, .7);
-cue('bloom', T.end, .6);
+cue('ratchet', T.google, .9); cue('bloom', T.google, .9); cue('tap', T.google, .7);
+cue('gdraw', 11.02, .7); cue('sparkle', 11.0, .6); cue('bell', 11.5, .4); cue('counter', 11.65, .5);
+[T.swap1, T.swap2].forEach(s => { cue('slide', s, .7); cue('detent', s + .32, .7); });
+cue('ratchet', T.portrait, .6); cue('bloom', T.portrait, .7); cue('tap', T.portrait, .6); cue('shutter', T.portrait + .55, .45); cue('bell', 14.3, .4);
+cue('bloom', T.end, .5); cue('tap', T.end, .6); cue('bell', T.end + .3, .45); cue('click', 17.05, .9);
 
 /* ───────────────────────── grain ───────────────────────── */
 const grainFrames = []; { let sd = 9; const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
@@ -241,15 +241,26 @@ const grainFrames = []; { let sd = 9; const r = () => (sd = sd * 16807 % 2147483
 
 /* ───────────────────────── layouts ───────────────────────── */
 const carIdx = t => T.steps.reduce((a, s) => a + E.spring(P(t, s, s + .75)), 0);
+function fanGeom(i, t) {
+  const land = E.spring(P(t, landT(i), landT(i) + .45));
+  const f = E.spring(P(t, .55 + i * .015, 1.05 + i * .015));
+  const k = i - 3;
+  return { x: 540 - 210 + k * 100 * f, y: 1000 - 280 - (1 - land) * 1500 + Math.abs(k) * 22 * f, w: 420, h: 560, r: 28,
+    rot: lerp(ROT0[i], k * 9, f), sc: 1, px: 0, fx: CAR[i][3], fy: CAR[i][4], o: land > 0 ? 1 : 0, sh: .8, z: i, zoom: 1 };
+}
 function carGeom(i, t) {
   const idx = carIdx(t), d = i - idx, ad = Math.abs(d);
-  const rise = E.spring(P(t, T.carIn + i * .06, T.carIn + .9 + i * .06));
-  return { x: CX + d * PITCH, y: CY + (1 - rise) * 900, w: CW, h: CH, r: 40, sc: lerp(1, .86, clamp(ad)), px: -d * 110, fx: CAR[i][3], fy: CAR[i][4],
-    o: rise > 0 ? clamp(1 - (ad - 1) * .8) : 0, sh: lerp(1, .5, clamp(ad)), z: 10 - Math.round(ad) };
+  const g = { x: CX + d * PITCH, y: CY, w: CW, h: CH, r: 40, sc: lerp(1, .86, clamp(ad)), px: -d * 110, fx: CAR[i][3], fy: CAR[i][4], rot: 0,
+    o: clamp(1 - (ad - 1) * .8), sh: lerp(1, .5, clamp(ad)), z: 10 - Math.round(ad), zoom: lerp(1, 1.06, P(t, 1.2, 6.0)) };
+  const m = E.spring(P(t, 1.0 + i * .04, 1.65 + i * .04));
+  if (m >= 1) return g;
+  const fg = fanGeom(i, t), out = lerpG(fg, g, m);
+  out.o = fg.o * lerp(1, g.o, m); out.z = m > .5 ? g.z : fg.z;
+  return out;
 }
 const gridScroll = t => -380 * E.inOutSine(P(t, T.scroll[0], T.scroll[1]));
 function tileGeom(tl, t) {
-  const g = { x: tl.x, y: tl.y + gridScroll(t), w: tl.w, h: tl.h, r: 24, fx: tl.fx, fy: tl.fy, sh: .35, z: 2, o: 1, sc: 1, px: 0, zoom: 1 };
+  const g = { x: tl.x, y: tl.y + gridScroll(t) * [.9, 1, 1.12][tl.col], w: tl.w, h: tl.h, r: 24, fx: tl.fx, fy: tl.fy, sh: .35, z: 2, o: 1, sc: 1, px: 0, zoom: 1 };
   const a = T.shrink + .35 + tl.order * .05, p = E.spring(P(t, a, a + .7));
   if (tl.key !== 'car6') { g.o = smooth(0, .4, p); g.sc = lerp(.9, 1, p); g.y += (1 - p) * 60; }
   return g;
@@ -265,12 +276,12 @@ function render(t) {
     const settle = E.inOutQuart(P(t, 1.05, 1.7));
     blurIn(brand, t, .1, .08, .55);
     const vis = (1 - smooth(T.expand - .1, T.expand + .2, t)) + (t > T.shrink ? smooth(T.shrink + .2, T.shrink + .5, t) * (1 - smooth(T.google - .2, T.google, t)) : 0);
-    S('brand', { tf: `translateY(${lerp(900, 150, settle)}px) scale(${lerp(1, .5, settle)})`, o: vis });
+    S('brand', { tf: `translateY(${lerp(330, 150, settle)}px) scale(${lerp(1, .5, settle)})`, o: vis });
     fade($('brandSub'), t, .35, .5, 1.0, .25);
   }
 
   /* carousel */
-  const carOn = t >= T.carIn - .05 && t < T.shrink + .8;
+  const carOn = t < T.shrink + .8;
   if (carOn) {
     const ex = E.inOutQuart(P(t, T.expand, T.expand + .72));
     CAR.forEach((_, i) => {
@@ -291,7 +302,7 @@ function render(t) {
     });
     const idx = carIdx(t), capOut = smooth(T.expand - .1, T.expand + .25, t);
     caps.forEach((c, i) => {
-      const d = i - idx, ad = Math.abs(d), rise = E.outCubic(P(t, T.carIn + .4, T.carIn + .9));
+      const d = i - idx, ad = Math.abs(d), rise = E.outCubic(P(t, T.carIn + .3, T.carIn + .8));
       S(c, { o: clamp(1 - ad * 2.2) * rise * (1 - capOut), filter: `blur(${Math.min(ad, 1) * 14 + (1 - rise) * 10}px)`, tf: `translate(${d * 120}px, ${(1 - rise) * 20}px)` });
     });
     const total = CAR.length * 12 + (CAR.length - 1) * 10 + 24;
@@ -335,30 +346,28 @@ function render(t) {
   show('google', t >= T.google && t < T.portrait + .5);
   if (gOn) {
     const toCard = E.inOutQuart(P(t, T.google, T.google + .75));
-    const cardG = { ...GC, sh: 1, z: 30, fx: .5, fy: .5, o: 1, sc: 1, px: 0, zoom: 1 };
-    const slide = (a, b, base) => {
-      const pin = a === null ? 1 : E.spring(P(t, a - .05, a + .7)), pout = b === null ? 0 : E.inOutQuart(P(t, b - .05, b + .45));
-      return { ...base, x: base.x + (1 - pin) * 780 - pout * 780, sc: lerp(.9, 1, pin) * lerp(1, .9, pout), px: -(1 - pin) * 80 + pout * 80,
-        vis: pout < 1 && (a === null || t > a - .06) };
+    const gIdx = E.spring(P(t, T.swap1 - .02, T.swap1 + .62)) + E.spring(P(t, T.swap2 - .02, T.swap2 + .62));
+    const cardAt = i => {
+      const d = i - gIdx, ad = Math.abs(d);
+      return { ...GC, x: GC.x + d * 740, sc: lerp(1, .88, clamp(ad)), px: -d * 90, sh: lerp(1, .45, clamp(ad)), z: 30 - Math.round(ad),
+        fx: .5, fy: .5, zoom: 1.0 + .03 * P(t, T.google, T.portrait), o: clamp(1.7 - ad) * (i === 0 ? 1 : smooth(11.55, 11.95, t)) };
     };
-    if (t < T.swap1 + .5) {
-      let g3 = lerpG(tileGeom(tileFp03, t), cardG, toCard);
-      g3.z = 30;
-      if (t >= T.google) g3 = slide(null, T.swap1, g3);
-      if (g3.vis !== false) setCard(CARDS.g11, g3);
+    if (t < T.swap2 + .7) {
+      const g3 = lerpG(tileGeom(tileFp03, t), cardAt(0), toCard);
+      g3.z = 30; if (g3.o > .001) setCard(CARDS.g11, g3);
     }
-    if (t >= T.swap1 - .1 && t < T.swap2 + .5) { const g = slide(T.swap1, T.swap2, cardG); if (g.vis) setCard(CARDS.fp01, g); }
-    if (t >= T.swap2 - .1 && t < T.portrait + .8) {
-      let g = slide(T.swap2, null, cardG);
+    if (t >= T.google + .3 && t < T.portrait + .2) { const g = cardAt(1); if (g.o > .001) setCard(CARDS.fp01, g); }
+    if (t >= T.google + .3 && t < T.portrait + .8) {
+      let g = cardAt(2);
       // portrait: the card's corners round off into a circle around his portrait
       const m = E.inOutQuart(P(t, T.portrait, T.portrait + .8));
       if (m > 0) {
-        const circ = { x: 540 - 410, y: 760 - 410, w: 820, h: 820, sc: 1, px: 0, fx: .56, fy: .64 };
+        const circ = { x: 540 - 410, y: 760 - 410, w: 820, h: 820, sc: 1, px: 0, fx: .56, fy: .64, o: 1 };
         g = lerpG(g, circ, m);
         g.r = `${lerp(44 / Math.min(GC.w, GC.h) * 100, 50, m)}%`;
         g.sh = lerp(1, .5, m);
       }
-      setCard(CARDS.fp02, g);
+      if (g.o > .001) setCard(CARDS.fp02, g);
       if (m > 0) setCard(CARDS.portrait, { ...g, z: 31, o: smooth(.25, .75, m), fx: .52, fy: .62, zoom: lerp(1.35, 1, m), sh: 0 });
     }
     if (t >= T.google) {
