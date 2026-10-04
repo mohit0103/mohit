@@ -376,28 +376,38 @@ export class WorkersSpeech implements Speech {
 	) {}
 
 	async transcribe(audio: Uint8Array, mime: string): Promise<string> {
+		// Record which service understood the voice note and how long each try took, so slow listening can be traced.
+		const tries: string[] = [];
+		const t0 = Date.now();
+		const note = (ok: boolean) => this.store.diag('listen', ok, tries.join(', '), utc(this.now())).catch(() => undefined);
 		if (this.groq) {
 			try {
 				const text = await this.groq.transcribe(audio, mime, WHISPER_HINT);
-				if (text) return text;
+				tries.push(`groq ${Date.now() - t0}ms${text ? '' : ' (empty)'}`);
+				if (text) return (await note(true), text);
 			} catch (e) {
-				console.warn('groq transcription failed', e);
+				tries.push(`groq failed ${Date.now() - t0}ms: ${String(e).slice(0, 80)}`);
 			}
 		}
+		const t1 = Date.now();
 		try {
 			const res: any = await (this.ai as any).run(WHISPER, { audio: toBase64(audio), language: 'en', vad_filter: true, initial_prompt: WHISPER_HINT });
 			const text = String(res?.text ?? '').trim();
-			if (text) return text;
+			tries.push(`cloudflare ${Date.now() - t1}ms${text ? '' : ' (empty)'}`);
+			if (text) return (await note(true), text);
 		} catch (e) {
-			console.warn('whisper failed', e);
+			tries.push(`cloudflare failed ${Date.now() - t1}ms: ${String(e).slice(0, 80)}`);
 		}
-		if (!this.llmFallback) return '';
+		if (!this.llmFallback) return (await note(false), '');
+		const t2 = Date.now();
 		const text = await this.llmFallback.generate({
 			system: 'You transcribe voice notes. Output only the exact words spoken, nothing else.',
 			turns: [{ role: 'user', text: 'Transcribe this voice note.' }],
 			audio: { mime, data: audio },
 			temperature: 0,
 		});
+		tries.push(`gemini ${Date.now() - t2}ms`);
+		await note(Boolean(text.trim()));
 		return text.trim();
 	}
 

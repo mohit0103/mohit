@@ -165,6 +165,11 @@ describe('self-check', () => {
 		expect(verifyReply('Last time you went to Toit with Rahul, right?', [], known)).toMatch(/"Toit", "Rahul"/);
 	});
 
+	it('flags assistant-style service offers', () => {
+		expect(verifyReply('Back to the grind tomorrow, Mohit. Let me know if you need anything before you head out.', [])).toMatch(/service offer/);
+		expect(verifyReply('Back to the grind tomorrow, Mohit. Hope the week treats you well!', [])).toBeNull();
+	});
+
 	it('flags promises to look something up later, since there is no later', () => {
 		for (const d of ['Wait, seriously? Let me check that for you.', 'Mumbai tomorrow! Let me check the weather for you.', "One sec, I'll look it up"]) expect(verifyReply(d, [])).toMatch(/promises to check/);
 		expect(verifyReply("It's Satya Nadella, dude.", [t('web_search', true, 'read')])).toBeNull();
