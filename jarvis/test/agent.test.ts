@@ -5,7 +5,7 @@ import { unsupportedNames, verifyReply } from '../src/agent/verify';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { countQueries, queriesUsed } from '../src/db';
-import { FallbackLlm, Gemini, GroqLlm, WorkersLlm, toJsonSchema } from '../src/services';
+import { CerebrasLlm, FallbackLlm, Gemini, GroqLlm, WorkersLlm, toJsonSchema } from '../src/services';
 import { Store } from '../src/store';
 import { LlmError, type AgentStepRequest, type AgentStepResult, type Llm } from '../src/types';
 import { emptyMemory, makeWorld, onChat, rows, textUpdate, toolResults } from './harness';
@@ -364,6 +364,15 @@ describe('brains with tools', () => {
 		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'hi from llama-3.3-70b-versatile' });
 		await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools });
 		expect(calls.at(-1)!.body.model).toBe('llama-3.3-70b-versatile'); // gpt-oss is resting for 30s
+	});
+
+	it('Cerebras speaks the same protocol at its own address, gpt-oss first', async () => {
+		const { f, calls } = fetchOf(() => Response.json({ choices: [{ message: { content: 'hey' } }] }));
+		const out = await new CerebrasLlm('ck', undefined, f).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools });
+		expect(out).toEqual({ text: 'hey', calls: [], by: 'cerebras:gpt-oss-120b' });
+		expect(calls[0].url).toBe('https://api.cerebras.ai/v1/chat/completions');
+		await new CerebrasLlm('ck', undefined, f).generate({ system: 's', turns: [{ role: 'user', text: 'q' }], search: true });
+		expect(calls[1].body.model).toBe('gpt-oss-120b'); // no search model of its own
 	});
 
 	it('Groq looks things up with its web-search model when asked to search', async () => {

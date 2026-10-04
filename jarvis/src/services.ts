@@ -748,31 +748,48 @@ export class FallbackLlm implements Llm {
 
 export const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
 
-export class GroqLlm implements Llm {
-	private models: string[];
-	/** Models that hit a rate limit, resting until the time Groq gave (per invocation). */
+export interface OpenAiCompatOptions {
+	/** Short name used in logs ("groq", "cerebras"). */
+	name: string;
+	/** Chat completions endpoint. */
+	url: string;
+	key: string;
+	/** Comma-separated override, else `defaults`. */
+	models?: string;
+	defaults: string[];
+	/** Model to try first for tool-using agent steps. */
+	agentFirst?: string;
+	/** A model that searches the web by itself, used for search requests. */
+	searchModel?: string;
+}
+
+/** Any OpenAI-compatible chat API (Groq, Cerebras): native tool calling, per-model rate-limit rests. */
+export class OpenAiCompatLlm implements Llm {
+	protected models: string[];
+	readonly name: string;
+	/** Models that hit a rate limit, resting until the time the provider gave (per invocation). */
 	private resting = new Map<string, number>();
 	constructor(
-		private key: string,
-		models?: string,
-		private fetcher: typeof fetch = (input, init) => fetch(input, init),
+		protected opts: OpenAiCompatOptions,
+		protected fetcher: typeof fetch = (input, init) => fetch(input, init),
 		private sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
 		private clock: () => number = Date.now,
 	) {
-		this.models = models
-			? models
+		this.name = opts.name;
+		this.models = opts.models
+			? opts.models
 					.split(',')
 					.map((m) => m.trim())
 					.filter(Boolean)
-			: GROQ_MODELS;
+			: opts.defaults;
 	}
 
 	async generate(req: LlmRequest): Promise<string> {
-		if (req.audio || req.images?.length) throw new LlmError('groq brain is text-only here', 'bad_response');
+		if (req.audio || req.images?.length) throw new LlmError(`${this.name} brain is text-only here`, 'bad_response');
 		const system = req.schema ? `${req.system}\n\nRespond with ONLY a JSON object matching this schema:\n${JSON.stringify(req.schema)}` : req.system;
 		const messages = [{ role: 'system', content: system }, ...req.turns.map((t) => ({ role: t.role === 'model' ? 'assistant' : 'user', content: t.text }))];
-		// Groq's compound model searches the web on its own, so lookups still work when Gemini is resting.
-		const models = req.search && !req.schema ? ['groq/compound-mini', ...this.models] : this.models;
+		// A model that searches the web on its own keeps lookups working when Gemini is resting.
+		const models = req.search && !req.schema && this.opts.searchModel ? [this.opts.searchModel, ...this.models] : this.models;
 		return this.chat(models, (model) => {
 			const body: Record<string, unknown> = { model, messages, temperature: req.temperature ?? 0.7, max_tokens: req.schema ? 1500 : 500 };
 			if (req.schema) body.response_format = { type: 'json_object' };
@@ -782,7 +799,7 @@ export class GroqLlm implements Llm {
 
 	/** Native OpenAI-style tool calling. The smartest tool-using model goes first. */
 	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
-		if (req.images?.length) throw new LlmError('groq brain is text-only here', 'bad_response');
+		if (req.images?.length) throw new LlmError(`${this.name} brain is text-only here`, 'bad_response');
 		const messages: any[] = [{ role: 'system', content: req.system }];
 		for (const m of req.messages) {
 			if (m.role === 'user') messages.push({ role: 'user', content: m.text });
@@ -795,7 +812,8 @@ export class GroqLlm implements Llm {
 			else for (const r of m.results) messages.push({ role: 'tool', tool_call_id: r.id, content: JSON.stringify(r.result).slice(0, 6000) });
 		}
 		const tools = req.tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: toJsonSchema(t.parameters) } }));
-		const models = ['openai/gpt-oss-120b', ...this.models.filter((m) => m !== 'openai/gpt-oss-120b')];
+		const first = this.opts.agentFirst;
+		const models = first ? [first, ...this.models.filter((m) => m !== first)] : this.models;
 		return this.chat(
 			models,
 			(model) => ({ model, messages, tools, tool_choice: req.toolChoice === 'none' ? 'none' : 'auto', temperature: req.temperature ?? 0.7, max_tokens: 700 }),
@@ -808,9 +826,9 @@ export class GroqLlm implements Llm {
 					} catch {
 						// a malformed call just runs with no arguments; the tool reports what's missing
 					}
-					return { id: String(c.id ?? `groq_${i}`), name: String(c.function?.name ?? ''), args };
+					return { id: String(c.id ?? `${this.name}_${i}`), name: String(c.function?.name ?? ''), args };
 				});
-				return text || calls.length ? { text, calls, by: 'groq' } : undefined;
+				return text || calls.length ? { text, calls, by: this.name } : undefined;
 			},
 		);
 	}
@@ -823,9 +841,9 @@ export class GroqLlm implements Llm {
 		for (const [i, model] of (awake.length ? awake : models).entries()) {
 			let res: Response;
 			try {
-				res = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
+				res = await this.fetcher(this.opts.url, {
 					method: 'POST',
-					headers: { 'content-type': 'application/json', authorization: `Bearer ${this.key}` },
+					headers: { 'content-type': 'application/json', authorization: `Bearer ${this.opts.key}` },
 					body: JSON.stringify(build(model)),
 				});
 			} catch (e) {
@@ -837,14 +855,14 @@ export class GroqLlm implements Llm {
 				const out = parse(data?.choices?.[0]?.message);
 				if (out !== undefined) {
 					// Say which model answered and which were skipped (rate limits), for the review timeline.
-					if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `groq:${model.split('/').pop()}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
+					if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `${this.name}:${model.split('/').pop()}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
 					return out;
 				}
-				lastMsg = `groq ${model}: empty answer`;
+				lastMsg = `${this.name} ${model}: empty answer`;
 				lastKind = 'bad_response';
 				continue;
 			}
-			lastMsg = `groq ${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 160)}`;
+			lastMsg = `${this.name} ${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 160)}`;
 			if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
 			lastKind = res.status === 429 ? 'quota' : 'unavailable';
 			skipped.push(`${model.split('/').pop()}:${res.status}`);
@@ -854,15 +872,15 @@ export class GroqLlm implements Llm {
 				if (i === 0 && wait <= 3 && !skipped.slice(0, -1).length) {
 					await this.sleep(wait * 1000);
 					try {
-						const again = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
+						const again = await this.fetcher(this.opts.url, {
 							method: 'POST',
-							headers: { 'content-type': 'application/json', authorization: `Bearer ${this.key}` },
+							headers: { 'content-type': 'application/json', authorization: `Bearer ${this.opts.key}` },
 							body: JSON.stringify(build(model)),
 						});
 						if (again.ok) {
 							const out = parse(((await again.json().catch(() => null)) as any)?.choices?.[0]?.message);
 							if (out !== undefined) {
-								if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `groq:${model.split('/').pop()}(waited ${wait}s)`;
+								if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `${this.name}:${model.split('/').pop()}(waited ${wait}s)`;
 								return out;
 							}
 						}
@@ -873,7 +891,28 @@ export class GroqLlm implements Llm {
 				this.resting.set(model, this.clock() + wait * 1000);
 			}
 		}
-		throw new LlmError(lastMsg || 'groq failed', lastKind);
+		throw new LlmError(lastMsg || `${this.name} failed`, lastKind);
+	}
+
+}
+
+export const CEREBRAS_MODELS = ['gpt-oss-120b', 'qwen-3.8-27b'];
+
+/** Cerebras: very fast, and its free tier allows about a million tokens a day per model. */
+export class CerebrasLlm extends OpenAiCompatLlm {
+	constructor(key: string, models?: string, fetcher?: typeof fetch, sleep?: (ms: number) => Promise<void>, clock?: () => number) {
+		super({ name: 'cerebras', url: 'https://api.cerebras.ai/v1/chat/completions', key, models, defaults: CEREBRAS_MODELS, agentFirst: 'gpt-oss-120b' }, fetcher, sleep, clock);
+	}
+}
+
+export class GroqLlm extends OpenAiCompatLlm {
+	constructor(key: string, models?: string, fetcher?: typeof fetch, sleep?: (ms: number) => Promise<void>, clock?: () => number) {
+		super(
+			{ name: 'groq', url: 'https://api.groq.com/openai/v1/chat/completions', key, models, defaults: GROQ_MODELS, agentFirst: 'openai/gpt-oss-120b', searchModel: 'groq/compound-mini' },
+			fetcher,
+			sleep,
+			clock,
+		);
 	}
 
 	/** Groq's hosted Whisper: fast, accurate speech-to-text. */
@@ -886,7 +925,7 @@ export class GroqLlm implements Llm {
 		form.set('response_format', 'json');
 		const res = await this.fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {
 			method: 'POST',
-			headers: { authorization: `Bearer ${this.key}` },
+			headers: { authorization: `Bearer ${this.opts.key}` },
 			body: form,
 		});
 		if (!res.ok) throw new Error(`groq transcription ${res.status}: ${(await res.text().catch(() => '')).slice(0, 120)}`);

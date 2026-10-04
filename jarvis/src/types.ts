@@ -17,6 +17,8 @@ export interface Env {
 	ELEVENLABS_API_KEY?: string;
 	GROQ_API_KEY?: string;
 	GROQ_MODELS?: string;
+	CEREBRAS_API_KEY?: string;
+	CEREBRAS_MODELS?: string;
 	ELEVENLABS_MONTHLY_CHARS?: string;
 	CITY?: string;
 	CITY_LAT?: string;

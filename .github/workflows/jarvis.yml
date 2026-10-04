@@ -5,6 +5,10 @@ on:
     branches: [main, claude/personal-ai-voice-assistant-wzofxu]
     paths: ['jarvis/**', '.github/workflows/jarvis.yml']
   workflow_dispatch:
+    inputs:
+      evals:
+        description: 'Live evals after deploy: quick (3 cases), all, or none'
+        default: quick
 
 concurrency:
   group: jarvis-${{ github.ref }}
@@ -45,6 +49,7 @@ jobs:
       GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
       ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -100,7 +105,7 @@ jobs:
         if: steps.check.outputs.ready == 'true'
         run: |
           node -e '
-            const keys = ["TELEGRAM_BOT_TOKEN","GEMINI_API_KEY","PAIR_CODE","GMAIL_ADDRESS","GMAIL_APP_PASSWORD","ELEVENLABS_API_KEY","GROQ_API_KEY"];
+            const keys = ["TELEGRAM_BOT_TOKEN","GEMINI_API_KEY","PAIR_CODE","GMAIL_ADDRESS","GMAIL_APP_PASSWORD","ELEVENLABS_API_KEY","GROQ_API_KEY","CEREBRAS_API_KEY"];
             const out = {};
             for (const k of keys) if (process.env[k]) out[k] = process.env[k];
             require("fs").writeFileSync("secrets.json", JSON.stringify(out));
@@ -135,4 +140,4 @@ jobs:
         continue-on-error: true
         run: |
           key=$(node -e "console.log(require('crypto').createHash('sha256').update('jarvis-webhook:'+process.env.TELEGRAM_BOT_TOKEN).digest('hex').slice(0,48))")
-          URL="${{ steps.deploy.outputs.url }}" KEY="$key" node scripts/evals.mjs
+          URL="${{ steps.deploy.outputs.url }}" KEY="$key" EVALS="${{ github.event.inputs.evals || 'quick' }}" node scripts/evals.mjs

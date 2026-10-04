@@ -1,5 +1,7 @@
 // Runs every live eval case against the deployed Jarvis, one message per request, and prints a report.
-// Usage: URL=https://jarvis.example.workers.dev KEY=<webhook secret> node scripts/evals.mjs [case ...]
+// Usage: URL=https://jarvis.example.workers.dev KEY=<webhook secret> [EVALS=quick|all|none] node scripts/evals.mjs [case ...]
+// Evals use the same free brain quota as his real chats, so after a deploy only a quick set runs, and none at all
+// while the main brain is resting (unless a case is named explicitly).
 const { URL: base, KEY: key } = process.env;
 const only = process.argv.slice(2);
 const get = async (path) => {
@@ -9,13 +11,20 @@ const get = async (path) => {
 	return body;
 };
 
-const { cases, ready } = await get('/eval');
+const QUICK = ['no_invented_favourites', 'reminder', 'recall_old'];
+const mode = process.env.EVALS ?? 'all';
+const { cases, ready, geminiResting, backups } = await get('/eval');
 if (!ready) {
 	console.log('::warning::EVAL_DB is not bound yet; skipping live evals');
 	process.exit(0);
 }
+if (!only.length && (mode === 'none' || (geminiResting && !backups?.cerebras))) {
+	console.log(mode === 'none' ? 'Live evals skipped (EVALS=none).' : "Live evals skipped: Gemini's free quota is resting, so it's saved for Mohit's chats.");
+	process.exit(0);
+}
+const chosen = cases.filter((c) => (only.length ? only.includes(c.name) : mode === 'all' || QUICK.includes(c.name)));
 let failed = 0;
-for (const c of cases.filter((c) => !only.length || only.includes(c.name))) {
+for (const c of chosen) {
 	let result;
 	try {
 		let step = 0;
@@ -40,5 +49,5 @@ for (const c of cases.filter((c) => !only.length || only.includes(c.name))) {
 		if (process.env.GITHUB_ACTIONS) console.log(`::warning::eval ${c.name}: ${ch.name}${ch.detail ? ` (${ch.detail.slice(0, 150)})` : ''}`);
 	}
 }
-console.log(`\n${cases.length - failed}/${cases.length} live evals passed`);
+console.log(`\n${chosen.length - failed}/${chosen.length} live evals passed`);
 process.exit(failed ? 1 : 0);
