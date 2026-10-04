@@ -1,5 +1,5 @@
 // Real implementations of the external services: Telegram, Gemini, Workers AI speech, weather and news.
-import type { Feeds, InlineButton, Llm, LlmRequest, Speech, Telegram, Weather } from './types';
+import type { AgentMsg, AgentStepRequest, AgentStepResult, Feeds, InlineButton, Llm, LlmRequest, Speech, Telegram, Weather } from './types';
 import { LlmError } from './types';
 import { Store } from './store';
 import { localDate, utc } from './time';
@@ -109,6 +109,8 @@ export class Gemini implements Llm {
 	}
 
 	private discovered = false;
+	/** Model health read once per invocation (each D1 read counts against the free plan's 50 queries). */
+	private healthCache: string | null | undefined;
 
 	async generate(req: LlmRequest): Promise<string> {
 		try {
@@ -140,18 +142,6 @@ export class Gemini implements Llm {
 	}
 
 	private async tryModels(req: LlmRequest): Promise<string> {
-		if (!this.key) throw new LlmError('GEMINI_API_KEY is not set', 'config');
-		const health = parseHealth(await this.memo?.get().catch(() => null));
-		const startHealth = JSON.stringify(health);
-		const now = this.clock();
-		const available = this.models.filter((m) => !(health[m]?.until > now));
-		// Every model is resting (quota or missing): fail fast instead of burning requests.
-		if (!available.length) throw new LlmError('all Gemini models are resting (free quota used up)', 'quota');
-		const order = req.tier === 'light' ? [...available.filter((m) => m.includes('lite')), ...available.filter((m) => !m.includes('lite'))] : available;
-		const benched = (model: string, minutes: number, why: string) => (health[model] = { until: now + minutes * 60_000, why });
-		const save = async () => {
-			if (JSON.stringify(health) !== startHealth) await this.memo?.set(JSON.stringify(health)).catch(() => undefined);
-		};
 		const contents = req.turns.map((t, i) => {
 			const parts: any[] = [{ text: t.text }];
 			if (i === req.turns.length - 1) {
@@ -169,11 +159,85 @@ export class Gemini implements Llm {
 			body.generationConfig.responseMimeType = 'application/json';
 			body.generationConfig.responseSchema = req.schema;
 		}
+		return this.run({ tier: req.tier, fast: req.fast, search: Boolean(req.search && !req.schema) }, body, (data) => {
+			const text = data?.candidates?.[0]?.content?.parts
+				?.filter((p: any) => !p.thought)
+				.map((p: any) => p.text ?? '')
+				.join('')
+				.trim();
+			return text || undefined;
+		});
+	}
+
+	/** One agent step with native function calling. Tool results go back as functionResponse parts. */
+	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
+		const contents: any[] = [];
+		const lastUser = req.messages.map((m) => m.role).lastIndexOf('user');
+		req.messages.forEach((m, i) => {
+			if (m.role === 'user') {
+				const parts: any[] = [{ text: m.text }];
+				if (i === lastUser) for (const img of req.images ?? []) parts.push({ inline_data: { mime_type: img.mime, data: toBase64(img.data) } });
+				contents.push({ role: 'user', parts });
+			} else if (m.role === 'model') {
+				if (m.by === 'gemini' && m.raw) contents.push(m.raw);
+				else {
+					// Steps answered by another brain carry no thought signature; Gemini accepts this documented placeholder.
+					const parts: any[] = m.text ? [{ text: m.text }] : [];
+					m.calls.forEach((c, j) => parts.push({ functionCall: { name: c.name, args: c.args }, ...(j === 0 ? { thoughtSignature: 'skip_thought_signature_validator' } : {}) }));
+					if (parts.length) contents.push({ role: 'model', parts });
+				}
+			} else {
+				contents.push({ role: 'user', parts: m.results.map((r) => ({ functionResponse: { name: r.name, response: { result: r.result } } })) });
+			}
+		});
+		const body: any = {
+			system_instruction: { parts: [{ text: req.system }] },
+			contents,
+			tools: [{ functionDeclarations: req.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }],
+			toolConfig: { functionCallingConfig: { mode: req.toolChoice === 'none' ? 'NONE' : 'AUTO' } },
+			generationConfig: { temperature: req.temperature ?? 0.7 },
+		};
+		return this.run({ fast: req.fast, agent: true }, body, (data) => {
+			const content = data?.candidates?.[0]?.content;
+			const parts: any[] = content?.parts ?? [];
+			const text = parts
+				.filter((p) => !p.thought && typeof p.text === 'string')
+				.map((p) => p.text)
+				.join('')
+				.trim();
+			const calls = parts
+				.filter((p) => p.functionCall?.name)
+				.map((p, i) => ({ id: String(p.functionCall.id ?? `call_${contents.length}_${i}`), name: String(p.functionCall.name), args: (p.functionCall.args ?? {}) as Record<string, unknown> }));
+			if (!text && !calls.length) return undefined;
+			return { text, calls, raw: { role: 'model', parts }, by: 'gemini' };
+		});
+	}
+
+	/**
+	 * The shared model loop: skips resting models, tries each in order, benches models that hit their quota or don't
+	 * exist, and drops the thinking or search setting when a model rejects it.
+	 */
+	private async run<T>(opts: { tier?: 'best' | 'light'; fast?: boolean; search?: boolean; agent?: boolean }, body: any, parse: (data: any) => T | undefined): Promise<T> {
+		if (!this.key) throw new LlmError('GEMINI_API_KEY is not set', 'config');
+		if (this.healthCache === undefined) this.healthCache = (await this.memo?.get().catch(() => null)) ?? null;
+		const health = parseHealth(this.healthCache);
+		const startHealth = JSON.stringify(health);
+		const now = this.clock();
+		const available = this.models.filter((m) => !(health[m]?.until > now));
+		// Every model is resting (quota or missing): fail fast instead of burning requests.
+		if (!available.length) throw new LlmError('all Gemini models are resting (free quota used up)', 'quota');
+		const order = opts.tier === 'light' ? [...available.filter((m) => m.includes('lite')), ...available.filter((m) => !m.includes('lite'))] : available;
+		const benched = (model: string, minutes: number, why: string) => (health[model] = { until: now + minutes * 60_000, why });
+		const save = async () => {
+			if (JSON.stringify(health) === startHealth) return;
+			this.healthCache = JSON.stringify(health);
+			await this.memo?.set(this.healthCache).catch(() => undefined);
+		};
 		let lastKind: LlmError['kind'] = 'unavailable';
 		let lastMsg = '';
 		for (const model of order) {
-			let thinking = req.fast ? thinkingFor(model) : undefined;
-			let search = Boolean(req.search && !req.schema);
+			let thinking = opts.fast || opts.agent ? thinkingFor(model) : undefined;
+			let search = Boolean(opts.search);
 			for (let attempt = 0; attempt < 2; attempt++) {
 				let res: Response;
 				const payload: any = thinking ? { ...body, generationConfig: { ...body.generationConfig, thinkingConfig: thinking } } : { ...body };
@@ -191,14 +255,11 @@ export class Gemini implements Llm {
 				}
 				if (res.ok) {
 					const data: any = await res.json().catch(() => null);
-					const text = data?.candidates?.[0]?.content?.parts
-						?.map((p: any) => p.text ?? '')
-						.join('')
-						.trim();
-					if (text) {
+					const out = parse(data);
+					if (out !== undefined) {
 						delete health[model];
 						await save();
-						return text;
+						return out;
 					}
 					lastKind = 'bad_response';
 					lastMsg = `empty answer from ${model} (${data?.candidates?.[0]?.finishReason ?? data?.promptFeedback?.blockReason ?? 'unknown'})`;
@@ -248,9 +309,9 @@ export function parseHealth(raw: string | null | undefined): Record<string, { un
 	}
 }
 
-/** Minimal thinking for quick replies: Gemini 2.x takes a token budget, Gemini 3+ a level. */
+/** Light thinking for quick replies: Gemini 2.x takes a token budget, Gemini 3+ a level (low, medium or high). */
 export function thinkingFor(model: string): Record<string, unknown> {
-	return /gemini-2\./.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'minimal' };
+	return /gemini-2\./.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'low' };
 }
 
 /** Keeps general-purpose Flash models (no TTS, image, live, embedding or preview variants), newest version first. */
@@ -492,6 +553,33 @@ export class PublicFeeds implements Feeds {
 		}
 	}
 
+	async weatherFor(place: string, date?: string): Promise<string | null> {
+		try {
+			const geo: any = await (await this.fetcher(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(place.split(',')[0].trim())}&count=1&language=en`)).json();
+			const loc = geo?.results?.[0];
+			if (!loc) return null;
+			const res = await this.fetcher(
+				`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m&timezone=auto&forecast_days=16`,
+			);
+			if (!res.ok) return null;
+			const d: any = await res.json();
+			const days: string[] = d.daily?.time ?? [];
+			const i = date ? days.indexOf(date) : 0;
+			if (i < 0) return `${loc.name}: no forecast for ${date} yet (forecasts go about 2 weeks ahead).`;
+			const rain = d.daily?.precipitation_probability_max?.[i];
+			const parts = [
+				`${loc.name}${loc.admin1 ? `, ${loc.admin1}` : ''}${loc.country ? `, ${loc.country}` : ''} on ${days[i]}`,
+				WEATHER_CODES[d.daily?.weather_code?.[i]] ?? 'mixed weather',
+				`${Math.round(d.daily?.temperature_2m_min?.[i])}–${Math.round(d.daily?.temperature_2m_max?.[i])}°C`,
+				i === 0 && d.current ? `now ${Math.round(d.current.temperature_2m)}°C` : '',
+				rain != null ? `${rain}% chance of rain` : '',
+			].filter(Boolean);
+			return parts.join(', ');
+		} catch {
+			return null;
+		}
+	}
+
 	async news(): Promise<string[]> {
 		const feeds = [
 			'https://news.google.com/rss/search?q=artificial+intelligence+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
@@ -546,15 +634,59 @@ export class WorkersLlm implements Llm {
 	constructor(private ai: Ai) {}
 
 	async generate(req: LlmRequest): Promise<string> {
-		const system = req.schema
-			? `${req.system}\n\nRespond with ONLY a JSON object matching this schema (no prose, no code fences):\n${JSON.stringify(req.schema)}`
-			: req.system;
+		const base = req.search ? `${req.system}\n\n(You can't browse the web right now. If this needs current information, say you couldn't look it up instead of guessing.)` : req.system;
+		const system = req.schema ? `${base}\n\nRespond with ONLY a JSON object matching this schema (no prose, no code fences):\n${JSON.stringify(req.schema)}` : base;
 		const messages = [{ role: 'system', content: system }, ...req.turns.map((t) => ({ role: t.role === 'model' ? 'assistant' : 'user', content: t.text }))];
 		const res: any = await (this.ai as any).run(BACKUP_MODEL, { messages, max_tokens: req.schema ? 1200 : 400, temperature: req.temperature ?? 0.7 });
 		const text = typeof res?.response === 'string' ? res.response : JSON.stringify(res?.response ?? '');
 		if (!text.trim()) throw new LlmError('backup model returned nothing', 'bad_response');
 		return text.trim();
 	}
+
+	/** No native tool calling here: the model asks for a tool with a one-line JSON object instead. */
+	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
+		if (req.images?.length) throw new LlmError('backup brain cannot see photos', 'bad_response');
+		const toolHelp =
+			req.toolChoice === 'none'
+				? 'Answer him now in plain words.'
+				: `TOOLS you can use:\n${req.tools.map((t) => `- ${t.name}: ${t.description} Args: ${JSON.stringify(toJsonSchema(t.parameters))}`).join('\n')}\n\nTo use a tool, reply with ONLY one JSON object like {"tool": "name", "args": {...}} and nothing else. Otherwise reply to him in plain words.`;
+		const turns = flattenAgent(req.messages);
+		const text = await this.generate({ system: `${req.system}\n\n${toolHelp}`, turns, temperature: req.temperature });
+		const parsed = req.toolChoice === 'none' ? undefined : (parseJsonLoose(text) as { tool?: unknown; args?: unknown } | undefined);
+		if (parsed && typeof parsed.tool === 'string' && req.tools.some((t) => t.name === parsed.tool)) {
+			const args = parsed.args && typeof parsed.args === 'object' ? (parsed.args as Record<string, unknown>) : {};
+			return { text: '', calls: [{ id: `cf_${req.messages.length}`, name: parsed.tool, args }], by: 'cloudflare' };
+		}
+		return { text, calls: [], by: 'cloudflare' };
+	}
+}
+
+/** Agent history as plain alternating turns, for brains without native tool calling. */
+export function flattenAgent(messages: AgentMsg[]): { role: 'user' | 'model'; text: string }[] {
+	const turns: { role: 'user' | 'model'; text: string }[] = [];
+	const push = (role: 'user' | 'model', text: string) => {
+		if (!text) return;
+		const last = turns[turns.length - 1];
+		if (last && last.role === role) last.text += `\n${text}`;
+		else turns.push({ role, text });
+	};
+	for (const m of messages) {
+		if (m.role === 'user') push('user', m.text);
+		else if (m.role === 'model') push('model', [m.text, ...m.calls.map((c) => JSON.stringify({ tool: c.name, args: c.args }))].filter(Boolean).join('\n'));
+		else push('user', m.results.map((r) => `[tool ${r.name} result] ${JSON.stringify(r.result).slice(0, 3000)}`).join('\n'));
+	}
+	while (turns.length && turns[0].role === 'model') turns.shift();
+	if (!turns.length || turns[turns.length - 1].role !== 'user') turns.push({ role: 'user', text: '(continue)' });
+	return turns;
+}
+
+/** Gemini's schema subset (type: "OBJECT") to standard JSON Schema (type: "object"). */
+export function toJsonSchema(schema: unknown): unknown {
+	if (Array.isArray(schema)) return schema.map(toJsonSchema);
+	if (!schema || typeof schema !== 'object') return schema;
+	const out: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(schema)) out[k] = k === 'type' && typeof v === 'string' ? v.toLowerCase() : toJsonSchema(v);
+	return out;
 }
 
 /**
@@ -587,6 +719,24 @@ export class FallbackLlm implements Llm {
 		}
 		throw lastError instanceof Error ? lastError : new LlmError(String(lastError), 'unavailable');
 	}
+
+	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
+		const usable = this.chain.filter((b) => b.media || !req.images?.length);
+		let lastError: unknown;
+		for (let i = 0; i < usable.length; i++) {
+			const { llm, name } = usable[i];
+			try {
+				const out = llm.agentStep
+					? await llm.agentStep(req)
+					: { text: await llm.generate({ system: req.system, turns: flattenAgent(req.messages), temperature: req.temperature, fast: req.fast }), calls: [], by: name };
+				if (i > 0) await this.onBackup?.(`agent step by ${name} (${String(lastError).slice(0, 100)})`).catch(() => undefined);
+				return { ...out, by: out.by ?? name };
+			} catch (e) {
+				lastError = e;
+			}
+		}
+		throw lastError instanceof Error ? lastError : new LlmError(String(lastError), 'unavailable');
+	}
 }
 
 // ---------- Groq (OpenAI-compatible, very fast, generous free tier) ----------
@@ -612,17 +762,60 @@ export class GroqLlm implements Llm {
 		if (req.audio || req.images?.length) throw new LlmError('groq brain is text-only here', 'bad_response');
 		const system = req.schema ? `${req.system}\n\nRespond with ONLY a JSON object matching this schema:\n${JSON.stringify(req.schema)}` : req.system;
 		const messages = [{ role: 'system', content: system }, ...req.turns.map((t) => ({ role: t.role === 'model' ? 'assistant' : 'user', content: t.text }))];
-		let lastMsg = '';
-		let lastKind: LlmError['kind'] = 'unavailable';
-		for (const model of this.models) {
+		// Groq's compound model searches the web on its own, so lookups still work when Gemini is resting.
+		const models = req.search && !req.schema ? ['groq/compound-mini', ...this.models] : this.models;
+		return this.chat(models, (model) => {
 			const body: Record<string, unknown> = { model, messages, temperature: req.temperature ?? 0.7, max_tokens: req.schema ? 1500 : 500 };
 			if (req.schema) body.response_format = { type: 'json_object' };
+			return body;
+		}, (msg) => String(msg?.content ?? '').trim() || undefined);
+	}
+
+	/** Native OpenAI-style tool calling. The smartest tool-using model goes first. */
+	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
+		if (req.images?.length) throw new LlmError('groq brain is text-only here', 'bad_response');
+		const messages: any[] = [{ role: 'system', content: req.system }];
+		for (const m of req.messages) {
+			if (m.role === 'user') messages.push({ role: 'user', content: m.text });
+			else if (m.role === 'model')
+				messages.push({
+					role: 'assistant',
+					content: m.text || null,
+					...(m.calls.length ? { tool_calls: m.calls.map((c) => ({ id: c.id, type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } })) } : {}),
+				});
+			else for (const r of m.results) messages.push({ role: 'tool', tool_call_id: r.id, content: JSON.stringify(r.result).slice(0, 6000) });
+		}
+		const tools = req.tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: toJsonSchema(t.parameters) } }));
+		const models = ['openai/gpt-oss-120b', ...this.models.filter((m) => m !== 'openai/gpt-oss-120b')];
+		return this.chat(
+			models,
+			(model) => ({ model, messages, tools, tool_choice: req.toolChoice === 'none' ? 'none' : 'auto', temperature: req.temperature ?? 0.7, max_tokens: 700 }),
+			(msg) => {
+				const text = String(msg?.content ?? '').trim();
+				const calls = (msg?.tool_calls ?? []).map((c: any, i: number) => {
+					let args: Record<string, unknown> = {};
+					try {
+						args = JSON.parse(c.function?.arguments || '{}');
+					} catch {
+						// a malformed call just runs with no arguments; the tool reports what's missing
+					}
+					return { id: String(c.id ?? `groq_${i}`), name: String(c.function?.name ?? ''), args };
+				});
+				return text || calls.length ? { text, calls, by: 'groq' } : undefined;
+			},
+		);
+	}
+
+	private async chat<T>(models: string[], build: (model: string) => Record<string, unknown>, parse: (msg: any) => T | undefined): Promise<T> {
+		let lastMsg = '';
+		let lastKind: LlmError['kind'] = 'unavailable';
+		for (const model of models) {
 			let res: Response;
 			try {
 				res = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
 					method: 'POST',
 					headers: { 'content-type': 'application/json', authorization: `Bearer ${this.key}` },
-					body: JSON.stringify(body),
+					body: JSON.stringify(build(model)),
 				});
 			} catch (e) {
 				lastMsg = String(e);
@@ -630,8 +823,8 @@ export class GroqLlm implements Llm {
 			}
 			if (res.ok) {
 				const data: any = await res.json().catch(() => null);
-				const text = String(data?.choices?.[0]?.message?.content ?? '').trim();
-				if (text) return text;
+				const out = parse(data?.choices?.[0]?.message);
+				if (out !== undefined) return out;
 				lastMsg = `groq ${model}: empty answer`;
 				lastKind = 'bad_response';
 				continue;

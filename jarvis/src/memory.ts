@@ -42,6 +42,27 @@ export const memorySchema: Schema = obj({
 	diary_note: str,
 });
 
+/** Background memory only notes things down; actions (reminders, plans, goals) are taken by the agent's tools. */
+const PASSIVE_KEYS = ['facts_add', 'facts_remove', 'people', 'plans_update', 'goals_checkin', 'admin_done', 'mood_label', 'mood_score', 'diary_note'] as const;
+
+export const passiveMemorySchema: Schema = obj(Object.fromEntries(PASSIVE_KEYS.map((k) => [k, (memorySchema.properties as Record<string, Schema>)[k]])));
+
+export function passiveOnly(ops: Partial<MemoryOps> | undefined): Partial<MemoryOps> {
+	const out: Record<string, unknown> = {};
+	for (const k of PASSIVE_KEYS) if (ops && k in ops) out[k] = (ops as Record<string, unknown>)[k];
+	return out as Partial<MemoryOps>;
+}
+
+export const PASSIVE_MEMORY_RULES = `MEMORY RULES (use empty arrays/strings and mood_score 0 when nothing applies). Jarvis already handled reminders, new plans and goals during the chat, so only note things down:
+- facts_add: lasting facts about him worth remembering (likes, dislikes, job, routines, health, money, places, things he did). Short third-person sentences, e.g. "Prefers window seats". Only things HE said or confirmed, never Jarvis's suggestions. Not things already in FACTS. Not plans.
+- facts_remove: ids of facts that are now wrong or that he asked you to forget.
+- people: anyone he mentions by name, with relation and a short note of what you learned. birthday as MM-DD if known, else "".
+- plans_update: when he says how a plan in PLANS went (status done + outcome) or that it was cancelled. Use "" for new_starts_at.
+- goals_checkin: he did a tracked habit today (id from GOALS).
+- admin_done: ids from LIFE ADMIN that he says are paid, received or sorted.
+- mood_label/mood_score: his mood if he expresses one (score 1 = awful ... 5 = great), else "" and 0.
+- diary_note: one short line about anything notable that happened to him today, else "".`;
+
 export const MEMORY_RULES = `MEMORY RULES (fill the "memory" object; use empty arrays/strings and mood_score 0 when nothing applies):
 - facts_add: lasting facts about him worth remembering (likes, dislikes, job, routines, health, money, places, things he did). Short third-person sentences, e.g. "Prefers window seats". Not things already in FACTS. Not plans (those go in plans_add).
 - facts_remove: ids of facts that are now wrong or that he asked you to forget.

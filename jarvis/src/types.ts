@@ -2,6 +2,8 @@
 
 export interface Env {
 	DB: D1Database;
+	/** Scratch database for live evals (never his real memory). */
+	EVAL_DB?: D1Database;
 	AI: Ai;
 	TELEGRAM_BOT_TOKEN: string;
 	GEMINI_API_KEY: string;
@@ -58,6 +60,46 @@ export interface LlmRequest {
 export interface Llm {
 	/** Returns the raw text answer (JSON text when a schema is given). Throws LlmError when every model fails. */
 	generate(req: LlmRequest): Promise<string>;
+	/** One step of a tool-using agent: the model either answers or asks to run tools. Optional for simple brains. */
+	agentStep?(req: AgentStepRequest): Promise<AgentStepResult>;
+}
+
+/** A tool the agent can call. Parameters use Gemini's OpenAPI subset (type names in capitals). */
+export interface ToolSpec {
+	name: string;
+	description: string;
+	parameters: Schema;
+}
+
+export interface ToolCall {
+	id: string;
+	name: string;
+	args: Record<string, unknown>;
+}
+
+export type AgentMsg =
+	| { role: 'user'; text: string }
+	/** `raw` is the provider's own message (Gemini needs its thought signatures echoed back); `by` says which provider. */
+	| { role: 'model'; text: string; calls: ToolCall[]; raw?: unknown; by?: string }
+	| { role: 'tool'; results: { id: string; name: string; result: unknown }[] };
+
+export interface AgentStepRequest {
+	system: string;
+	messages: AgentMsg[];
+	tools: ToolSpec[];
+	/** 'none' forces a plain answer (used on the last step). */
+	toolChoice?: 'auto' | 'none';
+	temperature?: number;
+	fast?: boolean;
+	/** Images attached to his latest message. */
+	images?: { mime: string; data: Uint8Array }[];
+}
+
+export interface AgentStepResult {
+	text: string;
+	calls: ToolCall[];
+	raw?: unknown;
+	by?: string;
 }
 
 export class LlmError extends Error {
@@ -81,6 +123,8 @@ export interface Weather {
 
 export interface Feeds {
 	weather(): Promise<Weather | null>;
+	/** Forecast for any place (geocoded), for a local date (YYYY-MM-DD) or today. */
+	weatherFor?(place: string, date?: string): Promise<string | null>;
 	news(): Promise<string[]>;
 }
 

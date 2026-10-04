@@ -10,13 +10,13 @@ PORT=${PORT:-8799}
 trap 'kill $DEV_PID 2>/dev/null || true; rm -rf "$WORK"' EXIT
 
 grep -v -E '^\[ai\]|^binding = "AI"' wrangler.toml |
-	sed -e "s#main = \"src/index.ts\"#main = \"$ROOT/src/index.ts\"#" -e "s#migrations_dir = \"migrations\"#migrations_dir = \"$ROOT/migrations\"#" \
-		-e 's/database_id = ".*"/database_id = "00000000-0000-0000-0000-000000000000"/' >"$WORK/wrangler.toml"
+	sed -e "s#main = \"src/index.ts\"#main = \"$ROOT/src/index.ts\"#" -e "s#migrations_dir = \"migrations\"#migrations_dir = \"$ROOT/migrations\"#" >"$WORK/wrangler.toml"
 printf 'TELEGRAM_BOT_TOKEN=SMOKE\nGEMINI_API_KEY=fake\nPAIR_CODE=smoke-code\n' >"$WORK/.dev.vars"
 WRANGLER="$ROOT/node_modules/.bin/wrangler"
 
 cd "$WORK"
 CI=1 "$WRANGLER" d1 migrations apply jarvis --local >/dev/null
+CI=1 "$WRANGLER" d1 migrations apply jarvis_eval --local >/dev/null
 CI=1 "$WRANGLER" dev --port "$PORT" --test-scheduled >"$WORK/dev.log" 2>&1 &
 DEV_PID=$!
 
@@ -46,6 +46,11 @@ sleep 4
 
 paired=$(CI=1 "$WRANGLER" d1 execute jarvis --local --json --command "SELECT v FROM kv WHERE k = 'owner_chat_id'" 2>/dev/null | grep -c '"1001"' || true)
 [ "$paired" -ge 1 ] || fail "pairing did not store the owner"
+# Live eval path: lists cases, and one step runs end to end on the scratch database (the fake key makes the brain fail).
+curl -sf --noproxy '*' -H "x-jarvis-key: $SECRET" "http://127.0.0.1:$PORT/eval" | grep -q '"ready":true' || fail "eval case list"
+curl -sf --noproxy '*' -H "x-jarvis-key: $SECRET" "http://127.0.0.1:$PORT/eval?case=reminder&step=0" | grep -q '"result"' || fail "eval step"
+evalpaired=$(CI=1 "$WRANGLER" d1 execute jarvis --local --json --command "SELECT count(*) AS c FROM messages WHERE text LIKE '%call mom%'" 2>/dev/null | grep -c '"c": 0' || true)
+[ "$evalpaired" -ge 1 ] || fail "eval leaked into the real database"
 grep -q 'Illegal invocation' "$WORK/dev.log" && fail "runtime binding error"
 grep -q 'tick not paired' "$WORK/dev.log" && fail "tick ran without seeing the pairing"
-echo "SMOKE OK: health, webhook auth, pairing, cron tick all work in workerd"
+echo "SMOKE OK: health, webhook auth, pairing, cron tick and live evals all work in workerd"

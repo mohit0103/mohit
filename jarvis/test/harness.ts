@@ -2,12 +2,15 @@
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { Deps, Feeds, InlineButton, Llm, LlmRequest, MailMessage, MailSource, Speech, Telegram } from '../src/types';
+import type { AgentStepRequest, AgentStepResult, Deps, Feeds, InlineButton, Llm, LlmRequest, MailMessage, MailSource, Speech, Telegram } from '../src/types';
 import { LlmError } from '../src/types';
 
 const MIGRATION = ['0001_init.sql', '0002_message_meta.sql'].map((f) => readFileSync(fileURLToPath(String(new URL(`../migrations/${f}`, import.meta.url))), 'utf8')).join('\n');
 
 const norm = (v: unknown) => (v === undefined ? null : typeof v === 'boolean' ? (v ? 1 : 0) : v);
+
+/** Statements executed, to stay inside the free plan's 50 D1 queries per invocation. */
+export const queryCount = { n: 0 };
 
 class Stmt {
 	constructor(
@@ -19,15 +22,18 @@ class Stmt {
 		return new Stmt(this.db, this.sql, args.map(norm));
 	}
 	async first<T>(col?: string): Promise<T | null> {
+		queryCount.n++;
 		const row = this.db.prepare(this.sql).get(...(this.args as any[])) as any;
 		if (!row) return null;
 		return (col ? row[col] : { ...row }) as T;
 	}
 	async all<T>() {
+		queryCount.n++;
 		const rows = this.db.prepare(this.sql).all(...(this.args as any[])) as any[];
 		return { results: rows.map((r) => ({ ...r })) as T[], success: true, meta: {} };
 	}
 	async run() {
+		queryCount.n++;
 		const r = this.db.prepare(this.sql).run(...(this.args as any[]));
 		return { success: true, results: [], meta: { changes: Number(r.changes), last_row_id: Number(r.lastInsertRowid) } };
 	}
@@ -92,12 +98,45 @@ export class FakeTelegram implements Telegram {
 }
 
 type Handler = (req: LlmRequest) => unknown;
+type AgentHandler = (req: AgentStepRequest, flat: LlmRequest) => AgentStepResult | string;
+
+/** An agent request seen as a plain one: his and Jarvis's words only (tool traffic left out). */
+export function flatAgent(req: AgentStepRequest): LlmRequest {
+	const turns: { role: 'user' | 'model'; text: string }[] = [];
+	for (const m of req.messages) if (m.role !== 'tool' && m.text) turns.push({ role: m.role, text: m.text });
+	return { system: req.system, turns, images: req.images, fast: req.fast };
+}
 
 /** An LLM whose answers come from a list of handlers matched against the prompt. */
 export class ScriptedLlm implements Llm {
 	calls: LlmRequest[] = [];
 	private handlers: { match: (r: LlmRequest) => boolean; fn: Handler }[] = [];
 	failWith: LlmError | null = null;
+	agentCalls: AgentStepRequest[] = [];
+	private agentHandlers: { match: (r: LlmRequest) => boolean; fn: AgentHandler }[] = [];
+
+	onAgent(match: (r: LlmRequest) => boolean, fn: AgentHandler) {
+		this.agentHandlers.unshift({ match, fn });
+		return this;
+	}
+
+	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
+		const flat = flatAgent(req);
+		this.calls.push(flat);
+		this.agentCalls.push(structuredClone({ ...req, images: undefined }));
+		if (this.failWith) throw this.failWith;
+		for (const h of this.agentHandlers)
+			if (h.match(flat)) {
+				const v = h.fn(req, flat);
+				return typeof v === 'string' ? { text: v, calls: [] } : v;
+			}
+		for (const h of this.handlers)
+			if (h.match(flat)) {
+				const v = h.fn(flat);
+				return { text: typeof v === 'string' ? v : JSON.stringify(v), calls: [] };
+			}
+		throw new LlmError('no scripted answer for prompt', 'bad_response');
+	}
 
 	on(match: string | RegExp | ((r: LlmRequest) => boolean), fn: Handler) {
 		const m =
@@ -144,6 +183,9 @@ export class FakeSpeech implements Speech {
 export class FakeFeeds implements Feeds {
 	async weather() {
 		return { summary: 'light rain, 20–27°C, now 23°C, 70% chance of rain' };
+	}
+	async weatherFor(place: string, date?: string) {
+		return /nowhere/i.test(place) ? null : `${place} on ${date ?? 'today'}: thunderstorms, 25–31°C, 90% chance of rain`;
 	}
 	async news() {
 		return ['OpenAI ships new model', 'Indian AI startup raises funding', 'New chip doubles AI speed'];
@@ -240,14 +282,32 @@ export function rows(w: World, sql: string, ...args: any[]): any[] {
 	return w.db.raw.prepare(sql).all(...args) as any[];
 }
 
-/** Scripts both chat calls from one function: the quick reply and the follow-up memory extraction. */
-export function onChat(w: World, fn: (req: LlmRequest) => { reply: string; memory?: Record<string, unknown> } | string) {
-	w.llm.on((r) => r.system.includes('Reply with just your message'), (r) => {
-		const out = fn(r);
-		return typeof out === 'string' ? out : out.reply;
+type ChatOut = { reply: string; memory?: Record<string, unknown>; calls?: { name: string; args: Record<string, unknown> }[] } | string;
+
+/** Action-type memory ops become the agent's tool calls, the way a real model would act on them. */
+function actionCalls(out: Exclude<ChatOut, string>) {
+	const m = (out.memory ?? {}) as Record<string, any[]>;
+	const calls: { name: string; args: Record<string, unknown> }[] = [...(out.calls ?? [])];
+	for (const p of m.plans_add ?? []) calls.push({ name: 'add_plan', args: { title: p.title, starts_at: p.starts_at, all_day: p.all_day, followup_question: p.followup_question } });
+	for (const u of m.plans_update ?? []) calls.push({ name: 'update_plan', args: { plan_id: u.id, status: u.status, outcome: u.outcome, new_starts_at: u.new_starts_at } });
+	for (const r of m.reminders_add ?? []) calls.push({ name: 'set_reminder', args: { text: r.text, due_at: r.due_at } });
+	for (const id of m.reminders_cancel ?? []) calls.push({ name: 'cancel_reminder', args: { reminder_id: id } });
+	for (const g of m.goals_add ?? []) calls.push({ name: 'track_goal', args: { title: g.title, cadence: g.cadence } });
+	return calls.map((c, i) => ({ id: `t${i}`, ...c }));
+}
+
+/**
+ * Scripts a chat from one function: the agent (tool calls first, then the reply once tool results are in) and the
+ * background memory pass that follows (which only sees what he said in the batch being processed).
+ */
+export function onChat(w: World, fn: (req: LlmRequest) => ChatOut) {
+	w.llm.onAgent((r) => r.system.includes('Reply with just your message'), (req, flat) => {
+		const out = fn(flat);
+		if (typeof out === 'string') return out;
+		const calls = req.messages.some((m) => m.role === 'tool') ? [] : actionCalls(out);
+		return calls.length ? { text: '', calls } : out.reply;
 	});
 	w.llm.on((r) => r.system.includes('You maintain the long-term memory'), (r) => {
-		// Show the script only what he said in the batch being processed.
 		const block = /New messages to process[^\n]*\n([\s\S]*?)\n\nReturn the memory updates/.exec(r.turns.at(-1)!.text)?.[1] ?? '';
 		const latest = block
 			.split('\n')
@@ -257,4 +317,11 @@ export function onChat(w: World, fn: (req: LlmRequest) => { reply: string; memor
 		const out = fn({ ...r, turns: [{ role: 'user', text: latest }] });
 		return typeof out === 'string' ? emptyMemory : { ...emptyMemory, ...(out.memory ?? {}) };
 	});
+}
+
+/** Tool results the agent saw during the run, by tool name. */
+export function toolResults(w: World, name: string): unknown[] {
+	const out: unknown[] = [];
+	for (const c of w.llm.agentCalls) for (const m of c.messages) if (m.role === 'tool') for (const r of m.results) if (r.name === name) out.push(r.result);
+	return [...new Set(out.map((o) => JSON.stringify(o)))].map((o) => JSON.parse(o));
 }

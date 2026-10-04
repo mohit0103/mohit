@@ -68,16 +68,21 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create the database if needed
+      - name: Create the databases if needed
         if: steps.check.outputs.ready == 'true'
         run: |
-          id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));const d=l.find(x=>x.name==='jarvis');console.log(d?d.uuid:'')")
-          if [ -z "$id" ]; then
-            npx wrangler d1 create jarvis
-            id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));console.log(l.find(x=>x.name==='jarvis').uuid)")
-          fi
-          sed -i "s/database_id = \".*\"/database_id = \"$id\"/" wrangler.toml
-          npx wrangler d1 migrations apply jarvis --remote
+          ensure() {
+            local name=$1 placeholder=$2 id
+            id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));const d=l.find(x=>x.name==='$name');console.log(d?d.uuid:'')")
+            if [ -z "$id" ]; then
+              npx wrangler d1 create "$name" > /dev/null
+              id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));console.log(l.find(x=>x.name==='$name').uuid)")
+            fi
+            sed -i "s/database_id = \"$placeholder\"/database_id = \"$id\"/" wrangler.toml
+            npx wrangler d1 migrations apply "$name" --remote
+          }
+          ensure jarvis 00000000-0000-0000-0000-000000000000
+          ensure jarvis_eval 11111111-1111-1111-1111-111111111111
 
       - name: Deploy the Worker
         if: steps.check.outputs.ready == 'true'
@@ -124,3 +129,10 @@ jobs:
           done
           echo "::error::Health check failed"
           exit 1
+
+      - name: Live evals (real conversations with the deployed brain)
+        if: steps.check.outputs.ready == 'true'
+        continue-on-error: true
+        run: |
+          key=$(node -e "console.log(require('crypto').createHash('sha256').update('jarvis-webhook:'+process.env.TELEGRAM_BOT_TOKEN).digest('hex').slice(0,48))")
+          URL="${{ steps.deploy.outputs.url }}" KEY="$key" node scripts/evals.mjs

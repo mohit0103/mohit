@@ -7,9 +7,12 @@ import { Store } from './store';
 import { ElevenLabs } from './eleven';
 import { edgeSynthesize } from './edge';
 import type { Deps, Env } from './types';
+import { countQueries } from './db';
+import { EVAL_CASES, runEvalStep } from './eval';
 
 export function makeDeps(env: Env): Deps {
-	const store = new Store(env.DB);
+	const db = countQueries(env.DB);
+	const store = new Store(db);
 	const gemini = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
 		get: () => store.get('llm_health'),
 		set: (h) => store.set('llm_health', h),
@@ -19,7 +22,7 @@ export function makeDeps(env: Env): Deps {
 	const llm = new FallbackLlm(gemini, backups, (why) => store.diag('backup brain', true, why.slice(0, 200), new Date().toISOString()));
 	const now = () => new Date();
 	return {
-		db: env.DB,
+		db,
 		tg: new TelegramApi(env.TELEGRAM_BOT_TOKEN),
 		llm,
 		speech: new WorkersSpeech(
@@ -95,6 +98,20 @@ export default {
 				goals: (await store.goals()).map((g) => g.title),
 			};
 			return Response.json({ since, messages, reviews, memory, diags: await store.diags(), models: await store.get('llm_health') });
+		}
+		if (req.method === 'GET' && url.pathname === '/eval') {
+			// Live evals on the scratch database: GET /eval lists cases; GET /eval?case=x&step=n runs one message.
+			if (req.headers.get('x-jarvis-key') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) return new Response('forbidden', { status: 403 });
+			const name = url.searchParams.get('case');
+			if (!name) return Response.json({ cases: EVAL_CASES.map((c) => ({ name: c.name, about: c.about })), ready: Boolean(env.EVAL_DB) });
+			if (!env.EVAL_DB) return Response.json({ error: 'EVAL_DB is not bound' }, { status: 500 });
+			try {
+				const out = await runEvalStep(makeDeps(env), countQueries(env.EVAL_DB), name, Number(url.searchParams.get('step')) || 0);
+				if (out.result) await new Store(env.DB).set(`eval:${name}`, JSON.stringify(out.result));
+				return Response.json(out);
+			} catch (e) {
+				return Response.json({ case: name, error: String(e) }, { status: 500 });
+			}
 		}
 		if (req.method === 'POST' && url.pathname === '/telegram') {
 			if (req.headers.get('x-telegram-bot-api-secret-token') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) {

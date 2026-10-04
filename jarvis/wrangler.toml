@@ -15,6 +15,13 @@ database_name = "jarvis"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations"
 
+# Scratch database for live evals after each deploy (never holds his real memory).
+[[d1_databases]]
+binding = "EVAL_DB"
+database_name = "jarvis_eval"
+database_id = "11111111-1111-1111-1111-111111111111"
+migrations_dir = "migrations"
+
 [vars]
 CITY = "Bengaluru"
 CITY_LAT = "12.9716"

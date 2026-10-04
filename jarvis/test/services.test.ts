@@ -253,9 +253,9 @@ describe('ElevenLabs voice', () => {
 });
 
 describe('fast replies', () => {
-	it('asks for minimal thinking in the right form per model generation', () => {
+	it('asks for light thinking in the right form per model generation', () => {
 		expect(thinkingFor('gemini-2.5-flash')).toEqual({ thinkingBudget: 0 });
-		expect(thinkingFor('gemini-3.8-flash')).toEqual({ thinkingLevel: 'minimal' });
+		expect(thinkingFor('gemini-3.8-flash')).toEqual({ thinkingLevel: 'low' });
 	});
 
 	it('retries without the thinking setting if a model rejects it', async () => {

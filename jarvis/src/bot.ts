@@ -1,5 +1,8 @@
 // Handles incoming Telegram updates: pairing, commands, buttons, and conversation.
-import { MEMORY_RULES, applyMemory, memorySchema, type MemoryOps } from './memory';
+import { PASSIVE_MEMORY_RULES, applyMemory, passiveMemorySchema, passiveOnly, type MemoryOps } from './memory';
+import { historyToAgent, runAgent, type TraceEntry } from './agent/loop';
+import { TOOLS } from './agent/tools';
+import { verifyReply } from './agent/verify';
 import { memorySnapshot, persona, planLine, timeContext } from './context';
 import { generateJson, parseJsonLoose } from './services';
 import { ownerChat, say } from './say';
@@ -191,15 +194,13 @@ async function converseInner(
 	const now = deps.now();
 	const t0 = Date.now();
 	await Promise.all([store.addMessage('user', text, 'chat', utc(now)), deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing')]);
-	if (deps.mail && /\b(e-?mails?|inbox|gmail|mails?)\b/i.test(text)) {
-		const tm = Date.now();
-		await checkMailNow(deps, store, now, 8_000);
-		timings.email = Date.now() - tm;
-	}
 	let reply: string;
+	let trace: TraceEntry[] = [];
+	let by: string | undefined;
+	let flags: string[] = [];
 	const tl = Date.now();
 	try {
-		reply = await replyTo(deps, store, now, images);
+		({ text: reply, trace, by, flags = [] } = await replyTo(deps, store, now, images, chatId));
 	} catch (e) {
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
@@ -216,19 +217,42 @@ async function converseInner(
 	}
 	timings.brain = Date.now() - tl;
 	const ts = Date.now();
-	const meta = Object.entries({ ...timings, voice: viaVoice ? 1 : 0 }).map(([k, v]) => `${k}=${v}`).join(' ');
+	const meta = [
+		...Object.entries({ ...timings, voice: viaVoice ? 1 : 0 }).map(([k, v]) => `${k}=${v}`),
+		...(by ? [`by=${by}`] : []),
+		...(trace.length ? [`tools=${trace.map((t) => `${t.tool}${t.ok ? '' : '!'}`).join(',')}`] : []),
+		...(flags.length ? [`agent=${flags.join(',')}`] : []),
+	].join(' ');
 	await say(deps, chatId, reply, { voice: viaVoice, kind: 'chat', meta });
 	timings.send = Date.now() - ts;
 	timings.total = Date.now() - t0 + (timings.listen ?? 0);
 	await store.del('pending_reply');
 	await store.diag('brain', true, 'replying normally', utc(now));
 	await store.diag('latency', true, Object.entries(timings).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', '), utc(now));
-	if (!isSmallTalk(text) || images.length) await processMemory(deps, store, now);
+	// Background memory runs from the next cron tick: this invocation has spent much of its 50-query allowance.
 }
 
+export const AGENT_RULES = `HOW YOU THINK AND ACT
+You're not a chatbot that just answers; you're a sharp friend who works out what he actually needs and gets it done.
+1. Read his message in the context of the conversation. What does he really want right now: info, a decision, something done, or just a friend?
+2. Get the facts before you talk. Use tools: recall for his past (anything not in WHAT YOU KNOW), web_search for anything about the
+   world, get_weather, check_email. Call several at once when useful. Skip tools for plain chit-chat.
+3. When he asks you to do something (remind him, save or change a plan, track a habit, remember or forget something), do it with the
+   tool, then confirm what the tool result says, with the exact day and time. If a tool errors, fix the arguments and try once more, or tell him honestly.
+4. When he's deciding something, make the call: pick one option and give the reason in a line, using what you know about him
+   (his plans, preferences, the weather, the time). Never hand back a list of options.
+5. Think one step ahead: a clash with his plans, rain on the way, a deadline, travel time. Mention the one thing that matters, only if it does.
+
+GROUNDING (the most important rule)
+- Personal details (places he likes, people, past events, habits) come ONLY from WHAT YOU KNOW or recall results. Never say
+  "that X place you love" unless memory says so. If recall finds nothing, say you don't remember, or ask.
+- Real-world specifics (restaurant or shop names, prices, scores, news, timings) come ONLY from web_search results or things you are
+  certain of. Never invent a place name. For suggestions, search first, then recommend one real place.
+- Only say you did something if a tool result says it worked.
+- Don't drag in random memories. Bring up something you remember only when it's relevant to what he's talking about right now.`;
+
 const STYLE_TAIL = `Reply with just your message to him: plain spoken words in your buddy voice, usually 1-3 short sentences (more only if he asks).
-If he tells you how a plan went, react like a friend. If he asks to be reminded, confirm casually with the time.
-If he asks what you know about him, sum it up warmly. If he says "forget that", say you've forgotten it.
+If he tells you how a plan went, react like a friend. If he asks what you know about him, sum it up warmly.
 Never claim you did something you cannot do (send an email, book something).
 When you can't do something yourself (book tickets, pay, call someone), never stop at "I can't": offer the next best thing,
 like searching the options and prices, the quickest way to do it, or offering a reminder at a sensible time.
@@ -238,23 +262,40 @@ His messages are often voice transcriptions, so words and Indian place names can
 He travels; for weather or places use where he says he is now, not just his home city. You can't see live traffic or his GPS:
 for routes, give the typical travel time and say Maps will show live traffic.
 If he sends a photo, actually look at it and react to what's in it like a friend would.
-You can look things up with Google Search: use it for facts, news, scores, prices, weather, places, recommendations he asks for,
-how-tos, anything current or anything you're unsure of. Search instead of saying "I don't know". Answer in your own words in
-your buddy voice; never read out links, sources or citations.`;
+Never say "I don't know" about the world before searching. Answer in your own words in your buddy voice; never read out links, sources or citations.`;
 
 function emailNote(deps: Deps): string {
 	return deps.mail
-		? `EMAIL: you DO have read-only access to his Gmail. Summaries of important emails from the last 3 days are under RECENT IMPORTANT EMAILS (the inbox was just checked if he asked about mail). If he asks about email and none are listed, tell him casually that the inbox is quiet. Never say you lack email access, and never mention a calendar (you only see what he tells you and what email says).`
+		? `EMAIL: you DO have read-only access to his Gmail. Recent important ones are under RECENT IMPORTANT EMAILS; for anything about mail, use check_email to look right now. If nothing turns up, tell him casually the inbox is quiet. Never say you lack email access, and never mention a calendar (you only see what he tells you and what email says).`
 		: `EMAIL: his Gmail is not connected yet. If he asks, tell him to add GMAIL_ADDRESS and GMAIL_APP_PASSWORD (see SETUP.md).`;
 }
 
-async function replyTo(deps: Deps, store: Store, now: Date, images: { mime: string; data: Uint8Array }[] = []): Promise<string> {
+/** The agent: thinks, uses tools (memory, reminders, plans, web, weather, email), then answers in Jarvis's voice. */
+export async function replyTo(
+	deps: Deps,
+	store: Store,
+	now: Date,
+	images: { mime: string; data: Uint8Array }[] = [],
+	chatId?: string,
+): Promise<{ text: string; trace: TraceEntry[]; by?: string; flags?: string[] }> {
 	const [snapshot, recent] = await Promise.all([memorySnapshot(store, now), store.recentMessages(20)]);
-	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${STYLE_TAIL}`;
-	const text = await deps.llm.generate({ system, turns: toTurns(recent), temperature: 0.95, fast: true, search: true, images });
-	const reply = cleanReply(text);
+	const system = `${persona(deps.config.name, deps.config.city)}\n\n${timeContext(now)}\n\nWHAT YOU KNOW:\n${snapshot}\n\n${emailNote(deps)}\n\n${AGENT_RULES}\n\n${STYLE_TAIL}`;
+	const out = await runAgent(deps.llm, {
+		system,
+		messages: historyToAgent(toTurns(recent)),
+		tools: TOOLS,
+		ctx: { deps, store, now },
+		temperature: 0.8,
+		images,
+		maxSteps: 6,
+		budgetMs: 25_000,
+		verify: verifyReply,
+		onTools: chatId ? () => deps.tg.sendChatAction(chatId, 'typing') : undefined,
+	});
+	const reply = cleanReply(out.text);
 	if (!reply) throw new LlmError('empty reply', 'bad_response');
-	return reply;
+	const flags = [...(out.recovered ? ['recovered'] : []), ...(out.revised?.length ? ['revised'] : [])];
+	return { text: reply, trace: out.trace, by: out.by, flags };
 }
 
 /** Models sometimes wrap a plain reply in quotes, a "Jarvis:" label or a JSON object; unwrap it. */
@@ -301,13 +342,13 @@ export async function processMemory(deps: Deps, store: Store, now: Date): Promis
 		const snapshot = await memorySnapshot(store, now);
 		const transcript = pending.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'} (${human(new Date(m.at))}): ${m.text}`).join('\n');
 		const ops = await generateJson<MemoryOps>(deps.llm, {
-			system: `You maintain the long-term memory of ${deps.config.name}'s AI buddy, Jarvis.\n\n${timeContext(now)}\n\nWHAT IS ALREADY KNOWN:\n${snapshot}\n\n${MEMORY_RULES}`,
+			system: `You maintain the long-term memory of ${deps.config.name}'s AI buddy, Jarvis.\n\n${timeContext(now)}\n\nWHAT IS ALREADY KNOWN:\n${snapshot}\n\n${PASSIVE_MEMORY_RULES}`,
 			turns: [{ role: 'user', text: `New messages to process (resolve relative dates against when each was said):\n${transcript}\n\nReturn the memory updates as JSON.` }],
-			schema: memorySchema,
+			schema: passiveMemorySchema,
 			temperature: 0.2,
 			tier: 'light',
 		});
-		await applyMemory(store, ops, now);
+		await applyMemory(store, passiveOnly(ops), now);
 		await store.set('mem_processed_id', String(pending[pending.length - 1].id));
 		await store.diag('memory', true, `saved from ${pending.length} messages`, utc(now));
 		return 'done';
@@ -481,11 +522,10 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 	await store.set('pending_reply_try', String(now.getTime()));
 	let reply: string;
 	try {
-		reply = await replyTo(deps, store, now);
+		reply = (await replyTo(deps, store, now)).text;
 	} catch {
 		return; // still down; try again next tick
 	}
 	await store.del('pending_reply');
 	await say(deps, chatId, reply, { voice: false, kind: 'chat' });
-	await processMemory(deps, store, now);
 }

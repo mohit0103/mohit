@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { handleUpdate, isSmallTalk } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { LlmError } from '../src/types';
-import { OWNER, buttonUpdate, emptyMemory, makeWorld, onChat, rows, textUpdate, voiceUpdate } from './harness';
+import { OWNER, buttonUpdate, emptyMemory, makeWorld, onChat, rows, textUpdate, toolResults, voiceUpdate } from './harness';
 
 
 describe('pairing and privacy', () => {
@@ -70,6 +70,8 @@ describe('conversation', () => {
 		const w = makeWorld();
 		onChat(w, () => ({ reply: 'Noted!', memory: { ...emptyMemory, facts_add: [{ text: 'Is vegetarian', category: 'preference' }] } }));
 		await handleUpdate(w.deps, textUpdate("I'm vegetarian by the way"));
+		w.clock.advance(5);
+		await tick(w.deps); // background memory runs from the cron tick
 		await handleUpdate(w.deps, textUpdate('what should I eat tonight?'));
 		const replies = w.llm.calls.filter((c) => c.system.includes('Reply with just your message'));
 		const req = replies[1];
@@ -259,12 +261,13 @@ describe('email on request, status and voices', () => {
 		const w = makeWorld();
 		triage(w);
 		w.mail.inbox = [{ uid: 1, from: 'Priya', subject: 'Deck', date: w.clock.now, text: 'Need the deck by 4' }];
-		onChat(w, () => ({ reply: 'Priya needs the deck by 4!', memory: emptyMemory }));
+		onChat(w, (r) => (/emails/.test(r.turns.at(-1)!.text) ? { reply: 'Priya needs the deck by 4!', calls: [{ name: 'check_email', args: { query: '', days: 1 } }] } : 'np'));
 		await handleUpdate(w.deps, textUpdate('Any important emails today?'));
 		expect(w.mail.calls).toBe(1);
-		const chat = w.llm.calls.find((c) => c.system.includes('Reply with just your message'))!;
-		expect(chat.system).toContain('Priya (manager): needs the deck by 4 PM');
-		expect(chat.system).toMatch(/you DO have read-only access to his Gmail/);
+		expect(JSON.stringify(toolResults(w, 'check_email'))).toContain('Priya (manager): needs the deck by 4 PM');
+		expect(w.llm.calls[0].system).toMatch(/you DO have read-only access to his Gmail/);
+		expect(w.tg.visible().at(-1)!.text).toBe('Priya needs the deck by 4!');
+		expect(rows(w, "SELECT meta FROM messages WHERE role = 'jarvis'").at(-1).meta).toContain('tools=check_email');
 		// A non-email message doesn't hit Gmail.
 		await handleUpdate(w.deps, textUpdate('cool thanks'));
 		expect(w.mail.calls).toBe(1);
@@ -329,7 +332,7 @@ describe('photos and safety net', () => {
 });
 
 describe('memory saving', () => {
-	it('skips the memory call for small talk, catches up later, and retries saves that failed', async () => {
+	it('saves memory from the cron tick (never during the reply) and retries saves that failed', async () => {
 		const w = makeWorld();
 		let memoryCalls = 0;
 		let memoryDown = false;
@@ -337,20 +340,24 @@ describe('memory saving', () => {
 		w.llm.on((r) => r.system.includes('You maintain the long-term memory'), (r) => {
 			memoryCalls++;
 			if (memoryDown) throw new LlmError('429', 'quota');
-			return r.turns[0].text.includes('dentist') ? { ...emptyMemory, plans_add: [{ title: 'Dentist', starts_at: '2026-10-09T17:00:00+05:30', all_day: false, followup_question: 'How was it?', followup_at: '' }] } : emptyMemory;
+			return r.turns[0].text.includes('dentist') ? { ...emptyMemory, facts_add: [{ text: 'Goes to Dr. Rao for dental care', category: 'health' }] } : emptyMemory;
 		});
 		await handleUpdate(w.deps, textUpdate('haha'));
+		await handleUpdate(w.deps, textUpdate('my dentist is Dr. Rao, she is great'));
 		expect(memoryCalls).toBe(0);
+		await tick(w.deps);
+		expect(memoryCalls).toBe(0); // too fresh: he may still be talking
 
 		memoryDown = true;
-		await handleUpdate(w.deps, textUpdate('dentist on Friday at 5pm'));
+		w.clock.advance(5);
+		await tick(w.deps);
 		expect(memoryCalls).toBe(1);
-		expect(rows(w, 'SELECT count(*) AS c FROM plans')[0].c).toBe(0);
+		expect(rows(w, 'SELECT count(*) AS c FROM facts')[0].c).toBe(0);
 
 		memoryDown = false;
 		w.clock.advance(15);
 		await tick(w.deps); // retries the failed batch, including the earlier small talk
-		expect(rows(w, 'SELECT title FROM plans')).toEqual([{ title: 'Dentist' }]);
+		expect(rows(w, 'SELECT text FROM facts')).toEqual([{ text: 'Goes to Dr. Rao for dental care' }]);
 		await tick(w.deps);
 		expect(memoryCalls).toBe(2); // nothing left to process
 	});

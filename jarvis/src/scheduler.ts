@@ -7,6 +7,7 @@ import { addDays, atLocal, human, local, localDate, localMinutes, utc } from './
 import type { Deps } from './types';
 import { syncEmail } from './email/sync';
 import { processMemory, retryPendingReply } from './bot';
+import { QUERY_LIMIT, queriesUsed } from './db';
 
 export const BRIEFING_AT = 7 * 60; // 07:00
 export const CHECKIN_AT = 19 * 60; // 19:00
@@ -36,12 +37,6 @@ export async function tick(deps: Deps): Promise<string[]> {
 	});
 	await step('pending reply', () => retryPendingReply(deps, store, chatId));
 	await step('reminders', () => sendDueReminders(deps, store, chatId, now, log));
-	await step('memory', async () => {
-		// Catch up on small talk saved for later and on any save that failed earlier.
-		const last = Number((await store.get('mem_processed_id')) ?? 0);
-		const pending = await store.messagesAfter(last, 1);
-		if (pending.length && now.getTime() - new Date(pending[0].at).getTime() > 10 * 60_000) log.push(`memory: ${await processMemory(deps, store, now)}`);
-	});
 
 	const pausedUntil = await store.get('paused_until');
 	const paused = pausedUntil && new Date(pausedUntil) > now;
@@ -95,6 +90,14 @@ export async function tick(deps: Deps): Promise<string[]> {
 	await step('followups', () => sendFollowups(deps, store, chatId, now, log));
 	await step('heads-up', () => sendHeadsUps(deps, store, chatId, now, log));
 	await step('nudges', () => maybeNudge(deps, store, chatId, now, log));
+	await step('memory', async () => {
+		// Background memory (facts, people, moods, diary notes) from the chat a few minutes ago. It needs ~18 queries,
+		// so a busy tick (briefing, check-in) leaves it for the next one, 5 minutes later.
+		if (QUERY_LIMIT - queriesUsed(deps.db) < 24) return log.push('memory: waiting for a quieter tick');
+		const last = Number((await store.get('mem_processed_id')) ?? 0);
+		const pending = await store.messagesAfter(last, 1);
+		if (pending.length && now.getTime() - new Date(pending[0].at).getTime() > 3 * 60_000) log.push(`memory: ${await processMemory(deps, store, now)}`);
+	});
 	await step('record', async () => {
 		const failed = log.filter((l) => l.includes(' failed:'));
 		await store.diag('schedule', failed.length === 0, failed.length ? failed.join('; ') : `running every 5 min (${log.join(', ') || 'nothing due'})`, utc(now));
@@ -359,6 +362,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 				text: `Send ${deps.config.name} one short, spontaneous friendly text message (1-2 sentences), like a buddy would.\n${ideas}\n` +
 					`Pick the best of: an "on this day" memory, a nudge to call someone he hasn't mentioned in a while, a goal nudge, ` +
 					`asking about something he told you recently, an interesting AI/tech fact, or a light joke. Don't repeat recent messages. ` +
+					`Every personal detail must come from WHAT YOU KNOW or the ideas above: never invent places he likes, people or past events, and don't name restaurants or spots. ` +
 					`Set "send" false if nothing feels natural right now.`,
 			},
 		],
@@ -367,7 +371,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 			properties: { send: { type: 'BOOLEAN' }, message: { type: 'STRING' } },
 			required: ['send', 'message'],
 		},
-		temperature: 1,
+		temperature: 0.8,
 		tier: 'light',
 	});
 	if (!r.send || !r.message?.trim()) return false;
