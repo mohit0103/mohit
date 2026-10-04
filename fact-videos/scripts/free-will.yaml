@@ -1,0 +1,48 @@
+# Pop Bold pilot: rendered with pop_render.py (scene visuals in free-will.js)
+channel: factloop
+reel_js: free-will.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]          # the beat slams back in when scene 2 starts
+pronounce:
+  Libet: Lib-ett
+scenes:
+  - id: hook
+    say: Your brain makes your choices before you even know it.
+    highlight: [before]
+    bg: "#8a3cff"
+  - id: libet
+    say: In 1983, scientist Benjamin Libet asked people to move their wrist whenever they felt like it.
+    highlight: [whenever]
+    bg: "#c6ff3d"
+  - id: signal
+    say: Their brain activity started rising about a third of a second before they felt the urge.
+    highlight: [before]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: scan
+    say: In 2008, brain scans predicted simple choices up to ten seconds early.
+    highlight: [ten]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: coin
+    say: Not perfectly. But better than a coin flip.
+    highlight: [better]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: argue
+    say: Scientists still argue about what it really means.
+    highlight: [argue]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: cta
+    say: So tell me. Is free will real? Yes, or no?
+    highlight: [real]
+    bg: "#c6ff3d"
+post_caption: "Your brain picks before YOU know you picked. 🧠 Brain scans have predicted simple choices up to 10 seconds early. So… is free will real? Yes or no 👇"
+hashtags: ["#freewill", "#brain", "#psychology", "#neuroscience", "#science", "#facts", "#reels"]
+sources:
+  - "Libet B. et al. (1983), Brain 106: readiness potential begins ~550 ms before movement; conscious intention reported ~200 ms before"
+  - "Soon C.S. et al. (2008), Nature Neuroscience 11: fMRI predicted left/right choices up to ~7-10 s before awareness (~60% accuracy)"
+  - "Interpretation is debated (e.g. Schurger et al. 2012, PNAS)"

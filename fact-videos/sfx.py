@@ -196,3 +196,118 @@ def master(in_wav, out_wav, target_lufs=-10.0, true_peak=-1.0):
 	ln = (f"loudnorm=I={target_lufs}:TP={true_peak}:LRA=7:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
 	      f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
 	subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', in_wav, '-af', f'{pre},{ln},alimiter=limit=0.89:level=false', '-ar', '48000', out_wav], check=True)
+
+
+# ---- Pop Bold kit: tight clicks + a punchy beat ----
+
+
+def snap():
+	n = int(0.06 * SR)
+	t = np.arange(n) / SR
+	x = rng.standard_normal(n) * np.exp(-t * 120)
+	return (x - _lowpass(x, 0.3)) * 0.9 + np.sin(2 * np.pi * 1800 * t) * np.exp(-t * 90) * 0.3
+
+
+def tick1():
+	return click(2600, 0.02) * 0.9
+
+
+def punch():
+	n = int(0.3 * SR)
+	t = np.arange(n) / SR
+	return np.sin(2 * np.pi * np.cumsum(160 * np.exp(-t * 30) + 50) / SR) * np.exp(-t * 14) + snap()[:n].sum() * 0 + _pad(snap(), n) * 0.5
+
+
+def _pad(x, n):
+	out = np.zeros(n)
+	out[: min(n, len(x))] = x[:n]
+	return out
+
+
+def chime():
+	n = int(1.2 * SR)
+	t = np.arange(n) / SR
+	out = np.zeros(n)
+	for f, a in ((1318.5, 0.5), (1975.5, 0.3), (2637.0, 0.15)):
+		out += np.sin(2 * np.pi * f * t + 2 * np.sin(2 * np.pi * f * 1.4 * t) * np.exp(-t * 8)) * a
+	return out * np.exp(-t * 4) * 0.6
+
+
+def fill_sfx(d=0.6):
+	n = int(d * SR)
+	t = np.arange(n) / SR
+	return np.sin(2 * np.pi * np.cumsum(400 + 900 * (t / d)) / SR) * 0.25 * np.sin(np.pi * t / d)
+
+
+def soft_swoosh():
+	return swish(0.28) * 0.6
+
+
+CUES.update({'snap': snap, 'tick': tick1, 'punch': punch, 'chime': chime, 'fill': fill_sfx, 'swoosh': soft_swoosh})
+
+
+def beat(seconds, bpm=104, drops=(), seed=5):
+	"""Punchy pop/trap-ish beat: kick, clap, hats, sub-bass and offbeat chord stabs.
+	`drops`: times where the full beat slams back in after a one-bar build (kick drop-out + riser)."""
+	r = np.random.default_rng(seed)
+	n = int(seconds * SR)
+	out = np.zeros(n)
+	b = 60 / bpm
+	bar = 4 * b
+	# drum voices
+	tk = np.arange(int(0.35 * SR)) / SR
+	kick = np.sin(2 * np.pi * np.cumsum(150 * np.exp(-tk * 28) + 46) / SR) * np.exp(-tk * 7)
+	kick[: int(0.004 * SR)] += r.standard_normal(int(0.004 * SR)) * 0.4
+	tc = np.arange(int(0.22 * SR)) / SR
+	cl = r.standard_normal(len(tc))
+	clap = (cl - _lowpass(cl, 0.15)) * (np.exp(-tc * 30) + 0.6 * np.exp(-np.maximum(tc - 0.012, 0) * 40) * (tc > 0.012)) * 0.55
+	th = np.arange(int(0.05 * SR)) / SR
+	hn = r.standard_normal(len(th))
+	hat = (hn - _lowpass(hn, 0.6)) * np.exp(-th * 90) * 0.22
+	# harmony: A minor - F - C - G
+	roots = [55.0, 43.65, 65.41, 49.0]
+	chords = [[220.0, 261.63, 329.63], [174.61, 220.0, 261.63], [196.0, 261.63, 329.63], [196.0, 246.94, 293.66]]
+	drop_bars = {int(d / bar) for d in drops}
+	n_bars = int(seconds / bar) + 1
+	for bi in range(n_bars):
+		t0 = bi * bar
+		build = (bi + 1) in drop_bars  # bar before a drop: strip the kick, add a riser
+		intro = bi == 0
+		for k in range(16):  # 16th grid
+			ts = t0 + k * b / 4
+			if ts >= seconds:
+				break
+			if k % 4 == 0 and not build:
+				place(out, kick, ts, 0.95 if not intro else 0.5)
+			if k in (6,) and not build and not intro:
+				place(out, kick, ts, 0.6)  # syncopated extra kick
+			if k in (4, 12) and not intro:
+				place(out, clap, ts, 0.9)
+			if k % 2 == 0 or (build and k % 1 == 0):
+				place(out, hat, ts, (0.9 if k % 4 == 2 else 0.55) * (1.2 if build else 1))
+		# sub bass on 8ths following the root
+		f = roots[bi % 4]
+		for k in range(8):
+			ts = t0 + k * b / 2
+			if build or ts >= seconds:
+				continue
+			nb = int(b / 2 * 0.9 * SR)
+			tt = np.arange(nb) / SR
+			note = np.sin(2 * np.pi * f * tt) * np.minimum(1, tt / 0.005) * np.exp(-tt * 3) * 0.35
+			place(out, note, ts, 1.0 if not intro else 0.4)
+		# offbeat chord stabs (filtered saw-ish)
+		for k in (1, 3, 5, 7):
+			ts = t0 + k * b / 2
+			if ts >= seconds or intro:
+				continue
+			nb = int(0.18 * SR)
+			tt = np.arange(nb) / SR
+			st = sum(np.sign(np.sin(2 * np.pi * cf * tt)) * 0.5 + np.sin(2 * np.pi * cf * 2 * tt) * 0.3 for cf in chords[bi % 4])
+			st = _lowpass(st * np.exp(-tt * 14), 0.2) * 0.12
+			place(out, st, ts, 1.0)
+		if build:
+			place(out, riser(bar), t0, 0.35)
+	for d in drops:
+		place(out, impact(), d, 0.35)
+	fade = np.clip(np.minimum(np.arange(n) / SR / 0.3, (seconds - np.arange(n) / SR) / 1.0), 0, 1)
+	return out * fade
