@@ -23,6 +23,7 @@ DUR = spec["duration"] + .2
 N = int(DUR * SR)
 SEC = spec["sections"]
 BEAT = 60 / (spec.get("bpm") or 100)
+G0 = spec.get("grid0") or 0.0               # phase of the beat grid
 music = np.zeros((2, N))
 drums = np.zeros((2, N))
 fx = np.zeros((2, N))
@@ -80,7 +81,7 @@ def reverb(x, sec=2.0, mix=.3, seed=1):
 
 
 def steps(a, b, step):
-    t = np.ceil(a / step - 1e-6) * step          # stay on the global beat grid
+    t = G0 + np.ceil((a - G0) / step - 1e-6) * step    # stay on the one global beat grid
     while t < b - 1e-6:
         yield t
         t += step
@@ -92,7 +93,7 @@ BAR = 4 * BEAT
 
 
 def chord_at(t):
-    return CH[int(t // BAR) % 4]
+    return CH[int((t - G0) // BAR) % 4]
 
 
 def felt(f, d=1.6, amp=.08):
@@ -125,8 +126,8 @@ for i, t in enumerate(steps(SEC["intro"][1] - BEAT, DUR - 1.2, BEAT / 2)):
     place(music, felt(hz(c[ARP[i % 8]] + 12), amp=.06 if quiet else .07), t, pan=.35 * np.sin(i * .8))
 # bass on each bar
 for t in steps(0, DUR - 1, BAR):
-    tb = tt(BAR)
-    place(music, np.sin(2 * np.pi * hz(chord_at(t)[0] - 12) * tb) * env(len(tb), .05, 1.0, 1.5) * .07, t)
+    tb = tt(BAR + .5)                                   # notes overlap so the bass never drops out between bars
+    place(music, np.sin(2 * np.pi * hz(chord_at(t)[0] - 12) * tb) * env(len(tb), .12, .6, 1.2) * .06, t)
 
 
 # ───────────────────────── gentle groove ─────────────────────────
@@ -141,12 +142,30 @@ def shaker(g=1.0):
     return hp(rng.standard_normal(len(t)), 7000) * np.exp(-t * 60) * g
 
 
-for name in ("carousel", "grid", "google"):
-    a, b = SEC[name]
-    for i, t in enumerate(steps(a, b, BEAT)):
-        place(drums, kick(.32 if i % 2 == 0 else .18), t)
-    for i, t in enumerate(steps(a, b, BEAT / 2)):
-        place(drums, shaker(.05 if i % 2 else .028), t, pan=.3)
+def snap(g=1.0):
+    t = tt(.12)
+    return lp(hp(rng.standard_normal(len(t)), 1200), 5000) * np.exp(-t * 45) * g
+
+
+# One continuous groove over the whole piece. Density follows a smooth curve
+# instead of starting and stopping per section, so nothing ever jumps.
+_K = [(0, 0), (1.2, 0), (1.7, 1), (5.6, 1), (6.1, .3), (7.6, .3), (8.0, 1), (13.4, 1), (13.9, .45), (15.6, .45), (16.4, .12), (DUR, 0)]
+def groove(t):
+    xs, ys = zip(*_K)
+    return float(np.interp(t, xs, ys))
+
+
+for i, t in enumerate(steps(0, DUR - .4, BEAT)):
+    g = groove(t)
+    if g <= .01:
+        continue
+    place(drums, kick((.32 if i % 2 == 0 else .2) * g), t)
+    if SEC["google"][0] <= t < SEC["google"][1] and i % 2:     # backbeat lifts the Google section
+        place(drums, snap(.16), t, pan=-.15)
+for i, t in enumerate(steps(0, DUR - .4, BEAT / 2)):
+    g = groove(t)
+    if g > .2:
+        place(drums, shaker((.05 if i % 2 else .028) * g), t, pan=.3)
 
 
 # ───────────────────────── micro sound design ─────────────────────────
@@ -194,6 +213,36 @@ def shutter():
     return o * .7
 
 
+def lift(d=1.0):                              # soft build: rising filtered air + rising tones, lands on the cue
+    t = tt(d)
+    air = np.zeros(len(t))
+    blk = 512
+    zi = np.zeros(2)
+    src = rng.standard_normal(len(t))
+    for k in range(0, len(t), blk):
+        fc = 250 * (14 ** (k / len(t)))
+        b, a = signal.butter(2, fc / (SR / 2))
+        o, zi = signal.lfilter(b, a, src[k:k + blk], zi=zi)
+        air[k:k + blk] = o
+    tones = sum(np.sin(2 * np.pi * np.cumsum(hz(n) * (1 + .5 * (t / d) ** 2)) / SR) for n in (69, 76)) * .05
+    return (air * .5 + tones) * (t / d) ** 2.2
+
+
+def bloom(d=1.6):                             # warm landing: low chord + bell, no hard transient
+    t = tt(d)
+    low = sum(np.sin(2 * np.pi * hz(n) * t) for n in (38, 45, 50)) * .18
+    return low * env(len(t), .02, 1.2, 1.5) * np.exp(-t * 1.2) + bell(hz(86), d) * .8
+
+
+def sparkle():
+    o = np.zeros(int(1.8 * SR))
+    for j, n in enumerate([86, 90, 93, 98, 102, 105]):
+        b_ = bell(hz(n), 1.0) * (.5 + j * .06)
+        i = int(j * .06 * SR)
+        o[i:i + len(b_)] += b_
+    return o
+
+
 def click():
     t = tt(.04)
     return (np.sin(2 * np.pi * 1800 * t) * .6 + hp(rng.standard_normal(len(t)), 4000) * .2) * np.exp(-t * 160)
@@ -232,6 +281,12 @@ for c in spec["cues"]:
         place(fx, counter(), at, .3 * g)
     elif ty == "shutter":
         place(fx, shutter(), at, .35 * g)
+    elif ty == "lift":
+        place(fx, lift(), at - 1.0, .45 * g)
+    elif ty == "bloom":
+        place(fx, bloom(), at, .55 * g)
+    elif ty == "sparkle":
+        place(fx, sparkle(), at, .35 * g, float(rng.uniform(-.2, .2)))
     elif ty == "click":
         place(fx, click(), at, .4 * g)
         place(fx, bell(hz(93), 1.2), at + .05, .22 * g)

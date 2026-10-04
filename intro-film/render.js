@@ -84,10 +84,10 @@ async function film() {
   // read duration + sound cues from the composition itself
   const browser = await chromium.launch(launchOpts);
   const p = await openPage(browser);
-  const { dur, cues, sections, bpm, score: scoreScript } = await p.page.evaluate(() => ({ dur: window.DURATION, cues: window.CUES, sections: window.SECTIONS || null, bpm: window.BPM || null, score: window.SCORE || 'score.py' }));
+  const { dur, cues, sections, bpm, grid0, score: scoreScript } = await p.page.evaluate(() => ({ dur: window.DURATION, cues: window.CUES, sections: window.SECTIONS || null, bpm: window.BPM || null, grid0: window.GRID0 || 0, score: window.SCORE || 'score.py' }));
   await browser.close();
   const cuesFile = path.join(OUT, `${NAME}-cues.json`);
-  fs.writeFileSync(cuesFile, JSON.stringify({ duration: dur, cues, sections, bpm }, null, 1));
+  fs.writeFileSync(cuesFile, JSON.stringify({ duration: dur, cues, sections, bpm, grid0 }, null, 1));
 
   const from = +arg('--from', 0), to = +arg('--to', dur);
   const F0 = Math.round(from * FPS), F1 = Math.round(to * FPS);

@@ -165,14 +165,9 @@ const T = {
   carIn: 1.35, steps: [2.2, 2.8, 3.4, 4.0, 4.6, 5.2], expand: 6.0, fbText: 6.75, shrink: 8.0, scroll: [8.4, 10.6], chips: [8.9, 9.5, 10.1],
   google: 10.6, swap1: 12.4, swap2: 13.0, portrait: 13.6, end: 15.8,
 };
-// Time warp: the composition is authored on a relaxed timeline; playback runs each
-// section 1.5–1.8× faster. Knots are [composition s, output s]; carousel steps land on 90 bpm half-beats.
-const KN = [[0, 0], [1.35, .861], [6.0, 3.444], [8.0, 4.75], [10.6, 6.25], [13.6, 8.2], [15.8, 9.6], [18.4, 11.4]];
-const warp = (x, from, to) => { for (let i = 1; i < KN.length; i++) if (x <= KN[i][from] || i === KN.length - 1)
-  return lerp(KN[i - 1][to], KN[i][to], clamp((x - KN[i - 1][from]) / (KN[i][from] - KN[i - 1][from]))); };
-const toOut = t => warp(t, 0, 1), toComp = u => warp(u, 1, 0);
-window.DURATION = 11.4;
-window.BPM = 90;
+window.DURATION = 18.4;
+window.BPM = 100;
+window.GRID0 = .4;          // beat grid phase: carousel steps, Google and the portrait land on beats
 
 const CAR = [
   ['photo-31.jpg', 'Blue hour', 'Twilight', .5, .7], ['photo-04.jpg', 'Stillness', 'Twilight', .5, .62], ['photo-22.jpg', 'Platform', 'Street', .6, .62],
@@ -221,9 +216,9 @@ const eTitle = words($('eTitle'), 'third_eyef1.7');
 const gL1 = words($('gL1'), 'Featured on');
 
 /* ───────────────────────── sound cues (all soft) ───────────────────────── */
-window.SECTIONS = Object.fromEntries(Object.entries({ intro: [0, 1.35], carousel: [1.35, 6.0], full: [6.0, 8.0], grid: [8.0, 10.6], google: [10.6, 13.6], portrait: [13.6, 15.8], end: [15.8, 18.4] }).map(([k, [a, b]]) => [k, [toOut(a), toOut(b)]]));
+window.SECTIONS = { intro: [0, 1.35], carousel: [1.35, 6.0], full: [6.0, 8.0], grid: [8.0, 10.6], google: [10.6, 13.6], portrait: [13.6, 15.8], end: [15.8, 18.4] };
 window.CUES = [];
-const cue = (type, at, gain = 1) => window.CUES.push({ type, at: +toOut(at).toFixed(4), gain });
+const cue = (type, at, gain = 1) => window.CUES.push({ type, at: +at.toFixed(4), gain });
 cue('bell', .15, .5); cue('tap', T.carIn + .1, .7);
 T.steps.forEach(s => { cue('tick', s, .8); cue('softswipe', s, .5); });
 cue('tap', T.expand, .9); cue('swell', T.expand, .6); cue('bell', T.fbText + .1, .6);
@@ -233,6 +228,11 @@ cue('tap', T.google, .8); cue('gdraw', 11.02, .8); cue('bell', 11.5, .5); cue('c
 cue('softswipe', T.swap1, .6); cue('tick', T.swap1 + .3, .6); cue('softswipe', T.swap2, .6); cue('tick', T.swap2 + .3, .6);
 cue('tap', T.portrait, .8); cue('shutter', T.portrait + .55, .45); cue('bell', 14.3, .5);
 cue('tap', T.end, .7); cue('bell', T.end + .3, .6); cue('click', 17.05, .9);
+// soft lifts into the three big moments, landing on a warm bloom
+cue('lift', T.expand, .9); cue('bloom', T.expand, .9);
+cue('lift', T.google, 1); cue('bloom', T.google, 1); cue('sparkle', 11.0, .8);
+cue('lift', T.portrait, .7); cue('bloom', T.portrait, .7);
+cue('bloom', T.end, .6);
 
 /* ───────────────────────── grain ───────────────────────── */
 const grainFrames = []; { let sd = 9; const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
@@ -413,7 +413,7 @@ function render(t) {
   $('grain').getContext('2d').putImageData(grainFrames[FRAME % grainFrames.length], 0, 0);
 }
 
-window.seek = u => render(toComp(u));
+window.seek = t => render(t);
 window.ready = (async () => {
   await document.fonts.ready;
   await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
@@ -425,9 +425,9 @@ if (!params.has('render')) {
   const fit = () => { const k = Math.min(innerWidth / W, innerHeight / H); $('stage').style.transform = `scale(${k})`; $('stage').style.marginRight = `${W * (k - 1)}px`; $('stage').style.marginBottom = `${H * (k - 1)}px`; };
   addEventListener('resize', fit); fit();
   window.ready.then(() => {
-    if (params.has('t')) { window.seek(+params.get('t')); return; }
+    if (params.has('t')) { render(+params.get('t')); return; }
     const t0 = performance.now();
-    const loop = now => { window.seek(((now - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); };
+    const loop = now => { render(((now - t0) / 1000) % window.DURATION); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
   });
 }
