@@ -105,7 +105,7 @@ def chunk_words(words, max_words=3, max_chars=18):
 
 
 def norm(w):
-	return re.sub(r"[^\w']", '', w.replace('’', "'")).lower()
+	return re.sub(r"[^\w']", '', str(w).replace('’', "'")).lower()
 
 
 def draw_caption(c, th, chunk, t, end_t, highlights):

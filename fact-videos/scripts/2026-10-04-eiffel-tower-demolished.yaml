@@ -1,0 +1,55 @@
+channel: factloop
+kicker: Paris · 1889
+voice: en-US-AndrewMultilingualNeural
+rate: "+10%"
+pronounce:
+  Eiffel: Eye-fell
+scenes:
+  - say: The Eiffel Tower was built to be torn down.
+    highlight: [torn]
+    bg: ink
+    layers:
+      - {type: photo, openverse: b3d2ba89-6607-4fd3-bcc4-05eb2129b103, frame: full, treatment: color, focus: 0.35, dim: 0.15}
+      - {type: stamp, text: "Demolish", at: torn, y: 1060, size: 150, rotate: -8}
+
+  - say: Its permit was only for twenty years. It was supposed to come down in 1909.
+    highlight: [twenty, 1909]
+    bg: paper
+    layers:
+      - {type: photo, openverse: 9c44c15c-e13c-4b10-a4cb-1316842ddd16, frame: print, treatment: bw, y: 760, w: 760, h: 860, tilt: -3}
+      - {type: chips, at: "1909", items: ["1889", "1909"], crossed: [1], y: 1250, size: 80, stagger: 0.25}
+
+  - say: While it was being built, famous artists called it useless and monstrous.
+    highlight: [useless, monstrous]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 6274958c-43ae-4180-8c22-d91e490bf59f, frame: full, treatment: duotone, focus: 0.4, dim: 0.25}
+      - {type: stamp, text: "Monstrous", at: monstrous, y: 1000, size: 140, rotate: -7}
+
+  - say: What saved it? Radio. Its height made it the perfect giant antenna.
+    highlight: [Radio, antenna]
+    bg: paper
+    layers:
+      - {type: photo, openverse: e9b234a8-e5be-412d-88ca-994cf7f61dfa, frame: print, treatment: bw, y: 780, w: 760, h: 860, tilt: 3}
+      - {type: stamp, text: "Saved", at: Radio, y: 1210, size: 140, rotate: -7}
+
+  - say: And on hot days, the top leans up to 18 centimetres away from the sun.
+    highlight: [leans, sun]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 78cd94b8-eeaf-4cef-9cd4-6de933f05d77, frame: full, treatment: color, focus: 0.3, dim: 0.25}
+      - {type: counter, value: 18, suffix: " cm", label: "lean in the heat", y: 1000, size: 230, roll: 1.6}
+
+  - say: So be honest. Is it a masterpiece, or overrated?
+    highlight: [masterpiece, overrated]
+    bg: ink
+    layers:
+      - {type: photo, openverse: 670835e2-272d-4e64-b396-e965dc16f4a0, frame: full, treatment: duotone, focus: 0.4, dim: 0.55}
+      - {type: split, y: 960, at: Is, left: {icon: diamond, label: "Masterpiece"}, right: {icon: thumb-down, label: "Overrated"}}
+
+post_caption: "The Eiffel Tower was supposed to be torn down in 1909. Artists called it 'useless and monstrous'. Radio saved it. 🗼 Masterpiece or overrated? 👇"
+hashtags: ["#EiffelTower", "#Paris", "#history", "#facts", "#didyouknow", "#travel", "#reels"]
+sources:
+  - "Eiffel Tower (Wikipedia, citing SETE and historical records): 20-year permit, slated for dismantling in 1909; saved by its use for radio telegraphy"
+  - "'Protest against the Tower of Monsieur Eiffel', Le Temps, 14 Feb 1887: called it 'useless and monstrous'"
+  - "Thermal expansion: the top can shift up to 18 cm away from the sun"
