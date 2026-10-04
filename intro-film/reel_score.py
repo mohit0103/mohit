@@ -2,7 +2,7 @@
 
     python3 reel_score.py out/reel-cues.json out/reel-score.wav
 
-Warm D-major felt-piano plucks over a pad at 100 bpm, a gentle kick and shaker
+Warm D-major felt-piano plucks over a pad (tempo from the cue file), a gentle kick and shaker
 only where the carousel and grid move, and quiet micro-sounds (picker ticks,
 taps, bells) placed from the composition's cue list. No whooshes or booms.
 """
@@ -22,7 +22,7 @@ out_file = sys.argv[2]
 DUR = spec["duration"] + .2
 N = int(DUR * SR)
 SEC = spec["sections"]
-BEAT = .6
+BEAT = 60 / (spec.get("bpm") or 100)
 music = np.zeros((2, N))
 drums = np.zeros((2, N))
 fx = np.zeros((2, N))
@@ -80,7 +80,7 @@ def reverb(x, sec=2.0, mix=.3, seed=1):
 
 
 def steps(a, b, step):
-    t = a
+    t = np.ceil(a / step - 1e-6) * step          # stay on the global beat grid
     while t < b - 1e-6:
         yield t
         t += step

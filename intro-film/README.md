@@ -7,7 +7,7 @@ Inter, Geist Mono and the Mrs Saint Delafield signature script.
 
 Rendered films:
 
-* **`out/reel.mp4`**: 9:16 vertical reel (1080×1920, 60 fps, 18.4 s) for Reels/Shorts.
+* **`out/reel.mp4`**: 9:16 vertical reel (1080×1920, 60 fps, 11.4 s) for Reels/Shorts.
 * `out/intro.mp4`: 16:9 long-form intro (1920×1080, 60 fps, 50.7 s).
 
 ## The reel (`reel.html` + `reel_score.py`)
@@ -26,6 +26,12 @@ Inter Display.
 | 10.6–13.6s | **Google × photo**: the featured tile glides into the card, the G draws on, the carousel swipes through the featured shots, 300K+ counter |
 | 13.6–15.8s | The card's corners round off into a circle around his portrait; the ring draws, the name sets |
 | 15.8–18.4s | The circle shrinks into an avatar above *third_eyef1.7*, the URL and a *Follow* button that gets pressed |
+
+The composition is authored on a relaxed 18.4 s timeline, and a piecewise time
+warp (`KN` in `reel.html`) plays each section 1.5–1.8× faster, giving 11.4 s.
+Carousel steps land on 90 bpm half-beats, and sound cues and sections are remapped
+through the same warp. Change the knots to change the pace without touching
+any animation.
 
 The score is a warm D-major felt-piano and pad bed (100 bpm) with a gentle
 kick and shaker only while things move. The sound design is micro-sounds only:
