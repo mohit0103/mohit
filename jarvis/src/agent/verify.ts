@@ -22,10 +22,40 @@ const PROMISE = /\b(let me|lemme|i'?ll|i will|gonna|going to)( quickly| just| go
 
 const ADMITS_FAILURE = /\b(couldn'?t|could not|can'?t|cannot|didn'?t|did not|wasn'?t able|failed|not able|glitch|problem|issue|sorry|oops|hmm)\b/i;
 
-/** Returns what's wrong with a draft (for the model to fix) or null when it matches what happened. */
-export function verifyReply(draft: string, trace: TraceEntry[]): string | null {
+/** Sentences that present something as his own memory or taste. */
+const ATTRIBUTION = /\b(you (love|loved|like|liked|enjoy|enjoyed|adore|always|usually|mentioned|said|told me|went|visited)|your (fav\w*|usual|go-to|regular)|last time you)\b/i;
+const NOT_NAMES = new Set(
+	'I Im Ive Ill Id You Your Yours Mohit Jarvis Hey Haha Hahaha Oh Ooh Aw Ugh Wait Nice Cool Okay Ok Yeah Yes No Nope Dude Man Bro Yaar Sure Sounds Got Gotcha Totally Honestly Btw And But So Or If When What Why How Who Where That This Those These There Then Also Maybe Just Still Plus Monday Tuesday Wednesday Thursday Friday Saturday Sunday Today Tomorrow Tonight AM PM AI'.split(' '),
+);
+
+/** Names (capitalised words) that a memory-style sentence uses but that nothing he or the tools said contains. */
+export function unsupportedNames(draft: string, known: string): string[] {
+	const haystack = known.toLowerCase();
+	const out: string[] = [];
+	for (const sentence of draft.split(/(?<=[.!?])\s+/)) {
+		if (!ATTRIBUTION.test(sentence)) continue;
+		const start = sentence.search(/[A-Za-z]/);
+		for (const m of sentence.matchAll(/\b[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*\b/g)) {
+			// The first word of a sentence is capitalised anyway, so it says nothing about being a name.
+			const words = m[0].split(/\s+/).filter((w, i) => !(m.index === start && i === 0) && !NOT_NAMES.has(w.replace(/'.*$/, '')));
+			for (const w of words) if (w.length > 2 && !haystack.includes(w.toLowerCase())) out.push(w);
+		}
+	}
+	return [...new Set(out)];
+}
+
+/**
+ * Returns what's wrong with a draft (for the model to fix) or null when it matches what happened.
+ * `known` is everything Jarvis legitimately knows this turn (memory, conversation); tool results are added from the trace.
+ */
+export function verifyReply(draft: string, trace: TraceEntry[], known?: string): string | null {
 	const okTools = new Set(trace.filter((t) => t.ok).map((t) => t.tool));
 	const problems: string[] = [];
+	if (known !== undefined) {
+		const invented = unsupportedNames(draft, `${known}\n${trace.map((t) => JSON.stringify(t.result ?? '')).join('\n')}`);
+		if (invented.length)
+			problems.push(`you present ${invented.map((w) => `"${w}"`).join(', ')} as something from his life or taste, but it isn't in anything you know about him. Remove it, or use recall to check first. Never invent his favourite places or past events.`);
+	}
 	for (const c of CLAIMS) {
 		if (c.pattern.test(draft) && !c.tools.some((t) => okTools.has(t))) problems.push(`your reply claims ${c.what}, but no ${c.tools.join('/')} call succeeded this turn. Either call the tool now, or don't claim it.`);
 	}

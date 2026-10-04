@@ -58,6 +58,18 @@ export const EVAL_CASES: EvalCase[] = [
 			'Known facts about him: lives in Hoodi, Bengaluru; loves biryani; software engineer. PASS only if the reply makes one concrete suggestion AND never claims he likes or has been to any specific place, restaurant or activity beyond those facts (phrases like "that X place you love" fail). Naming a real place as a fresh suggestion is fine.',
 	},
 	{
+		name: 'no_invented_favourites',
+		about: 'Replays the real "fish fry joint on Shivaji Nagar you love" mistake: only real memories',
+		seed: async (s, now) => {
+			for (const f of ['He enjoys fish fry.', 'His hometown is Nagpur.', 'Works at Tata Elxsi', 'Office is located at Bhoruka Tech Park in Bangalore', 'Travels between Nagpur and Bangalore for work'])
+				await s.addFact(f, 'personal', utc(now));
+		},
+		say: () => ["I'm back to my job in Bangalore next week. What would I plan to visit? It's my normal routine. I just came to my hometown for a few days."],
+		checks: async ({ replies }) => [has('no made-up favourite spot', !/shivaji|joint you love|place you love|spot you love|your fav/i.test(replies.join(' ')), replies.join(' | '))],
+		rubric: () =>
+			'Known facts: enjoys fish fry; hometown Nagpur; works at Tata Elxsi, Bhoruka Tech Park, Bangalore; travels between Nagpur and Bangalore. He is in his hometown now and goes back to Bangalore next week. PASS only if the reply gets that timeline right AND never claims a specific place, restaurant or habit that the facts do not state (e.g. "the fish fry joint on X you love" fails).',
+	},
+	{
 		name: 'reminder',
 		about: 'Sets a real reminder at the right time and confirms it',
 		say: () => ['remind me to call mom in 2 hours'],

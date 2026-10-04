@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { runAgent, type Tool } from '../src/agent/loop';
 import { TOOLS, keywords, type ToolCtx } from '../src/agent/tools';
-import { verifyReply } from '../src/agent/verify';
+import { unsupportedNames, verifyReply } from '../src/agent/verify';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { countQueries, queriesUsed } from '../src/db';
@@ -142,6 +142,18 @@ describe('self-check', () => {
 		expect(verifyReply("No more pineapple pizza, got it. I'll forget that fact about you.", [])).toMatch(/forgetting/);
 		expect(verifyReply('Consider that memory officially deleted, dude.', [t('forget', true)])).toBeNull();
 	});
+	it('flags names presented as his memories that nothing supports', () => {
+		const known = 'FACTS: He enjoys fish fry. His hometown is Nagpur. Office is at Bhoruka Tech Park in Bangalore.';
+		const bad = "Sounds like you'll be back at the Bhoruka Tech Park grind, dude. How about hitting the fish fry joint on Shivaji Nagar you love?";
+		expect(unsupportedNames(bad, known)).toEqual(['Shivaji', 'Nagar']);
+		expect(verifyReply(bad, [], known)).toMatch(/"Shivaji", "Nagar" as something from his life/);
+		expect(verifyReply('Back to Bhoruka Tech Park next week? Grab some fish fry in Nagpur before you leave!', [], known)).toBeNull();
+		expect(verifyReply('Try Meghana Foods, people rave about their biryani.', [], known)).toBeNull(); // a suggestion, not a "memory"
+		const recalled = [t('recall', true, 'read', { found: ['he said: went to Toit with Rahul'] })];
+		expect(verifyReply('Last time you went to Toit with Rahul, right?', recalled, known)).toBeNull();
+		expect(verifyReply('Last time you went to Toit with Rahul, right?', [], known)).toMatch(/"Toit", "Rahul"/);
+	});
+
 	it('flags promises to look something up later, since there is no later', () => {
 		for (const d of ['Wait, seriously? Let me check that for you.', 'Mumbai tomorrow! Let me check the weather for you.', "One sec, I'll look it up"]) expect(verifyReply(d, [])).toMatch(/promises to check/);
 		expect(verifyReply("It's Satya Nadella, dude.", [t('web_search', true, 'read')])).toBeNull();

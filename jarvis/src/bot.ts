@@ -291,7 +291,7 @@ export async function replyTo(
 		images,
 		maxSteps: 6,
 		budgetMs: 25_000,
-		verify: verifyReply,
+		verify: (draft, trace) => verifyReply(draft, trace, `${system}\n${recent.map((m) => m.text).join('\n')}`),
 		onTools: chatId ? () => deps.tg.sendChatAction(chatId, 'typing') : undefined,
 	});
 	const reply = cleanReply(out.text);
