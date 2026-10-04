@@ -18,6 +18,10 @@ export interface Env {
 	GROQ_API_KEY?: string;
 	GROQ_MODELS?: string;
 	CEREBRAS_API_KEY?: string;
+	MISTRAL_API_KEY?: string;
+	MISTRAL_MODELS?: string;
+	NVIDIA_API_KEY?: string;
+	NVIDIA_MODELS?: string;
 	CEREBRAS_MODELS?: string;
 	ELEVENLABS_MONTHLY_CHARS?: string;
 	CITY?: string;

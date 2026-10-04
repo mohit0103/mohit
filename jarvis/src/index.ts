@@ -2,11 +2,11 @@
 import { handleUpdate } from './bot';
 import { ImapMail, gmailSocket } from './email/imap';
 import { tick } from './scheduler';
-import { CerebrasLlm, FallbackLlm, Gemini, GroqLlm, PublicFeeds, TelegramApi, WorkersLlm, WorkersSpeech, DEFAULT_MODELS, parseHealth } from './services';
+import { CerebrasLlm, FallbackLlm, Gemini, GroqLlm, MistralLlm, NvidiaLlm, PublicFeeds, TelegramApi, WorkersLlm, WorkersSpeech, DEFAULT_MODELS, parseHealth } from './services';
 import { Store } from './store';
 import { ElevenLabs } from './eleven';
 import { edgeSynthesize } from './edge';
-import type { Deps, Env } from './types';
+import type { Deps, Env, Llm } from './types';
 import { countQueries } from './db';
 import { EVAL_CASES, runEvalStep } from './eval';
 
@@ -18,10 +18,14 @@ export function makeDeps(env: Env): Deps {
 		set: (h) => store.set('llm_health', h),
 	});
 	const groq = env.GROQ_API_KEY ? new GroqLlm(env.GROQ_API_KEY, env.GROQ_MODELS) : null;
-	const cerebras = env.CEREBRAS_API_KEY ? new CerebrasLlm(env.CEREBRAS_API_KEY, env.CEREBRAS_MODELS) : null;
-	// Gemini first (best, sees photos), then Cerebras (biggest free daily allowance), Groq, and Cloudflare as a last resort.
+	// Gemini first (best, sees photos), then whichever free backups have keys, with Cloudflare as the last resort.
+	const optional: [string, string | undefined, (key: string) => Llm][] = [
+		['mistral', env.MISTRAL_API_KEY, (k) => new MistralLlm(k, env.MISTRAL_MODELS)],
+		['nvidia', env.NVIDIA_API_KEY, (k) => new NvidiaLlm(k, env.NVIDIA_MODELS)],
+		['cerebras', env.CEREBRAS_API_KEY, (k) => new CerebrasLlm(k, env.CEREBRAS_MODELS)],
+	];
 	const backups = [
-		...(cerebras ? [{ name: 'cerebras', llm: cerebras }] : []),
+		...optional.filter(([, key]) => key).map(([name, key, make]) => ({ name, llm: make(key!) })),
 		...(groq ? [{ name: 'groq', llm: groq }] : []),
 		...(env.AI ? [{ name: 'cloudflare', llm: new WorkersLlm(env.AI) }] : []),
 	];
@@ -81,7 +85,7 @@ export default {
 			return Response.json({
 				diags: await store.diags(),
 				counts,
-				features: { gmail: Boolean(env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD), elevenlabs: Boolean(env.ELEVENLABS_API_KEY), groq: Boolean(env.GROQ_API_KEY), cerebras: Boolean(env.CEREBRAS_API_KEY) },
+				features: { gmail: Boolean(env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD), elevenlabs: Boolean(env.ELEVENLABS_API_KEY), groq: Boolean(env.GROQ_API_KEY), cerebras: Boolean(env.CEREBRAS_API_KEY), mistral: Boolean(env.MISTRAL_API_KEY), nvidia: Boolean(env.NVIDIA_API_KEY) },
 				voice: (await store.get('tts_voice')) ?? 'default',
 			});
 		}
@@ -118,7 +122,7 @@ export default {
 				const health = parseHealth(await new Store(env.DB).get('llm_health'));
 				const models = (env.GEMINI_MODELS ?? DEFAULT_MODELS.join(',')).split(',').map((m) => m.trim()).filter(Boolean);
 				const geminiResting = models.every((m) => health[m]?.until > Date.now());
-				return Response.json({ cases: EVAL_CASES.map((c) => ({ name: c.name, about: c.about })), ready: Boolean(env.EVAL_DB), geminiResting, backups: { cerebras: Boolean(env.CEREBRAS_API_KEY), groq: Boolean(env.GROQ_API_KEY) } });
+				return Response.json({ cases: EVAL_CASES.map((c) => ({ name: c.name, about: c.about })), ready: Boolean(env.EVAL_DB), geminiResting, backups: { big: Boolean(env.MISTRAL_API_KEY || env.NVIDIA_API_KEY || env.CEREBRAS_API_KEY), groq: Boolean(env.GROQ_API_KEY) } });
 			}
 			if (!env.EVAL_DB) return Response.json({ error: 'EVAL_DB is not bound' }, { status: 500 });
 			try {

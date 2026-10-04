@@ -5,7 +5,7 @@ import { unsupportedNames, verifyReply } from '../src/agent/verify';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
 import { countQueries, queriesUsed } from '../src/db';
-import { CerebrasLlm, FallbackLlm, Gemini, GroqLlm, WorkersLlm, toJsonSchema } from '../src/services';
+import { CerebrasLlm, FallbackLlm, Gemini, GroqLlm, MistralLlm, NvidiaLlm, WorkersLlm, nineCharId, toJsonSchema } from '../src/services';
 import { Store } from '../src/store';
 import { LlmError, type AgentStepRequest, type AgentStepResult, type Llm } from '../src/types';
 import { emptyMemory, makeWorld, onChat, rows, textUpdate, toolResults } from './harness';
@@ -373,6 +373,29 @@ describe('brains with tools', () => {
 		expect(calls[0].url).toBe('https://api.cerebras.ai/v1/chat/completions');
 		await new CerebrasLlm('ck', undefined, f).generate({ system: 's', turns: [{ role: 'user', text: 'q' }], search: true });
 		expect(calls[1].body.model).toBe('gpt-oss-120b'); // no search model of its own
+	});
+
+	it('Mistral gets 9-character tool ids, consistently for calls and results', async () => {
+		const { f, calls } = fetchOf(() => Response.json({ choices: [{ message: { content: 'ok' } }] }));
+		await new MistralLlm('mk', undefined, f).agentStep({
+			system: 's',
+			messages: [{ role: 'user', text: 'x' }, { role: 'model', text: '', calls: [call('recall', { query: 'a' }, 'call_3_0')] }, { role: 'tool', results: [{ id: 'call_3_0', name: 'recall', result: 1 }] }],
+			tools,
+		});
+		const body = calls[0].body;
+		expect(calls[0].url).toBe('https://api.mistral.ai/v1/chat/completions');
+		expect(body.model).toBe('mistral-medium-latest');
+		const id = body.messages[2].tool_calls[0].id;
+		expect(id).toMatch(/^[a-z0-9]{9}$/);
+		expect(body.messages[3].tool_call_id).toBe(id);
+		expect(nineCharId('abc123XYZ')).toBe('abc123XYZ');
+		expect(nineCharId('call_3_0')).not.toBe(nineCharId('call_3_1'));
+	});
+
+	it('NVIDIA NIM speaks the same protocol at its own address', async () => {
+		const { f, calls } = fetchOf(() => Response.json({ choices: [{ message: { content: 'yo' } }] }));
+		expect(await new NvidiaLlm('nk', undefined, f).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'yo', by: 'nvidia:gpt-oss-120b' });
+		expect(calls[0].url).toBe('https://integrate.api.nvidia.com/v1/chat/completions');
 	});
 
 	it('Groq looks things up with its web-search model when asked to search', async () => {

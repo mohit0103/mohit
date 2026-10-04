@@ -42,7 +42,9 @@ In the GitHub app or website: **mohit0103/mohit → Settings → Secrets and var
 | `JARVIS_PAIR_CODE` | any password you make up, e.g. `tiger-mango-42` |
 | `GMAIL_ADDRESS` | your Gmail address (optional) |
 | `GMAIL_APP_PASSWORD` | app password from step 4 (optional) |
-| `CEREBRAS_API_KEY` | free key from cloud.cerebras.ai → API Keys (optional but recommended: a big free daily allowance, so Jarvis keeps thinking when Gemini's runs out) |
+| `MISTRAL_API_KEY` | free key, no card: console.mistral.ai → choose the free plan (phone check) → API Keys (recommended: a big free allowance so Jarvis keeps thinking when Gemini's runs out; free-tier requests may be used for training) |
+| `NVIDIA_API_KEY` | free key, no card: build.nvidia.com → sign in → any model → Get API Key (optional extra backup) |
+| `CEREBRAS_API_KEY` | key from cloud.cerebras.ai (optional; may ask for a payment method) |
 | `GROQ_API_KEY` | free key from console.groq.com → API Keys (optional: backup brain when Gemini's free limit runs out, and faster voice-note understanding) |
 
 ## 6. Deploy

@@ -761,6 +761,19 @@ export interface OpenAiCompatOptions {
 	agentFirst?: string;
 	/** A model that searches the web by itself, used for search requests. */
 	searchModel?: string;
+	/** Rewrites tool-call ids the provider would reject (Mistral wants exactly 9 letters/digits). */
+	toolId?: (id: string) => string;
+}
+
+/** A stable 9-character alphanumeric id derived from any id (the same input always gives the same output). */
+export function nineCharId(id: string): string {
+	if (/^[a-zA-Z0-9]{9}$/.test(id)) return id;
+	const fnv = (seed: number) => {
+		let h = seed >>> 0;
+		for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+		return h.toString(36).padStart(7, '0');
+	};
+	return (fnv(2166136261) + fnv(374761393)).slice(0, 9);
 }
 
 /** Any OpenAI-compatible chat API (Groq, Cerebras): native tool calling, per-model rate-limit rests. */
@@ -801,15 +814,16 @@ export class OpenAiCompatLlm implements Llm {
 	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
 		if (req.images?.length) throw new LlmError(`${this.name} brain is text-only here`, 'bad_response');
 		const messages: any[] = [{ role: 'system', content: req.system }];
+		const tid = this.opts.toolId ?? ((id: string) => id);
 		for (const m of req.messages) {
 			if (m.role === 'user') messages.push({ role: 'user', content: m.text });
 			else if (m.role === 'model')
 				messages.push({
 					role: 'assistant',
 					content: m.text || null,
-					...(m.calls.length ? { tool_calls: m.calls.map((c) => ({ id: c.id, type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } })) } : {}),
+					...(m.calls.length ? { tool_calls: m.calls.map((c) => ({ id: tid(c.id), type: 'function', function: { name: c.name, arguments: JSON.stringify(c.args) } })) } : {}),
 				});
-			else for (const r of m.results) messages.push({ role: 'tool', tool_call_id: r.id, content: JSON.stringify(r.result).slice(0, 6000) });
+			else for (const r of m.results) messages.push({ role: 'tool', tool_call_id: tid(r.id), content: JSON.stringify(r.result).slice(0, 6000) });
 		}
 		const tools = req.tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: toJsonSchema(t.parameters) } }));
 		const first = this.opts.agentFirst;
@@ -894,6 +908,24 @@ export class OpenAiCompatLlm implements Llm {
 		throw new LlmError(lastMsg || `${this.name} failed`, lastKind);
 	}
 
+}
+
+export const MISTRAL_MODELS = ['mistral-medium-latest', 'mistral-small-latest'];
+
+/** Mistral: its free plan (no card) is generous; the free tier may use requests for training. */
+export class MistralLlm extends OpenAiCompatLlm {
+	constructor(key: string, models?: string, fetcher?: typeof fetch, sleep?: (ms: number) => Promise<void>, clock?: () => number) {
+		super({ name: 'mistral', url: 'https://api.mistral.ai/v1/chat/completions', key, models, defaults: MISTRAL_MODELS, agentFirst: 'mistral-medium-latest', toolId: nineCharId }, fetcher, sleep, clock);
+	}
+}
+
+export const NVIDIA_MODELS = ['openai/gpt-oss-120b', 'meta/llama-3.3-70b-instruct'];
+
+/** NVIDIA NIM: free hosted open models (no card), OpenAI-compatible. */
+export class NvidiaLlm extends OpenAiCompatLlm {
+	constructor(key: string, models?: string, fetcher?: typeof fetch, sleep?: (ms: number) => Promise<void>, clock?: () => number) {
+		super({ name: 'nvidia', url: 'https://integrate.api.nvidia.com/v1/chat/completions', key, models, defaults: NVIDIA_MODELS, agentFirst: 'openai/gpt-oss-120b' }, fetcher, sleep, clock);
+	}
 }
 
 export const CEREBRAS_MODELS = ['gpt-oss-120b', 'qwen-3.8-27b'];

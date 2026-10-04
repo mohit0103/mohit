@@ -18,8 +18,8 @@ if (!ready) {
 	console.log('::warning::EVAL_DB is not bound yet; skipping live evals');
 	process.exit(0);
 }
-if (!only.length && (mode === 'none' || (geminiResting && !backups?.cerebras))) {
-	console.log(mode === 'none' ? 'Live evals skipped (EVALS=none).' : "Live evals skipped: Gemini's free quota is resting, so it's saved for Mohit's chats.");
+if (!only.length && (mode === 'none' || (geminiResting && !backups?.big))) {
+	console.log(mode === 'none' ? 'Live evals skipped (EVALS=none).' : "Live evals skipped: Gemini is resting and there is no big backup brain, so the quota is saved for Mohit's chats.");
 	process.exit(0);
 }
 const chosen = cases.filter((c) => (only.length ? only.includes(c.name) : mode === 'all' || QUICK.includes(c.name)));
