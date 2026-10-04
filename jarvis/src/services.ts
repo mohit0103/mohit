@@ -919,7 +919,7 @@ export class MistralLlm extends OpenAiCompatLlm {
 	}
 }
 
-export const NVIDIA_MODELS = ['openai/gpt-oss-120b', 'meta/llama-3.3-70b-instruct'];
+export const NVIDIA_MODELS = ['openai/gpt-oss-120b', 'meta/llama-3.3-70b-instruct', 'openai/gpt-oss-20b'];
 
 /** NVIDIA NIM: free hosted open models (no card), OpenAI-compatible. */
 export class NvidiaLlm extends OpenAiCompatLlm {
