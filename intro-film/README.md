@@ -7,33 +7,30 @@ Inter, Geist Mono and the Mrs Saint Delafield signature script.
 
 Rendered films:
 
-* **`out/reel.mp4`**: 9:16 vertical trailer (1080×1920, 60 fps, 17.2 s) for Reels/Shorts.
+* **`out/reel.mp4`**: 9:16 vertical reel (1080×1920, 60 fps, 18.4 s) for Reels/Shorts.
 * `out/intro.mp4`: 16:9 long-form intro (1920×1080, 60 fps, 50.7 s).
 
 ## The reel (`reel.html` + `reel_score.py`)
 
-Every cut is a **match cut**. Each photo is placed by a feature it shares with its
-neighbour (a circle, a person, a horizon or a vanishing point), so at the cut both
-images line up exactly and the camera move carries straight through. Typography is
-Inter Display (optical sizing, tight tracking) in an Apple-keynote style: words
-blur into focus.
+A soft, Apple-style piece on a light canvas. Every photo is a rounded card, a
+*shared element* that morphs between layouts instead of cutting, with spring
+easing (≈3% overshoot), soft shadows, inner parallax and blur-in words set in
+Inter Display.
 
-| time | match |
+| time | scene |
 |---|---|
-| 0–1s | *third_eyef1.7* → a white dot that becomes the **iris** |
-| 1–4.5s | Circle chain: eye iris → moon → sun → Konark wheel hub → ferris-wheel hub → flower (*See. Moon. Sun. Wheel. Wonder. Bloom.*) |
-| 4.5–5.5s | The iris closes on the flower; *Chasing the last light.* |
-| 5.5–7.5s | A horizon line opens onto the beach; the beach walker splits into the seated man (same axis); the lake and sea horizons lock at the same height |
-| 7.5–9s | Push into the railway's vanishing point → the radial Pixel shot grows out of the same point |
-| 9–11.5s | **Google × photo**: the G draws on, the featured frame pulls out of full screen into a card, and the carousel swipes through the featured shots (*Featured on Google Pixel & Google India*, 300K+ counter) |
-| 11.5–14.5s | The ferris hub becomes **his camera lens** and pulls out to the portrait and name |
-| 14.5–17.2s | Eighth-note recap, *third_eyef1.7* |
+| 0–1.4s | *third_eyef1.7* sharpens out of a blur, then settles into the eyebrow |
+| 1.4–6s | **Selected work** carousel: cards spring in, glide on the beat with inner parallax, captions slide and blur, the active dot stretches into a pill |
+| 6–8s | The last card expands to full bleed: *Chasing the last light.* |
+| 8–10.6s | It shrinks back into the first tile of a masonry grid; tiles spring in, the grid scrolls under a frosted header, the mood-chip highlight glides |
+| 10.6–13.6s | **Google × photo**: the featured tile glides into the card, the G draws on, the carousel swipes through the featured shots, 300K+ counter |
+| 13.6–15.8s | The card's corners round off into a circle around his portrait; the ring draws, the name sets |
+| 15.8–18.4s | The circle shrinks into an avatar above *third_eyef1.7*, the URL and a *Follow* button that gets pressed |
 
-`window.checkCoverage()` in the page verifies that every photo fills the frame at every frame.
-
-The score is a D-minor trailer pulse (side-chained bass, stabs, claps, hats, snare roll)
-with a sound for every cut: shape-match whooshes with glassy tails, airy horizon swells,
-vanishing-point zoom risers, card swipes, the G "draw" plucks, booms and braams.
+The score is a warm D-major felt-piano and pad bed (100 bpm) with a gentle
+kick and shaker only while things move. The sound design is micro-sounds only:
+picker ticks for each carousel step, soft taps, bells, pebble pops as tiles land,
+four bell notes as the G draws, and a button click.
 
 ```bash
 node render.js --page reel.html      # -> out/reel.mp4 (~7 min on 4 cores)

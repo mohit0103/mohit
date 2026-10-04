@@ -6,95 +6,85 @@
 <link rel="stylesheet" href="assets/fonts/inter-display.css">
 <style>
   :root {
-    --white: #ffffff; --black: #000000; --gray-bg: #f5f5f7; --label: #1d1d1f; --label2: #6e6e73; --label3: #86868b;
-    --amber: #ad6e52; --font: 'Inter Display', -apple-system, 'SF Pro Display', sans-serif;
+    --canvas: #f5f5f7; --fill: #e8e8ed; --label: #1d1d1f; --label2: #6e6e73; --label3: #86868b;
+    --font: 'Inter Display', -apple-system, 'SF Pro Display', sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: #000; overflow: hidden; }
   body.preview { display: grid; place-items: center; height: 100vh; }
-  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--black); color: var(--white);
-    transform-origin: 0 0; font-family: var(--font); -webkit-font-smoothing: antialiased; font-optical-sizing: auto;
-    font-feature-settings: 'cv11', 'ss03'; }
-  .layer { position: absolute; inset: 0; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--canvas); color: var(--label);
+    transform-origin: 0 0; font-family: var(--font); -webkit-font-smoothing: antialiased; font-optical-sizing: auto; }
   .abs { position: absolute; }
+  .layer { position: absolute; inset: 0; }
   .c { left: 0; width: 1080px; text-align: center; }
-  .shot { position: absolute; inset: 0; overflow: hidden; }
-  .ph { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
-  .t-head { font-weight: 600; letter-spacing: -.035em; line-height: 1.04; white-space: nowrap; }
-  .t-body { font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
+  .card { position: absolute; left: 0; top: 0; overflow: hidden; background: var(--fill); will-change: transform; transform-origin: 0 0; }
+  .card img { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+  .head { font-weight: 600; letter-spacing: -.035em; line-height: 1.05; white-space: nowrap; }
+  .body { font-weight: 500; letter-spacing: -.01em; white-space: nowrap; }
   .w { display: inline-block; will-change: transform, filter, opacity; }
   svg { position: absolute; left: 0; top: 0; overflow: visible; }
-  #grain { position: absolute; inset: 0; width: 1080px; height: 1920px; mix-blend-mode: overlay; opacity: .07; pointer-events: none; }
-  #vig { background: radial-gradient(ellipse 95% 72% at 50% 50%, transparent 55%, rgba(0,0,0,.42) 100%); }
-  .grad { padding-bottom: .12em; background: linear-gradient(100deg, #ffe3cf 0%, #f2b48d 45%, #c97b5a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .chip { display: inline-block; height: 56px; line-height: 56px; padding: 0 26px; border-radius: 28px; font-size: 24px; font-weight: 600; letter-spacing: -.01em; position: relative; z-index: 1; }
+  #grain { position: absolute; inset: 0; width: 1080px; height: 1920px; mix-blend-mode: overlay; opacity: .045; pointer-events: none; }
+  .grad { background: linear-gradient(100deg, #ffffff 0%, #fff1e6 50%, #ffd9bf 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .12em; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <!-- light canvas used by the Google + portrait scenes -->
-  <div class="layer" id="lightBg" style="background:var(--gray-bg)"></div>
+  <!-- cards live here (shared elements that morph between layouts) -->
+  <div class="layer" id="cards" style="z-index:0"></div>
+  <div class="layer" id="shade" style="background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.58) 100%)"></div>
 
-  <!-- intro -->
-  <div class="layer" id="intro">
-    <div class="abs c t-head" id="iTitle" style="top:900px;font-size:44px"></div>
-    <div class="abs c t-body" id="iSub" style="top:968px;font-size:22px;color:var(--label3)">Photography</div>
-    <div class="abs" id="iDot" style="border-radius:50%;background:#fff"></div>
-  </div>
+  <!-- intro / eyebrow -->
+  <div class="abs c head" id="brand" style="top:0;font-size:46px;transform-origin:540px 0"></div>
+  <div class="abs c body" id="brandSub" style="top:968px;font-size:24px;color:var(--label3)">Photography</div>
 
-  <!-- match-cut shots -->
-  <div class="layer" id="shots"></div>
-  <svg id="fxSvg" width="1080" height="1920">
-    <circle id="ring" cx="540" cy="960" r="0" fill="none" stroke="#fff" stroke-width="2" opacity="0"/>
-    <line id="lineA" x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="2" opacity="0"/>
-    <line id="lineB" x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="2" opacity="0"/>
-  </svg>
+  <!-- carousel chrome -->
+  <div class="abs c body" id="secLabel" style="top:300px;font-size:24px;font-weight:600;color:var(--label3)">Selected work</div>
+  <div class="layer" id="caps"></div>
+  <div class="abs" id="dots" style="top:1590px;left:0;width:1080px;height:12px"></div>
 
-  <!-- type beat -->
-  <div class="layer" id="beat">
-    <div class="abs c t-body" id="bA" style="top:842px;font-size:50px;color:var(--label3)"></div>
-    <div class="abs c t-head" id="bB" style="top:906px;font-size:118px;padding-bottom:14px"></div>
+  <!-- full-bleed moment -->
+  <div class="abs c body" id="fbA" style="top:1250px;font-size:46px;color:rgba(255,255,255,.82)"></div>
+  <div class="abs c head" id="fbB" style="top:1310px;font-size:112px"></div>
+
+  <!-- grid header (sticky, frosted) -->
+  <div class="abs" id="gridHead" style="left:0;top:0;width:1080px;height:350px;background:rgba(245,245,247,.82);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)">
+    <div class="abs c head" id="ghTitle" style="top:160px;font-size:50px">Explore by mood</div>
+    <div class="abs c" id="chipRow" style="top:248px;height:56px">
+      <div id="chipInner" style="display:inline-block;position:relative;white-space:nowrap">
+        <div id="chipPill" class="abs" style="top:0;height:56px;border-radius:28px;background:#1d1d1f"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Google × photo -->
   <div class="layer" id="google">
     <svg id="gMark" viewBox="0 0 48 48" width="150" height="150" style="left:465px;top:250px">
       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.480-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
       <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.150 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
     </svg>
     <div class="abs c" id="gX" style="top:436px;font-size:64px;font-weight:250;color:var(--label3);line-height:1">×</div>
-    <div class="layer" id="cards"></div>
-    <div class="abs c t-body" id="gL1" style="top:1468px;font-size:30px;color:var(--label2)">Featured on</div>
-    <div class="abs c t-head" id="gL2" style="top:1514px;font-size:60px;color:var(--label)">Google Pixel <span style="color:var(--label3);font-weight:400">&amp;</span> Google India</div>
-    <div class="abs c t-body" id="gL3" style="top:1622px;font-size:27px;color:var(--label2)"><span id="gNum" style="color:var(--label);font-weight:600">300K+</span> views on a single frame</div>
+    <div class="abs c body" id="gL1" style="top:1468px;font-size:30px;color:var(--label2)"></div>
+    <div class="abs c head" id="gL2" style="top:1514px;font-size:60px">Google Pixel <span style="color:var(--label3);font-weight:400">&amp;</span> Google India</div>
+    <div class="abs c body" id="gL3" style="top:1622px;font-size:27px;color:var(--label2)"><span id="gNum" style="color:var(--label);font-weight:600">300K+</span> views on a single frame</div>
   </div>
 
   <!-- portrait -->
-  <div class="layer" id="portrait">
-    <div class="layer" id="pFerrisWrap"><img class="ph" id="pFerris" src="assets/photos/featured-pixel-02.jpg"></div>
-    <div class="layer" id="pWrap"><img class="ph" id="pImg" src="assets/photos/mohit-portrait.png"></div>
-    <svg id="pSvg" width="1080" height="1920">
-      <circle id="pRing" cx="540" cy="760" r="434" fill="none" stroke="#1d1d1f" stroke-width="1.5"/>
-      <defs><path id="pPath" d="M 540 760 m -478 0 a 478 478 0 1 1 956 0 a 478 478 0 1 1 -956 0"/></defs>
-      <g id="pBadge"><text font-family="Inter Display" font-weight="600" font-size="17" letter-spacing="6" fill="#86868b"><textPath href="#pPath">THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 ·</textPath></text></g>
-    </svg>
-    <div class="abs c t-head" id="pName" style="top:1300px;font-size:92px;color:var(--label)"></div>
-    <div class="abs c t-body" id="pRole" style="top:1420px;font-size:32px;color:var(--label2)"></div>
-  </div>
+  <svg id="pSvg" width="1080" height="1920">
+    <circle id="pRing" cx="540" cy="760" r="440" fill="none" stroke="#1d1d1f" stroke-width="1.5"/>
+    <defs><path id="pPath" d="M 540 760 m -484 0 a 484 484 0 1 1 968 0 a 484 484 0 1 1 -968 0"/></defs>
+    <g id="pBadge"><text font-family="Inter Display" font-weight="600" font-size="17" letter-spacing="6" fill="#86868b"><textPath href="#pPath">THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 · PHOTOGRAPHER · BANGALORE · THIRD_EYEF1.7 ·</textPath></text></g>
+  </svg>
+  <div class="abs c head" id="pName" style="top:1300px;font-size:92px"></div>
+  <div class="abs c body" id="pRole" style="top:1420px;font-size:32px;color:var(--label2)"></div>
 
-  <!-- recap + end -->
-  <div class="layer" id="recap"></div>
-  <div class="layer" id="end">
-    <div class="abs c t-head" id="eTitle" style="top:860px;font-size:88px"></div>
-    <div class="abs c t-body" id="eSub" style="top:980px;font-size:28px;color:var(--label3)">Mohit Bhaisare — Photography</div>
-    <div class="abs c t-body" id="eUrl" style="top:1030px;font-size:23px;color:var(--label2)">mohit-bhaisare.vercel.app</div>
-  </div>
+  <!-- end -->
+  <div class="abs c head" id="eTitle" style="top:880px;font-size:84px"></div>
+  <div class="abs c body" id="eUrl" style="top:996px;font-size:27px;color:var(--label2)">mohit-bhaisare.vercel.app</div>
+  <div class="abs" id="eBtn" style="left:410px;top:1090px;width:260px;height:84px;border-radius:42px;background:#1d1d1f;color:#fff;text-align:center;line-height:84px;font-size:30px;font-weight:600;letter-spacing:-.01em">Follow</div>
 
-  <!-- overlays -->
-  <div class="abs c t-body" id="eyebrow" style="top:96px;font-size:22px;font-weight:600;letter-spacing:.01em;color:rgba(255,255,255,.86)">third_eyef1.7</div>
-  <div class="abs c t-head" id="word" style="top:1612px;font-size:72px;text-shadow:0 2px 30px rgba(0,0,0,.25)"></div>
-  <div class="layer" id="vig"></div>
   <canvas id="grain" width="540" height="960"></canvas>
 </div>
 
@@ -106,384 +96,315 @@ window.SCORE = 'reel_score.py';
 const $ = id => document.getElementById(id);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, p) => a + (b - a) * p;
-const lerpLog = (a, b, p) => a * Math.pow(b / a, p);
 const P = (t, a, b) => clamp((t - a) / (b - a));
 const E = {
-  lin: x => x, outCubic: x => 1 - (1 - x) ** 3, inCubic: x => x ** 3, inQuad: x => x * x,
+  outCubic: x => 1 - (1 - x) ** 3, inCubic: x => x ** 3,
   inOutCubic: x => x < .5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2,
   outQuart: x => 1 - (1 - x) ** 4, inOutQuart: x => x < .5 ? 8 * x ** 4 : 1 - (-2 * x + 2) ** 4 / 2,
-  inOutQuint: x => x < .5 ? 16 * x ** 5 : 1 - (-2 * x + 2) ** 5 / 2,
-  outExpo: x => x >= 1 ? 1 : 1 - 2 ** (-10 * x), inExpo: x => x <= 0 ? 0 : 2 ** (10 * x - 10),
-  outBack: x => 1 + 2.2 * (x - 1) ** 3 + 1.2 * (x - 1) ** 2, inOutSine: x => -(Math.cos(Math.PI * x) - 1) / 2,
+  inOutSine: x => -(Math.cos(Math.PI * x) - 1) / 2,
+  // gently under-damped spring (≈3% overshoot), like iOS
+  spring: x => x >= 1 ? 1 : 1 - Math.exp(-8 * x) * Math.cos(7 * x),
 };
-const EP = (t, a, b, e = E.inOutCubic) => e(P(t, a, b));
 const smooth = (a, b, x) => { const u = clamp((x - a) / (b - a)); return u * u * (3 - 2 * u); };
 const show = (el, on) => { (typeof el === 'string' ? $(el) : el).style.display = on ? '' : 'none'; };
 function S(el, o) {
   if (typeof el === 'string') el = $(el);
   for (const k in o) { const v = o[k];
-    if (k === 'o') el.style.opacity = v; else if (k === 'tf') el.style.transform = v;
-    else if (k === 'clip') el.style.clipPath = v; else el.style[k] = v; }
+    if (k === 'o') el.style.opacity = v; else if (k === 'tf') el.style.transform = v; else el.style[k] = v; }
 }
-function setMask(el, m) { el.style.webkitMaskImage = m; el.style.maskImage = m; }
+const setMask = (el, m) => { el.style.webkitMaskImage = m; el.style.maskImage = m; };
 let FRAME = 0;
 
-// words that blur-sharpen into place (Apple keynote style)
-function words(el) {
-  const txt = el.textContent || el.dataset.text; el.innerHTML = '';
+function words(el, txt) {
+  el.innerHTML = '';
   return txt.split(' ').map((w, i, a) => { const s = document.createElement('span'); s.className = 'w'; s.textContent = w;
     el.appendChild(s); if (i < a.length - 1) el.appendChild(document.createTextNode(' ')); return s; });
 }
-function blurIn(pieces, t, a, st = .06, dur = .45, b = Infinity, bd = .25) {
+// Apple-style reveal: each word sharpens out of a blur while it settles
+function blurIn(pieces, t, a, st = .06, dur = .5, b = null, bd = .25) {
   pieces.forEach((el, i) => {
-    const pin = E.outCubic(P(t, a + i * st, a + i * st + dur)), pout = b === Infinity ? 0 : E.inCubic(P(t, b + i * st * .4, b + i * st * .4 + bd));
+    const pin = E.outCubic(P(t, a + i * st, a + i * st + dur));
+    const pout = b === null ? 0 : E.inCubic(P(t, b + i * st * .4, b + i * st * .4 + bd));
     el.style.opacity = pin * (1 - pout);
-    el.style.filter = `blur(${(1 - pin) * 14 + pout * 12}px)`;
-    el.style.transform = `translateY(${(1 - pin) * 26 - pout * 16}px) scale(${lerp(1.06, 1, pin)})`;
+    el.style.filter = `blur(${(1 - pin) * 12 + pout * 10}px)`;
+    el.style.transform = `translateY(${(1 - pin) * 22 - pout * 14}px)`;
   });
 }
+const fade = (el, t, a, dur = .45, b = null, bd = .25, dy = 16) => {
+  const pin = E.outCubic(P(t, a, a + dur)), pout = b === null ? 0 : E.inCubic(P(t, b, b + bd));
+  S(el, { o: pin * (1 - pout), filter: `blur(${(1 - pin) * 10 + pout * 8}px)`, tf: `translateY(${(1 - pin) * dy - pout * dy * .6}px)` });
+};
 
-/* ───────────────────────── shots ─────────────────────────
-   Each shot is placed by a feature (x, y, r in image pixels). A transition into
-   a shot has an anchor A = screen circle (cx, cy, R): the outgoing shot's
-   feature and the incoming shot's feature are both mapped onto it, so at the
-   cut they coincide exactly. Between its in and out anchors a shot keeps moving
-   (constant-rate zoom + drift), so the camera never stops. */
-const SH = [
-  { src: 'photo-01.jpg', at: 1.0, tin: 'circle', fin: [633, 425, 92], A: [540, 990, 225], word: 'See.' },
-  { src: 'photo-05.jpg', at: 1.5, tin: 'circle', fin: [950, 548, 131], A: [540, 990, 240], word: 'Moon.' },
-  { src: 'photo-16.jpg', at: 2.0, tin: 'circle', fin: [1103, 782, 117], A: [540, 1245, 300], word: 'Sun.' },
-  { src: 'photo-20.jpg', at: 2.5, tin: 'circle', fin: [945, 1695, 171], A: [540, 1245, 270], word: 'Wheel.' },
-  { src: 'featured-pixel-02.jpg', at: 3.0, tin: 'circle', fin: [1077, 1535, 117], A: [540, 1100, 112], word: 'Wonder.' },
-  { src: 'photo-14.jpg', at: 3.5, tin: 'circle', fin: [953, 537, 53], A: [540, 1150, 113], outA: [540, 1150, 127], word: 'Bloom.' },
-  { src: null, at: 4.5, tin: 'irisOut' },
-  { src: 'photo-31.jpg', at: 5.5, tin: 'slit', fin: [1280, 2450, 100], A: [540, 1350, 85], slitY: 2096, word: 'Blue hour.' },
-  { src: 'photo-04.jpg', at: 6.0, tin: 'axis', fin: [960, 2700, 100], fout: [960, 2240, 100], A: [540, 1350, 85], word: 'Stillness.' },
-  { src: 'photo-13.jpg', at: 6.5, tin: 'horizon', fin: [960, 2234, 100], A: [540, 959, 85], word: 'Amber.' },
-  { src: 'photo-28.jpg', at: 7.0, tin: 'horizon', fin: [960, 2191, 100], A: [540, 959, 85], word: 'Horizon.' },
-  { src: 'photo-22.jpg', at: 7.5, tin: 'horizon', fin: [1320, 1985, 100], A: [540, 959, 135], outS: 2.5, word: 'Lines.' },
-  { src: 'featured-pixel-03.jpg', at: 8.25, tin: 'vp', fin: [960, 1205, 100], A: [540, 959, 85], outA: [540, 959, 85] },
-  { src: null, at: 9.0, tin: 'cut' },
+/* ───────────────────────── cards (shared elements) ───────────────────────── */
+const CARDS = {};
+function card(key, src) {
+  const d = document.createElement('div'); d.className = 'card';
+  const img = document.createElement('img'); img.src = `assets/photos/${src}`;
+  d.appendChild(img); $('cards').appendChild(d);
+  return CARDS[key] = { d, img };
+}
+// geometry + cover-fit image with focus, zoom and parallax
+function setCard(c, g) {
+  const { x, y, w, h, r = 0, fx = .5, fy = .5, zoom = 1, px = 0, py = 0, o = 1, sh = 1, z = 0, sc = 1 } = g;
+  const d = c.d, img = c.img;
+  d.style.display = '';
+  d.style.width = `${w}px`; d.style.height = `${h}px`;
+  d.style.transform = `translate(${x}px,${y}px) translate(${w / 2}px,${h / 2}px) scale(${sc}) translate(${-w / 2}px,${-h / 2}px)`;
+  d.style.borderRadius = typeof r === 'string' ? r : `${r}px`;
+  d.style.opacity = o; d.style.zIndex = z;
+  d.style.boxShadow = sh > 0 ? `0 ${24 * sh}px ${70 * sh}px rgba(0,0,0,${.16 * sh}), 0 ${4 * sh}px ${14 * sh}px rgba(0,0,0,${.06 * sh})` : 'none';
+  const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.max(w / iw, h / ih) * zoom;
+  const tx = clamp((w - iw * s) * fx + px, w - iw * s, 0), ty = clamp((h - ih * s) * fy + py, h - ih * s, 0);
+  img.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+}
+const hideCards = () => Object.values(CARDS).forEach(c => c.d.style.display = 'none');
+const lerpG = (a, b, p) => { const o = { ...a }; for (const k in b) o[k] = typeof b[k] === 'number' && typeof a[k] === 'number' ? lerp(a[k], b[k], p) : (p < .5 && k in a ? a[k] : b[k]); return o; };
+
+/* ───────────────────────── content ───────────────────────── */
+const T = {
+  carIn: 1.35, steps: [2.2, 2.8, 3.4, 4.0, 4.6, 5.2], expand: 6.0, fbText: 6.75, shrink: 8.0, scroll: [8.4, 10.6], chips: [8.9, 9.5, 10.1],
+  google: 10.6, swap1: 12.4, swap2: 13.0, portrait: 13.6, end: 15.8,
+};
+window.DURATION = 18.4;
+
+const CAR = [
+  ['photo-31.jpg', 'Blue hour', 'Twilight', .5, .7], ['photo-04.jpg', 'Stillness', 'Twilight', .5, .62], ['photo-22.jpg', 'Platform', 'Street', .6, .62],
+  ['photo-26.jpg', 'Canopy', 'Nature', .5, .5], ['photo-20.jpg', 'Konark', 'Culture', .5, .5], ['photo-33.jpg', 'Wild', 'Nature', .5, .35],
+  ['photo-28.jpg', 'Amber horizon', 'Twilight', .5, .62],
 ];
-// transition window: [length, fraction before the cut]
-const TR = { circle: [.45, .18], irisOut: [.35, .6], slit: [.42, .05], axis: [.42, .25], horizon: [.42, .25], vp: [.5, .3], cut: [0, 0] };
-const CAM_C = [540, 959];
-const cam = t => t < 5.5 ? 1 : 1 + .035 * (Math.min(t, 7.5) - 5.5);   // slow push through the horizon chain
-
-const shotEls = SH.map(s => {
-  if (!s.src) return null;
-  const d = document.createElement('div'); d.className = 'shot';
-  const img = document.createElement('img'); img.className = 'ph'; img.src = `assets/photos/${s.src}`;
-  d.appendChild(img); $('shots').appendChild(d); return { d, img };
+const CW = 700, CH = 940, CX = 190, CY = 430, PITCH = 650;
+CAR.forEach(([src], i) => card(`car${i}`, src));
+const caps = CAR.map(([, title, mood]) => {
+  const d = document.createElement('div'); d.className = 'abs c';
+  d.style.top = '1418px';
+  d.innerHTML = `<div class="head" style="font-size:54px">${title}</div><div class="body" style="font-size:26px;color:var(--label2);margin-top:12px">${mood}</div>`;
+  $('caps').appendChild(d); return d;
 });
-// placement of shot i at time t (screen-space scale s and the screen position of its in-feature)
-function placement(i, t) {
-  const s = SH[i], n = SH[i + 1];
-  const fin = s.fin, fout = s.fout || s.fin;
-  const sIn = s.A[2] / fin[2];
-  const pIn = [s.A[0] - fin[0] * sIn, s.A[1] - fin[1] * sIn];           // image translation at the in-cut
-  const oa = s.outA || (n && n.A && n.src && n.tin !== 'vp' ? n.A : null);
-  let sOut = sIn, pOut = pIn;
-  if (s.outS) { sOut = s.outS; pOut = [s.A[0] - fin[0] * sOut, s.A[1] - fin[1] * sOut]; }
-  else if (oa) { sOut = oa[2] / fout[2]; pOut = [oa[0] - fout[0] * sOut, oa[1] - fout[1] * sOut]; }
-  const t1 = n ? n.at : s.at + 1;
-  let p = (t - s.at) / (t1 - s.at);                                      // linear and unclamped: motion carries through cuts…
-  if ((p > 1 && sOut < sIn) || (p < 0 && sOut > sIn)) p = clamp(p);      // …but only ever as a push-in, never exposing an edge
-  const sc = lerpLog(sIn, sOut, p);
-  // keep the in-feature on a straight path between its in and out screen positions
-  const fxIn = s.A[0], fyIn = s.A[1];
-  const fxOut = pOut[0] + fin[0] * sOut, fyOut = pOut[1] + fin[1] * sOut;
-  let fx = lerp(fxIn, fxOut, p), fy = lerp(fyIn, fyOut, p);
-  let tx = fx - fin[0] * sc, ty = fy - fin[1] * sc;
-  // camera
-  const k = cam(t);
-  return { s: sc * k, tx: CAM_C[0] + (tx - CAM_C[0]) * k, ty: CAM_C[1] + (ty - CAM_C[1]) * k };
-}
-const featScreen = (pl, f) => [pl.tx + f[0] * pl.s, pl.ty + f[1] * pl.s, f[2] * pl.s];
-function drawShot(i, t, o = {}) {
-  const el = shotEls[i]; if (!el) return null;
-  let pl = placement(i, t);
-  if (o.mul) { const f = featScreen(pl, SH[i].fin); pl = { s: pl.s * o.mul, tx: f[0] - SH[i].fin[0] * pl.s * o.mul, ty: f[1] - SH[i].fin[1] * pl.s * o.mul }; }
-  el.d.style.display = ''; el.d.style.zIndex = o.z || 0; el.d.style.opacity = o.op ?? 1;
-  el.img.style.transform = `translate(${pl.tx}px,${pl.ty}px) scale(${pl.s})`;
-  setMask(el.d, o.mask || 'none');
-  el.img.style.filter = o.filter || 'none';
-  return pl;
-}
-const ringEl = $('ring'), lineA = $('lineA'), lineB = $('lineB');
-function renderShots(t) {
-  shotEls.forEach(e => e && (e.d.style.display = 'none'));
-  ringEl.setAttribute('opacity', 0); lineA.setAttribute('opacity', 0); lineB.setAttribute('opacity', 0);
-  let c = -1; for (let i = 0; i < SH.length; i++) if (t >= SH[i].at) c = i;
-  let k = -1, p = 0;
-  for (let i = 0; i < SH.length; i++) {
-    const [D, a] = TR[SH[i].tin] || [0, 0]; if (!D) continue;
-    const s0 = SH[i].at - D * a;
-    if (t >= s0 && t < s0 + D) { k = i; p = (t - s0) / D; }
-  }
-  if (k < 0) { if (c >= 0 && SH[c].src) drawShot(c, t); return; }
-  const B = k, A = k - 1, ty = SH[B].tin;
-  const hasA = A >= 0 && !!SH[A].src, hasB = !!SH[B].src;
-  if (ty === 'circle') {
-    if (hasA) drawShot(A, t);
-    const pl = placement(B, t), [x, y, r] = featScreen(pl, SH[B].fin);
-    const al = smooth(0, .32, p);
-    const grow = E.inOutCubic(P(p, .22, 1));
-    const rin = r * lerp(1, 14, grow), f = lerp(3, 90, grow);
-    drawShot(B, t, { z: 1, mask: `radial-gradient(circle at ${x}px ${y}px, rgba(0,0,0,${al}) ${rin}px, rgba(0,0,0,0) ${rin + f}px)` });
-    ringEl.setAttribute('cx', x); ringEl.setAttribute('cy', y); ringEl.setAttribute('r', rin + f * .3);
-    ringEl.setAttribute('opacity', .75 * Math.sin(Math.PI * clamp(p * 1.4)) * (1 - grow * .6));
-    ringEl.setAttribute('stroke-width', lerp(2.5, 1, grow));
-  } else if (ty === 'irisOut') {
-    const pl = placement(A, t), [x, y, r] = featScreen(pl, SH[A].fin);
-    const e = E.inOutCubic(p), rin = lerp(r * 14, 0, e), f = lerp(90, 2, e);
-    drawShot(A, t, { mask: `radial-gradient(circle at ${x}px ${y}px, #000 ${rin}px, transparent ${rin + f}px)` });
-    ringEl.setAttribute('cx', x); ringEl.setAttribute('cy', y); ringEl.setAttribute('r', Math.max(0, rin));
-    ringEl.setAttribute('opacity', .7 * smooth(.4, .8, p) * (1 - smooth(.85, 1, p)));
-  } else if (ty === 'axis' || ty === 'horizon' || ty === 'slit') {
-    if (hasA) drawShot(A, t);
-    const pl = placement(B, t);
-    const vertical = ty === 'axis';
-    const fy = ty === 'slit' ? pl.ty + SH[B].slitY * pl.s : featScreen(pl, SH[B].fin)[1];
-    const fx = featScreen(pl, SH[B].fin)[0];
-    const e = E.inOutQuart(p), half = (vertical ? W : H) * 1.05 * e, f = lerp(4, 160, e);
-    const ctr = vertical ? fx : fy, dir = vertical ? '90deg' : '180deg';
-    const m = `linear-gradient(${dir}, transparent ${ctr - half - f}px, #000 ${ctr - half}px, #000 ${ctr + half}px, transparent ${ctr + half + f}px)`;
-    drawShot(B, t, { z: 1, mask: m });
-    const op = .8 * Math.sin(Math.PI * clamp(p * 1.25)) * (1 - e);
-    [[lineA, -1], [lineB, 1]].forEach(([ln, sg]) => {
-      const v = ctr + sg * (half + f * .2);
-      if (vertical) { ln.setAttribute('x1', v); ln.setAttribute('x2', v); ln.setAttribute('y1', 0); ln.setAttribute('y2', H); }
-      else { ln.setAttribute('y1', v); ln.setAttribute('y2', v); ln.setAttribute('x1', 0); ln.setAttribute('x2', W); }
-      ln.setAttribute('opacity', op);
-    });
-  } else if (ty === 'vp') {
-    // zoom through the vanishing point: the outgoing shot rushes past, the incoming one grows out of the same point
-    if (hasA) drawShot(A, t, { mul: Math.exp(2.2 * E.inQuad(p)), op: 1 - smooth(.55, .95, p), filter: `blur(${smooth(.3, 1, p) * 10}px)` });
-    const m = lerp(.32, 1, E.outExpo(P(p, .15, 1)));
-    const pl = placement(B, t);
-    const sEff = pl.s * m;
-    const [x, y] = featScreen(pl, SH[B].fin);
-    const rr = sEff < .8 ? 930 * sEff : lerp(744, 2400, smooth(.8, .9, sEff / pl.s * .85));
-    drawShot(B, t, { z: 1, mul: m, mask: `radial-gradient(circle at ${x}px ${y}px, #000 ${rr}px, transparent ${rr + 30}px)`, op: smooth(.1, .3, p) });
-  } else if (hasB) drawShot(B, t);
-}
+const dots = CAR.map(() => { const d = document.createElement('div'); d.className = 'abs';
+  d.style.cssText = 'top:0;height:12px;border-radius:6px;background:#1d1d1f'; $('dots').appendChild(d); return d; });
 
-/* ───────────────────────── other scenes ───────────────────────── */
-$('iTitle').textContent = 'third_eyef1.7';
-const iTitle = words($('iTitle'));
-$('bA').textContent = 'Chasing'; $('bB').textContent = 'the last light.';
-const bA = words($('bA')), bB = words($('bB'));
-bB.forEach(w => w.classList.add('grad'));   // gradient per word so it survives per-word transforms
-$('pName').textContent = 'Mohit Bhaisare'; $('pRole').textContent = 'Photographer, Bangalore.';
-const pName = words($('pName')), pRole = words($('pRole'));
-$('eTitle').textContent = 'third_eyef1.7';
-const eTitle = words($('eTitle'));
-const gL1 = words($('gL1'));
+// masonry grid (3 columns)
+const GX = 60, GG = 20, GW = (W - 2 * GX - 2 * GG) / 3, GY0 = 400;
+const GRID = [
+  [['photo-28.jpg', 420, .5, .62], ['photo-02.jpg', 380], ['photo-18.jpg', 460, .5, .3], ['photo-29.jpg', 380, .5, .66]],
+  [['photo-23.jpg', 460], ['featured-pixel-03.jpg', 380], ['photo-30.jpg', 420, .4, .4], ['photo-07.jpg', 400]],
+  [['photo-14.jpg', 300], ['photo-10.jpg', 420], ['photo-25.jpg', 380, .7, .5], ['photo-05.jpg', 460, .49, .5]],
+];
+const tiles = [];
+GRID.forEach((col, ci) => { let y = GY0; col.forEach(([src, h, fx = .5, fy = .5], ri) => {
+  const key = src === 'photo-28.jpg' ? 'car6' : `g${ci}${ri}`;     // the amber-horizon card becomes the first tile
+  if (key !== 'car6') card(key, src);
+  tiles.push({ key, x: GX + ci * (GW + GG), y, w: GW, h, fx, fy, order: ri * 3 + ci });
+  y += h + GG; }); });
+const tileFp03 = tiles.find(t => t.key === 'g11');
 
-// Google cards: the featured frame shrinks from full screen into a card, then the carousel advances
-const CARD = { x: 200, y: 560, w: 680, h: 850, r: 44 };
-const CARDS = [['featured-pixel-03.jpg', 960, 1205], ['featured-pixel-01.jpg', 960, 1200], ['featured-pixel-02.jpg', 1077, 1535]];
-const cardEls = CARDS.map(([src]) => {
-  const d = document.createElement('div'); d.className = 'shot';
-  const img = document.createElement('img'); img.className = 'ph'; img.src = `assets/photos/${src}`;
-  d.appendChild(img); $('cards').appendChild(d); return { d, img };
-});
-// card framing: image (1920×2400) fills the card exactly
-const cardFit = (fx, fy) => { const s = CARD.w / 1920; return { s, x: CARD.x + fx * s, y: CARD.y + fy * s }; };
+// Google cards
+const GC = { x: 200, y: 560, w: 680, h: 850, r: 44 };
+card('fp01', 'featured-pixel-01.jpg'); card('fp02', 'featured-pixel-02.jpg');
+card('portrait', 'mohit-portrait.png');
+const CHIPS = ['Twilight', 'Night & Astro', 'Nature', 'Street', 'Culture'];
+const chipEls = CHIPS.map((c, i) => { const s = document.createElement('span'); s.className = 'chip'; s.textContent = c;
+  s.style.background = 'rgba(0,0,0,.05)'; if (i) s.style.marginLeft = '10px'; $('chipInner').appendChild(s); return s; });
 
-// recap (four eighth-note cuts) — cover framing
-const RECAP = [['photo-31.jpg', .66, .7], ['featured-pixel-03.jpg', .5, .5], ['photo-16.jpg', .57, .72], ['photo-26.jpg', .5, .5]];
-const recapEls = RECAP.map(([src, fx, fy]) => {
-  const d = document.createElement('div'); d.className = 'shot';
-  const img = document.createElement('img'); img.className = 'ph'; img.src = `assets/photos/${src}`;
-  d.appendChild(img); $('recap').appendChild(d); return { d, img, fx, fy };
-});
-function cover(img, m, fx, fy) {
-  const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.max(W / iw, H / ih) * m;
-  img.style.transform = `translate(${(W - iw * s) * fx}px,${(H - ih * s) * fy}px) scale(${s})`;
-}
+const brand = words($('brand'), 'third_eyef1.7');
+const fbA = words($('fbA'), 'Chasing'), fbB = words($('fbB'), 'the last light.');
+fbB.forEach(w => w.classList.add('grad'));
+const pName = words($('pName'), 'Mohit Bhaisare'), pRole = words($('pRole'), 'Photographer, Bangalore.');
+const eTitle = words($('eTitle'), 'third_eyef1.7');
+const gL1 = words($('gL1'), 'Featured on');
 
-/* ───────────────────────── timing + sound cues ───────────────────────── */
-const T = { beat: 4.5, google: 9.0, swap1: 10.0, swap2: 10.5, expand: 11.0, portrait: 11.5, recap: 14.5, end: 15.0 };
-window.DURATION = 17.2;
-window.SECTIONS = { intro: [0, 1], m1: [1, 4.5], brk: [4.5, 5.5], bands: [5.5, 7.5], m2: [7.5, 9.0], recog: [9.0, 11.5], portrait: [11.5, 14.5], end: [14.5, 17.2] };
+/* ───────────────────────── sound cues (all soft) ───────────────────────── */
+window.SECTIONS = { intro: [0, 1.35], carousel: [1.35, 6.0], full: [6.0, 8.0], grid: [8.0, 10.6], google: [10.6, 13.6], portrait: [13.6, 15.8], end: [15.8, 18.4] };
 window.CUES = [];
 const cue = (type, at, gain = 1) => window.CUES.push({ type, at: +at.toFixed(4), gain });
-cue('type', .1, .35); cue('riser', 1.0, .8); cue('boom', 1.0, .9); cue('shutter', 1.0, .6);
-SH.forEach((s, i) => {
-  if (i === 0 || !s.src) return;
-  ({ circle: () => cue('match', s.at), axis: () => cue('axis', s.at), horizon: () => cue('horizon', s.at),
-     slit: () => { cue('reverse', s.at, .8); cue('boom', s.at, .8); cue('horizon', s.at, .6); },
-     vp: () => { cue('zoom', s.at, 1); cue('boom', s.at + .1, .8); } }[s.tin] || (() => {}))();
-});
-cue('swish', 4.42, .6); cue('braam', T.beat, .9); cue('drop', T.beat, .6);
-cue('pop', 9.38, .7); cue('gdraw', 9.42); cue('pop', 9.62, .6); cue('chime', 9.9, .7); cue('counter', 10.05, .7);
-cue('swipe', T.swap1); cue('swipe', T.swap2); cue('whoosh', T.expand + .25, .8);
-cue('match', T.portrait, 1.1); cue('shutter', T.portrait + .1, .7);
-for (let i = 0; i < 4; i++) cue('strobe', T.recap + i * .125, .8 + i * .06);
-cue('boom', T.end, 1.1); cue('braam', T.end, .9); cue('chime', T.end + .15, .5);
+cue('bell', .15, .5); cue('tap', T.carIn + .1, .7);
+T.steps.forEach(s => { cue('tick', s, .8); cue('softswipe', s, .5); });
+cue('tap', T.expand, .9); cue('swell', T.expand, .6); cue('bell', T.fbText + .1, .6);
+cue('tap', T.shrink + .1, .8); T.chips.forEach(s => cue('tick', s, .6));
+for (let i = 0; i < 12; i++) cue('pebble', T.shrink + .4 + i * .05, .35);
+cue('tap', T.google, .8); cue('gdraw', 11.02, .8); cue('bell', 11.5, .5); cue('counter', 11.65, .5);
+cue('softswipe', T.swap1, .6); cue('tick', T.swap1 + .3, .6); cue('softswipe', T.swap2, .6); cue('tick', T.swap2 + .3, .6);
+cue('tap', T.portrait, .8); cue('shutter', T.portrait + .55, .45); cue('bell', 14.3, .5);
+cue('tap', T.end, .7); cue('bell', T.end + .3, .6); cue('click', 17.05, .9);
 
 /* ───────────────────────── grain ───────────────────────── */
 const grainFrames = []; { let sd = 9; const r = () => (sd = sd * 16807 % 2147483647) / 2147483647;
   const g = $('grain').getContext('2d'); for (let f = 0; f < 6; f++) { const id = g.createImageData(540, 960);
     for (let i = 0; i < id.data.length; i += 4) { const v = 128 + (r() - .5) * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; } grainFrames.push(id); } }
 
+/* ───────────────────────── layouts ───────────────────────── */
+const carIdx = t => T.steps.reduce((a, s) => a + E.spring(P(t, s, s + .75)), 0);
+function carGeom(i, t) {
+  const idx = carIdx(t), d = i - idx, ad = Math.abs(d);
+  const rise = E.spring(P(t, T.carIn + i * .06, T.carIn + .9 + i * .06));
+  return { x: CX + d * PITCH, y: CY + (1 - rise) * 900, w: CW, h: CH, r: 40, sc: lerp(1, .86, clamp(ad)), px: -d * 110, fx: CAR[i][3], fy: CAR[i][4],
+    o: rise > 0 ? clamp(1 - (ad - 1) * .8) : 0, sh: lerp(1, .5, clamp(ad)), z: 10 - Math.round(ad) };
+}
+const gridScroll = t => -380 * E.inOutSine(P(t, T.scroll[0], T.scroll[1]));
+function tileGeom(tl, t) {
+  const g = { x: tl.x, y: tl.y + gridScroll(t), w: tl.w, h: tl.h, r: 24, fx: tl.fx, fy: tl.fy, sh: .35, z: 2, o: 1, sc: 1, px: 0, zoom: 1 };
+  const a = T.shrink + .35 + tl.order * .05, p = E.spring(P(t, a, a + .7));
+  if (tl.key !== 'car6') { g.o = smooth(0, .4, p); g.sc = lerp(.9, 1, p); g.y += (1 - p) * 60; }
+  return g;
+}
+
 /* ───────────────────────── render ───────────────────────── */
 function render(t) {
   FRAME = Math.floor(t * FPS + 1e-6);
+  hideCards();
 
-  /* intro: title, then a white dot that becomes the iris */
-  show('intro', t < 1.2);
-  if (t < 1.2) {
-    blurIn(iTitle, t, .08, .08, .45, .6, .22);
-    const sub = E.outCubic(P(t, .25, .6)) * (1 - E.inCubic(P(t, .62, .8)));
-    S('iSub', { o: sub, filter: `blur(${(1 - sub) * 10}px)` });
-    const r = 225 * E.outExpo(P(t, .72, 1.02));
-    S('iDot', { left: `${540 - r}px`, top: `${990 - r}px`, width: `${2 * r}px`, height: `${2 * r}px`, o: t < .72 ? 0 : 1 - smooth(1.02, 1.12, t) });
+  /* brand: centred title that settles into an eyebrow */
+  {
+    const settle = E.inOutQuart(P(t, 1.05, 1.7));
+    blurIn(brand, t, .1, .08, .55);
+    const vis = (1 - smooth(T.expand - .1, T.expand + .2, t)) + (t > T.shrink ? smooth(T.shrink + .2, T.shrink + .5, t) * (1 - smooth(T.google - .2, T.google, t)) : 0);
+    S('brand', { tf: `translateY(${lerp(900, 150, settle)}px) scale(${lerp(1, .5, settle)})`, o: vis });
+    fade($('brandSub'), t, .35, .5, 1.0, .25);
   }
 
-  /* match-cut shots */
-  show('shots', t < T.google);
-  if (t < T.google) renderShots(t);
-
-  /* type beat */
-  show('beat', t >= T.beat && t < 5.5);
-  if (t >= T.beat && t < 5.5) {
-    blurIn(bA, t, 4.6, .06, .4, 5.22, .2);
-    blurIn(bB, t, 4.72, .09, .5, 5.25, .2);
-  }
-  // horizon line that the beach shot opens from
-  if (t >= 5.2 && t < 5.5) {
-    const pl = placement(7, 5.5), y = pl.ty + SH[7].slitY * pl.s, w = W * E.inOutQuart(P(t, 5.25, 5.48));
-    lineA.setAttribute('x1', 540 - w / 2); lineA.setAttribute('x2', 540 + w / 2); lineA.setAttribute('y1', y); lineA.setAttribute('y2', y);
-    lineA.setAttribute('opacity', .9);
-  }
-
-  /* Google × photo */
-  const gOn = t >= T.google && t < T.portrait;
-  show('google', gOn);
-  show('lightBg', t >= T.google && t < T.recap);
-  if (gOn) {
-    // card 0 starts exactly where the full-screen featured frame left off
-    const pull = E.inOutQuart(P(t, T.google, T.google + .62));
-    const s0 = .85 * 1.07, c0 = cardFit(960, 1205);
-    cardEls.forEach((c, i) => {
-      const [, fx, fy] = CARDS[i];
-      let s, x, y, inset = [CARD.y, W - CARD.x - CARD.w, H - CARD.y - CARD.h, CARD.x], rad = CARD.r;
-      const cf = cardFit(fx, fy);
-      s = cf.s; x = cf.x; y = cf.y;
-      if (i === 0) { s = lerpLog(s0, c0.s, pull); x = 540; y = lerp(959, c0.y, pull); inset = inset.map(v => v * pull); rad = CARD.r * pull; }
-      if (i === 2) {
-        const ex = E.inOutQuart(P(t, T.expand, T.portrait));
-        s = lerpLog(cf.s, 1.2, ex); x = lerp(cf.x, 540, ex); y = lerp(cf.y, 960, ex); inset = inset.map(v => v * (1 - ex)); rad = CARD.r * (1 - ex);
+  /* carousel */
+  const carOn = t >= T.carIn - .05 && t < T.shrink + .8;
+  if (carOn) {
+    const ex = E.inOutQuart(P(t, T.expand, T.expand + .72));
+    CAR.forEach((_, i) => {
+      let g = carGeom(i, t);
+      if (i === 6 && t >= T.expand) {
+        const full = { x: 0, y: 0, w: W, h: H, r: 0, sc: 1, px: 0, fx: .5, fy: .62, o: 1, sh: 0, z: 20, zoom: 1 };
+        g = lerpG({ ...g, zoom: 1 }, full, ex);
+        g.zoom = lerp(1, 1.06, P(t, T.expand, T.shrink));
+        if (t >= T.shrink) {
+          const tl = tiles.find(x => x.key === 'car6');
+          g = lerpG({ ...full, zoom: 1.06 }, tileGeom(tl, t), E.inOutQuart(P(t, T.shrink, T.shrink + .75)));
+          g.z = 20;
+        }
+      } else if (t >= T.expand) {
+        g.x += (i < 6 ? -1 : 1) * 200 * ex; g.o *= 1 - ex; g.sc *= lerp(1, .94, ex);
       }
-      // carousel: card i is centred during [in_i, out_i]
-      const ins = [-1, T.swap1, T.swap2], outs = [T.swap1, T.swap2, 99];
-      const pin = i === 0 ? 1 : E.inOutQuart(P(t, ins[i] - .05, ins[i] + .4));
-      const pout = E.inOutQuart(P(t, outs[i] - .05, outs[i] + .4));
-      const dx = (1 - pin) * 780 - pout * 780;
-      const sc = lerp(.9, 1, pin) * lerp(1, .9, pout);
-      const vis = (i === 0 || t > ins[i] - .06) && pout < 1;
-      c.d.style.display = vis ? '' : 'none';
-      c.d.style.zIndex = i;
-      c.d.style.clipPath = `inset(${inset[0]}px ${inset[1]}px ${inset[2]}px ${inset[3]}px round ${rad}px)`;
-      c.d.style.transform = `translateX(${dx}px) scale(${sc})`;
-      c.d.style.transformOrigin = `540px ${CARD.y + CARD.h / 2}px`;
-      c.d.style.boxShadow = 'none';
-      c.img.style.transform = `translate(${x - fx * s}px,${y - fy * s}px) scale(${s})`;
+      if (g.o > .001 && !(i === 6 && t >= T.shrink + .75)) setCard(CARDS[`car${i}`], g);
     });
-    // G draws itself with a sweeping conic mask, × and the copy blur in
-    const gd = E.inOutCubic(P(t, 9.38, 9.92));
-    const gm = `conic-gradient(from -90deg, #000 ${gd * 360}deg, transparent ${gd * 360 + .5}deg)`;
-    setMask($('gMark'), gm);
-    const gIn = E.outBack(P(t, 9.36, 9.9));
-    const out = E.inCubic(P(t, T.expand - .1, T.expand + .2));
-    S('gMark', { tf: `scale(${lerp(.7, 1, clamp(gIn, 0, 1.2))}) rotate(${lerp(-40, 0, gd)}deg) translateY(${-out * 40}px)`, o: (gd > 0 ? 1 : 0) * (1 - out) });
-    const xi = E.outCubic(P(t, 9.6, 9.95));
-    S('gX', { o: xi * (1 - out), filter: `blur(${(1 - xi) * 10 + out * 10}px)`, tf: `translateY(${-out * 30}px)` });
-    blurIn(gL1, t, 9.8, .05, .45, T.expand - .1, .2);
-    const l2 = E.outCubic(P(t, 9.9, 10.35));
-    S('gL2', { o: l2 * (1 - out), filter: `blur(${(1 - l2) * 12 + out * 10}px)`, tf: `translateY(${(1 - l2) * 24}px)` });
-    const l3 = E.outCubic(P(t, 10.05, 10.5));
-    S('gL3', { o: l3 * (1 - out), filter: `blur(${(1 - l3) * 10 + out * 10}px)` });
-    $('gNum').textContent = `${Math.round(300 * E.outQuart(P(t, 10.05, 10.75)))}K+`;
+    const idx = carIdx(t), capOut = smooth(T.expand - .1, T.expand + .25, t);
+    caps.forEach((c, i) => {
+      const d = i - idx, ad = Math.abs(d), rise = E.outCubic(P(t, T.carIn + .4, T.carIn + .9));
+      S(c, { o: clamp(1 - ad * 2.2) * rise * (1 - capOut), filter: `blur(${Math.min(ad, 1) * 14 + (1 - rise) * 10}px)`, tf: `translate(${d * 120}px, ${(1 - rise) * 20}px)` });
+    });
+    const total = CAR.length * 12 + (CAR.length - 1) * 10 + 24;
+    let x = (W - total) / 2;
+    dots.forEach((d, i) => { const a = clamp(1 - Math.abs(i - idx)), w = 12 + 24 * a;
+      S(d, { left: `${x}px`, width: `${w}px`, o: (.18 + .82 * a) * smooth(T.carIn + .5, T.carIn + .9, t) * (1 - capOut) }); x += w + 10; });
+    fade($('secLabel'), t, 1.55, .5, T.expand - .1, .25);
+  }
+  show('caps', carOn); show('dots', carOn); show('secLabel', carOn);
+
+  /* full-bleed moment */
+  const fbOn = t >= T.expand && t < T.shrink + .4;
+  show('shade', fbOn); show('fbA', fbOn); show('fbB', fbOn);
+  if (fbOn) {
+    S('shade', { o: smooth(T.expand + .3, T.expand + .8, t) * (1 - smooth(T.shrink - .1, T.shrink + .3, t)) });
+    blurIn(fbA, t, T.fbText, .06, .5, T.shrink - .35, .25);
+    blurIn(fbB, t, T.fbText + .12, .1, .6, T.shrink - .3, .25);
   }
 
-  /* portrait: the ferris hub becomes his camera lens */
-  const pOn = t >= T.portrait && t < T.recap;
-  show('portrait', pOn);
+  /* grid */
+  const gridOn = t >= T.shrink && t < T.google + .8;
+  show('gridHead', gridOn);
+  if (gridOn) {
+    const out = E.inOutQuart(P(t, T.google, T.google + .6));
+    tiles.forEach(tl => {
+      if (tl === tileFp03) return;
+      if (tl.key === 'car6' && t < T.shrink + .75) return;
+      const g = tileGeom(tl, t); g.o *= 1 - out; g.sc *= lerp(1, .94, out);
+      if (g.o > .001) setCard(CARDS[tl.key], g);
+    });
+    const hin = E.outCubic(P(t, T.shrink + .3, T.shrink + .8));
+    S('gridHead', { o: hin * (1 - out), tf: `translateY(${(1 - hin) * -20}px)` });
+    const k = T.chips.reduce((a, s) => a + E.spring(P(t, s, s + .6)), 0);
+    const i0 = Math.min(Math.floor(k), 3), f = k - i0, c0 = chipEls[i0], c1 = chipEls[i0 + 1];
+    S('chipPill', { left: `${lerp(c0.offsetLeft, c1.offsetLeft, f)}px`, width: `${lerp(c0.offsetWidth, c1.offsetWidth, f)}px` });
+    chipEls.forEach((c, i) => { c.style.color = Math.abs(i - k) < .5 ? '#fff' : '#1d1d1f'; });
+  }
+
+  /* Google × photo: the featured tile glides into the card */
+  const gOn = t >= T.shrink + .3 && t < T.end + .9;
+  show('google', t >= T.google && t < T.portrait + .5);
+  if (gOn) {
+    const toCard = E.inOutQuart(P(t, T.google, T.google + .75));
+    const cardG = { ...GC, sh: 1, z: 30, fx: .5, fy: .5, o: 1, sc: 1, px: 0, zoom: 1 };
+    const slide = (a, b, base) => {
+      const pin = a === null ? 1 : E.spring(P(t, a - .05, a + .7)), pout = b === null ? 0 : E.inOutQuart(P(t, b - .05, b + .45));
+      return { ...base, x: base.x + (1 - pin) * 780 - pout * 780, sc: lerp(.9, 1, pin) * lerp(1, .9, pout), px: -(1 - pin) * 80 + pout * 80,
+        vis: pout < 1 && (a === null || t > a - .06) };
+    };
+    if (t < T.swap1 + .5) {
+      let g3 = lerpG(tileGeom(tileFp03, t), cardG, toCard);
+      g3.z = 30;
+      if (t >= T.google) g3 = slide(null, T.swap1, g3);
+      if (g3.vis !== false) setCard(CARDS.g11, g3);
+    }
+    if (t >= T.swap1 - .1 && t < T.swap2 + .5) { const g = slide(T.swap1, T.swap2, cardG); if (g.vis) setCard(CARDS.fp01, g); }
+    if (t >= T.swap2 - .1 && t < T.portrait + .8) {
+      let g = slide(T.swap2, null, cardG);
+      // portrait: the card's corners round off into a circle around his portrait
+      const m = E.inOutQuart(P(t, T.portrait, T.portrait + .8));
+      if (m > 0) {
+        const circ = { x: 540 - 410, y: 760 - 410, w: 820, h: 820, sc: 1, px: 0, fx: .56, fy: .64 };
+        g = lerpG(g, circ, m);
+        g.r = `${lerp(44 / Math.min(GC.w, GC.h) * 100, 50, m)}%`;
+        g.sh = lerp(1, .5, m);
+      }
+      setCard(CARDS.fp02, g);
+      if (m > 0) setCard(CARDS.portrait, { ...g, z: 31, o: smooth(.25, .75, m), fx: .52, fy: .62, zoom: lerp(1.35, 1, m), sh: 0 });
+    }
+    if (t >= T.google) {
+      const gd = E.inOutCubic(P(t, 10.98, 11.52));
+      setMask($('gMark'), `conic-gradient(from -90deg, #000 ${gd * 360}deg, transparent ${gd * 360 + .5}deg)`);
+      const gIn = E.spring(P(t, 10.95, 11.6)), out = E.inCubic(P(t, T.portrait - .1, T.portrait + .25));
+      S('gMark', { tf: `scale(${lerp(.7, 1, gIn)}) rotate(${lerp(-40, 0, gd)}deg) translateY(${-out * 40}px)`, o: (gd > 0 ? 1 : 0) * (1 - out) });
+      const xi = E.outCubic(P(t, 11.2, 11.55));
+      S('gX', { o: xi * (1 - out), filter: `blur(${(1 - xi) * 10 + out * 10}px)`, tf: `translateY(${-out * 30}px)` });
+      blurIn(gL1, t, 11.4, .05, .45, T.portrait - .1, .2);
+      const l2 = E.outCubic(P(t, 11.5, 11.95)), l3 = E.outCubic(P(t, 11.65, 12.1));
+      S('gL2', { o: l2 * (1 - out), filter: `blur(${(1 - l2) * 12 + out * 10}px)`, tf: `translateY(${(1 - l2) * 24}px)` });
+      S('gL3', { o: l3 * (1 - out), filter: `blur(${(1 - l3) * 10 + out * 10}px)` });
+      $('gNum').textContent = `${Math.round(300 * E.outQuart(P(t, 11.65, 12.4)))}K+`;
+    }
+  }
+
+  /* portrait settles, then the circle shrinks into the end-card avatar */
+  const pOn = t >= T.portrait && t < T.end + .7;
+  show('pSvg', pOn); show('pName', pOn); show('pRole', pOn);
+  if (t >= T.portrait + .8) {
+    const av = E.inOutQuart(P(t, T.end, T.end + .8));
+    const R = lerp(410, 130, av), cy = lerp(760, 650, av);
+    setCard(CARDS.portrait, { x: 540 - R, y: cy - R, w: 2 * R, h: 2 * R, r: '50%', fx: .52, fy: .62, sh: .5, z: 31, o: 1 - smooth(17.85, 18.35, t) });
+  }
   if (pOn) {
-    const HUB = [1077, 1535], LENS = [383, 345];
-    const drift = 1 + .04 * (t - T.portrait);
-    $('pFerris').style.transform = `translate(${540 - HUB[0] * 1.2 * drift}px,${960 - HUB[1] * 1.2 * drift}px) scale(${1.2 * drift})`;
-    S('pFerrisWrap', { o: 1 - smooth(11.62, 12.05, t) });
-    const al = smooth(11.5, 11.68, t);
-    const mv = E.inOutQuint(P(t, 11.6, 12.65));
-    const cy = lerp(960, 760, mv), R = lerp(140, 410, mv), s = lerpLog(140 / 48, 1.45, mv);
-    $('pImg').style.transform = `translate(${540 - LENS[0] * s}px,${cy - LENS[1] * s}px) scale(${s})`;
-    setMask($('pWrap'), `radial-gradient(circle at 540px ${cy}px, rgba(0,0,0,${al}) ${R}px, rgba(0,0,0,0) ${R + 2}px)`);
-    const rl = 2 * Math.PI * 434, rp = E.inOutQuart(P(t, 12.3, 13.0));
+    const rl = 2 * Math.PI * 440, rp = E.inOutQuart(P(t, T.portrait + .5, T.portrait + 1.2));
     $('pRing').setAttribute('stroke-dasharray', `${rl} ${rl}`); $('pRing').setAttribute('stroke-dashoffset', rl * (1 - rp));
-    $('pBadge').setAttribute('transform', `rotate(${(t - T.portrait) * 18 - 40} 540 760)`);
-    $('pBadge').style.opacity = smooth(12.5, 12.9, t);
-    blurIn(pName, t, 12.55, .09, .55);
-    blurIn(pRole, t, 12.85, .05, .5);
-    const ex = E.inCubic(P(t, 14.2, 14.5));
-    S('portrait', { o: 1 - ex, tf: `scale(${lerp(1, .97, ex)})` });
-  }
-
-  /* recap strobe */
-  const rOn = t >= T.recap && t < T.end;
-  show('recap', rOn);
-  if (rOn) {
-    const i = clamp(Math.floor((t - T.recap) / .125), 0, 3), lt = t - T.recap - i * .125;
-    recapEls.forEach((r, j) => r.d.style.display = j === i ? '' : 'none');
-    const r = recapEls[i]; cover(r.img, lerp(1.12, 1.02, E.outExpo(lt / .125)), r.fx, r.fy);
+    $('pBadge').setAttribute('transform', `rotate(${(t - T.portrait) * 16 - 40} 540 760)`);
+    S('pSvg', { o: smooth(T.portrait + .5, T.portrait + .8, t) * (1 - smooth(T.end, T.end + .3, t)) });
+    $('pBadge').style.opacity = smooth(T.portrait + .8, T.portrait + 1.2, t);
+    blurIn(pName, t, T.portrait + .7, .09, .55, T.end - .05, .25);
+    blurIn(pRole, t, T.portrait + 1.0, .05, .5, T.end - .05, .25);
   }
 
   /* end card */
-  show('end', t >= T.end);
-  if (t >= T.end) {
-    blurIn(eTitle, t, T.end + .05, .1, .6);
-    const a = E.outCubic(P(t, 15.35, 15.8)), b = E.outCubic(P(t, 15.55, 16.0));
-    S('eSub', { o: a, filter: `blur(${(1 - a) * 10}px)` });
-    S('eUrl', { o: b, filter: `blur(${(1 - b) * 10}px)` });
-    S('end', { o: 1 - smooth(16.75, 17.2, t), tf: `scale(${lerp(1, 1.03, P(t, T.end, 17.2))})` });
+  const eOn = t >= T.end;
+  show('eTitle', eOn); show('eUrl', eOn); show('eBtn', eOn);
+  if (eOn) {
+    const all = 1 - smooth(17.85, 18.35, t);
+    blurIn(eTitle, t, T.end + .35, .1, .6);
+    S('eTitle', { o: all });
+    fade($('eUrl'), t, T.end + .6, .5);
+    $('eUrl').style.opacity *= all;
+    const bi = E.spring(P(t, T.end + .85, T.end + 1.5)), press = Math.sin(Math.PI * P(t, 17.0, 17.22));
+    const done = t > 17.1;
+    S('eBtn', { o: smooth(0, .3, bi) * all, tf: `translateY(${(1 - bi) * 30}px) scale(${lerp(.9, 1, bi) * (1 - .06 * press)})`, background: done ? '#ad6e52' : '#1d1d1f' });
+    const label = done ? 'Following' : 'Follow';
+    if ($('eBtn').textContent !== label) $('eBtn').textContent = label;
   }
 
-  /* eyebrow + per-shot word */
-  const montage = (t >= 1.0 && t < T.beat) || (t >= 5.5 && t < T.google);
-  S('eyebrow', { o: montage ? smooth(1.0, 1.3, t) * (1 - smooth(4.3, 4.5, t)) + (t >= 5.5 ? smooth(5.6, 5.9, t) * (1 - smooth(8.7, 8.95, t)) : 0) : 0 });
-  let c = -1; for (let i = 0; i < SH.length; i++) if (t >= SH[i].at) c = i;
-  const wEl = $('word');
-  if (montage && c >= 0 && SH[c].word) {
-    const s = SH[c], n = SH[c + 1];
-    if (wEl.textContent !== s.word) wEl.textContent = s.word;
-    const pin = E.outCubic(P(t, s.at + .04, s.at + .3)), pout = E.inCubic(P(t, n.at - .14, n.at - .02));
-    S(wEl, { o: pin * (1 - pout), filter: `blur(${(1 - pin) * 14 + pout * 14}px)`, tf: `translateY(${(1 - pin) * 18}px) scale(${lerp(1.05, 1, pin)})` });
-  } else S(wEl, { o: 0 });
-
-  S('vig', { o: (t >= 1 && t < T.beat) || (t >= 5.5 && t < T.google) || (t >= T.recap && t < T.end) ? 1 : 0 });
   $('grain').getContext('2d').putImageData(grainFrames[FRAME % grainFrames.length], 0, 0);
 }
-
-/* coverage self-check: every visible photo must fill the frame */
-window.checkCoverage = () => {
-  const bad = [];
-  for (let f = 0; f < window.DURATION * FPS; f += 2) {
-    const t = f / FPS;
-    SH.forEach((s, i) => {
-      const [D, a] = TR[s.tin] || [0, 0], n = SH[i + 1], [Dn, an] = n ? (TR[n.tin] || [0, 0]) : [0, 0];
-      const from = s.at - D * a + D * .6, to = n ? n.at + Dn * (1 - an) : 99;   // span where the shot is (almost) unmasked
-      if (!s.src || t < from || t > to) return;
-      const pl = placement(i, t), img = shotEls[i].img;
-      const x0 = pl.tx, y0 = pl.ty, x1 = x0 + img.naturalWidth * pl.s, y1 = y0 + img.naturalHeight * pl.s;
-      if (x0 > .5 || y0 > .5 || x1 < W - .5 || y1 < H - .5) bad.push(`${t.toFixed(2)} ${s.src} [${x0.toFixed(0)},${y0.toFixed(0)},${x1.toFixed(0)},${y1.toFixed(0)}] s=${pl.s.toFixed(2)}`);
-    });
-  }
-  return bad;
-};
 
 window.seek = t => render(t);
 window.ready = (async () => {
