@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ElevenLabs } from '../src/eleven';
 import worker, { webhookSecret } from '../src/index';
-import { FallbackLlm, Gemini, TelegramApi, WorkersLlm, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText, thinkingFor } from '../src/services';
+import { FallbackLlm, Gemini, GroqLlm, TelegramApi, WorkersLlm, WorkersSpeech, parseJsonLoose, parseRssTitles, speakable, splitText, thinkingFor } from '../src/services';
 import { Store } from '../src/store';
 import { LlmError } from '../src/types';
 import { fakeD1 } from './harness';
@@ -334,5 +334,44 @@ describe('never going silent', () => {
 		const { f, calls } = fakeFetch(() => ok('{}'));
 		await new Gemini('k', 'gemini-3.8-flash,gemini-3.5-flash-lite', f, noSleep).generate({ system: '', turns: [{ role: 'user', text: 'x' }], tier: 'light' });
 		expect(calls[0].url).toContain('gemini-3.5-flash-lite');
+	});
+});
+
+describe('Groq fallback', () => {
+	const failing = { generate: async () => { throw new LlmError('quota', 'quota'); } };
+
+	it('answers when Gemini is out of quota, and Cloudflare covers when Groq is too', async () => {
+		let groqUp = true;
+		const { f, calls } = fakeFetch(() =>
+			groqUp ? Response.json({ choices: [{ message: { content: 'Groq here, bro!' } }] }) : new Response('rate limit', { status: 429 }),
+		);
+		const groq = new GroqLlm('gk', 'llama-3.3-70b-versatile', f);
+		const cloudflare = { generate: async () => 'Cloudflare here!' };
+		const notes: string[] = [];
+		const llm = new FallbackLlm(failing, [{ name: 'groq', llm: groq }, { name: 'cloudflare', llm: cloudflare }], async (w) => void notes.push(w));
+		expect(await llm.generate({ system: 'buddy', turns: [{ role: 'user', text: 'hi' }] })).toBe('Groq here, bro!');
+		const body = JSON.parse(String(calls[0].init!.body));
+		expect(body.messages[0]).toEqual({ role: 'system', content: 'buddy' });
+		expect((calls[0].init!.headers as any).authorization).toBe('Bearer gk');
+		expect(notes[0]).toMatch(/answered by groq/);
+		groqUp = false;
+		expect(await llm.generate({ system: '', turns: [{ role: 'user', text: 'hi' }] })).toBe('Cloudflare here!');
+	});
+
+	it('asks Groq for JSON when a schema is needed', async () => {
+		const { f, calls } = fakeFetch(() => Response.json({ choices: [{ message: { content: '{"a":1}' } }] }));
+		await new GroqLlm('gk', undefined, f).generate({ system: 's', turns: [{ role: 'user', text: 'x' }], schema: { type: 'OBJECT' } });
+		expect(JSON.parse(String(calls[0].init!.body)).response_format).toEqual({ type: 'json_object' });
+	});
+
+	it('transcribes voice notes with Groq first, falling back to Workers AI Whisper', async () => {
+		let groqOk = true;
+		const { f } = fakeFetch(() => (groqOk ? Response.json({ text: 'remind me at eight' }) : new Response('down', { status: 503 })));
+		const groq = new GroqLlm('gk', undefined, f);
+		const ai = { run: async () => ({ text: 'from workers whisper' }) } as unknown as Ai;
+		const s = new WorkersSpeech(ai, new Store(fakeD1()), () => new Date(), 'apollo', 3000, undefined, null, null, groq);
+		expect(await s.transcribe(new Uint8Array([1]), 'audio/ogg')).toBe('remind me at eight');
+		groqOk = false;
+		expect(await s.transcribe(new Uint8Array([1]), 'audio/ogg')).toBe('from workers whisper');
 	});
 });

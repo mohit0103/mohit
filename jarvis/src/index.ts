@@ -2,7 +2,7 @@
 import { handleUpdate } from './bot';
 import { ImapMail, gmailSocket } from './email/imap';
 import { tick } from './scheduler';
-import { FallbackLlm, Gemini, PublicFeeds, TelegramApi, WorkersLlm, WorkersSpeech } from './services';
+import { FallbackLlm, Gemini, GroqLlm, PublicFeeds, TelegramApi, WorkersLlm, WorkersSpeech } from './services';
 import { Store } from './store';
 import { ElevenLabs } from './eleven';
 import { edgeSynthesize } from './edge';
@@ -14,9 +14,9 @@ export function makeDeps(env: Env): Deps {
 		get: () => store.get('llm_health'),
 		set: (h) => store.set('llm_health', h),
 	});
-	const llm = new FallbackLlm(gemini, env.AI ? new WorkersLlm(env.AI) : null, (why) =>
-		store.diag('backup brain', true, `used Cloudflare backup model (${why.slice(0, 120)})`, new Date().toISOString()),
-	);
+	const groq = env.GROQ_API_KEY ? new GroqLlm(env.GROQ_API_KEY, env.GROQ_MODELS) : null;
+	const backups = [...(groq ? [{ name: 'groq', llm: groq }] : []), ...(env.AI ? [{ name: 'cloudflare', llm: new WorkersLlm(env.AI) }] : [])];
+	const llm = new FallbackLlm(gemini, backups, (why) => store.diag('backup brain', true, why.slice(0, 200), new Date().toISOString()));
 	const now = () => new Date();
 	return {
 		db: env.DB,
@@ -31,6 +31,7 @@ export function makeDeps(env: Env): Deps {
 			llm,
 			(t, v) => edgeSynthesize(t, v),
 			env.ELEVENLABS_API_KEY ? new ElevenLabs(env.ELEVENLABS_API_KEY, store, Number(env.ELEVENLABS_MONTHLY_CHARS) || 9500) : null,
+			groq,
 		),
 		feeds: new PublicFeeds(Number(env.CITY_LAT) || 12.9716, Number(env.CITY_LON) || 77.5946),
 		mail: env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD ? new ImapMail(env.GMAIL_ADDRESS, env.GMAIL_APP_PASSWORD, gmailSocket) : null,
@@ -71,7 +72,7 @@ export default {
 			return Response.json({
 				diags: await store.diags(),
 				counts,
-				features: { gmail: Boolean(env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD), elevenlabs: Boolean(env.ELEVENLABS_API_KEY) },
+				features: { gmail: Boolean(env.GMAIL_ADDRESS && env.GMAIL_APP_PASSWORD), elevenlabs: Boolean(env.ELEVENLABS_API_KEY), groq: Boolean(env.GROQ_API_KEY) },
 				voice: (await store.get('tts_voice')) ?? 'default',
 			});
 		}

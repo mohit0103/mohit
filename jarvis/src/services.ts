@@ -308,9 +308,18 @@ export class WorkersSpeech implements Speech {
 		private llmFallback?: Llm,
 		private edge: ((text: string, voiceId: string) => Promise<Uint8Array>) | null = (t, v) => edgeSynthesize(t, v),
 		private eleven: ElevenLabs | null = null,
+		private groq: GroqLlm | null = null,
 	) {}
 
 	async transcribe(audio: Uint8Array, mime: string): Promise<string> {
+		if (this.groq) {
+			try {
+				const text = await this.groq.transcribe(audio, mime, WHISPER_HINT);
+				if (text) return text;
+			} catch (e) {
+				console.warn('groq transcription failed', e);
+			}
+		}
 		try {
 			const res: any = await (this.ai as any).run(WHISPER, { audio: toBase64(audio), language: 'en', vad_filter: true, initial_prompt: WHISPER_HINT });
 			const text = String(res?.text ?? '').trim();
@@ -548,23 +557,107 @@ export class WorkersLlm implements Llm {
 	}
 }
 
-/** Gemini first; when it is out of quota or down, the backup answers so Jarvis never goes silent. */
+/**
+ * Tries brains in order (Gemini, then Groq, then Cloudflare) so Jarvis never goes silent when one is out of
+ * free quota. Requests with audio or images only go to brains that accept them.
+ */
 export class FallbackLlm implements Llm {
+	private chain: { name: string; llm: Llm; media: boolean }[];
 	constructor(
-		private primary: Llm,
-		private backup: Llm | null,
+		primary: Llm,
+		backups: Llm | null | { name: string; llm: Llm; media?: boolean }[],
 		private onBackup?: (why: string) => Promise<void>,
-	) {}
+	) {
+		const rest = Array.isArray(backups) ? backups.map((b) => ({ ...b, media: Boolean(b.media) })) : backups ? [{ name: 'backup', llm: backups, media: false }] : [];
+		this.chain = [{ name: 'gemini', llm: primary, media: true }, ...rest];
+	}
 
 	async generate(req: LlmRequest): Promise<string> {
-		try {
-			return await this.primary.generate(req);
-		} catch (e) {
-			const kind = e instanceof LlmError ? e.kind : 'unavailable';
-			// Audio and images need Gemini; config errors need the owner to fix the key.
-			if (!this.backup || kind === 'config' || req.audio || req.images?.length) throw e;
-			await this.onBackup?.(String(e)).catch(() => undefined);
-			return this.backup.generate(req);
+		const hasMedia = Boolean(req.audio || req.images?.length);
+		const usable = this.chain.filter((b) => b.media || !hasMedia);
+		let lastError: unknown;
+		for (let i = 0; i < usable.length; i++) {
+			try {
+				const text = await usable[i].llm.generate(req);
+				if (i > 0) await this.onBackup?.(`answered by ${usable[i].name} (${String(lastError).slice(0, 100)})`).catch(() => undefined);
+				return text;
+			} catch (e) {
+				lastError = e;
+			}
 		}
+		throw lastError instanceof Error ? lastError : new LlmError(String(lastError), 'unavailable');
+	}
+}
+
+// ---------- Groq (OpenAI-compatible, very fast, generous free tier) ----------
+
+export const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'llama-3.1-8b-instant'];
+
+export class GroqLlm implements Llm {
+	private models: string[];
+	constructor(
+		private key: string,
+		models?: string,
+		private fetcher: typeof fetch = (input, init) => fetch(input, init),
+	) {
+		this.models = models
+			? models
+					.split(',')
+					.map((m) => m.trim())
+					.filter(Boolean)
+			: GROQ_MODELS;
+	}
+
+	async generate(req: LlmRequest): Promise<string> {
+		if (req.audio || req.images?.length) throw new LlmError('groq brain is text-only here', 'bad_response');
+		const system = req.schema ? `${req.system}\n\nRespond with ONLY a JSON object matching this schema:\n${JSON.stringify(req.schema)}` : req.system;
+		const messages = [{ role: 'system', content: system }, ...req.turns.map((t) => ({ role: t.role === 'model' ? 'assistant' : 'user', content: t.text }))];
+		let lastMsg = '';
+		let lastKind: LlmError['kind'] = 'unavailable';
+		for (const model of this.models) {
+			const body: Record<string, unknown> = { model, messages, temperature: req.temperature ?? 0.7, max_tokens: req.schema ? 1500 : 500 };
+			if (req.schema) body.response_format = { type: 'json_object' };
+			let res: Response;
+			try {
+				res = await this.fetcher('https://api.groq.com/openai/v1/chat/completions', {
+					method: 'POST',
+					headers: { 'content-type': 'application/json', authorization: `Bearer ${this.key}` },
+					body: JSON.stringify(body),
+				});
+			} catch (e) {
+				lastMsg = String(e);
+				continue;
+			}
+			if (res.ok) {
+				const data: any = await res.json().catch(() => null);
+				const text = String(data?.choices?.[0]?.message?.content ?? '').trim();
+				if (text) return text;
+				lastMsg = `groq ${model}: empty answer`;
+				lastKind = 'bad_response';
+				continue;
+			}
+			lastMsg = `groq ${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 160)}`;
+			if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
+			lastKind = res.status === 429 ? 'quota' : 'unavailable';
+		}
+		throw new LlmError(lastMsg || 'groq failed', lastKind);
+	}
+
+	/** Groq's hosted Whisper: fast, accurate speech-to-text. */
+	async transcribe(audio: Uint8Array, mime: string, prompt: string): Promise<string> {
+		const form = new FormData();
+		form.set('file', new Blob([audio], { type: mime }), mime.includes('ogg') ? 'voice.ogg' : 'voice.mp3');
+		form.set('model', 'whisper-large-v3-turbo');
+		form.set('language', 'en');
+		form.set('prompt', prompt);
+		form.set('response_format', 'json');
+		const res = await this.fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {
+			method: 'POST',
+			headers: { authorization: `Bearer ${this.key}` },
+			body: form,
+		});
+		if (!res.ok) throw new Error(`groq transcription ${res.status}: ${(await res.text().catch(() => '')).slice(0, 120)}`);
+		const data: any = await res.json();
+		return String(data?.text ?? '').trim();
 	}
 }

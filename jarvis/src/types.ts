@@ -13,6 +13,8 @@ export interface Env {
 	TTS_SPEAKER?: string;
 	TTS_DAILY_CHARS?: string;
 	ELEVENLABS_API_KEY?: string;
+	GROQ_API_KEY?: string;
+	GROQ_MODELS?: string;
 	ELEVENLABS_MONTHLY_CHARS?: string;
 	CITY?: string;
 	CITY_LAT?: string;

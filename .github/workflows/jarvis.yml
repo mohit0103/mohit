@@ -44,6 +44,7 @@ jobs:
       GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
       GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
       ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -94,7 +95,7 @@ jobs:
         if: steps.check.outputs.ready == 'true'
         run: |
           node -e '
-            const keys = ["TELEGRAM_BOT_TOKEN","GEMINI_API_KEY","PAIR_CODE","GMAIL_ADDRESS","GMAIL_APP_PASSWORD","ELEVENLABS_API_KEY"];
+            const keys = ["TELEGRAM_BOT_TOKEN","GEMINI_API_KEY","PAIR_CODE","GMAIL_ADDRESS","GMAIL_APP_PASSWORD","ELEVENLABS_API_KEY","GROQ_API_KEY"];
             const out = {};
             for (const k of keys) if (process.env[k]) out[k] = process.env[k];
             require("fs").writeFileSync("secrets.json", JSON.stringify(out));
