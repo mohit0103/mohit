@@ -2,8 +2,8 @@
 
     python3 reel_score.py out/reel-cues.json out/reel-score.wav
 
-Warm D-major felt-piano plucks over a pad (tempo from the cue file), a gentle kick and shaker
-only where the carousel and grid move, and quiet micro-sounds (picker ticks,
+A through-composed eight-bar D-major piece (felt piano, pad, legato melody) on one
+continuous beat grid, a steady soft kick and shaker, and quiet micro-sounds (picker ticks,
 taps, bells) placed from the composition's cue list. No whooshes or booms.
 """
 
@@ -88,53 +88,69 @@ def steps(a, b, step):
 
 
 # ───────────────────────── music ─────────────────────────
-CH = [[50, 57, 61, 64, 66, 69], [47, 54, 57, 62, 66, 69], [43, 50, 54, 59, 62, 66], [45, 52, 57, 61, 64, 66]]   # Dmaj7 Bm7 Gmaj7 A6
+# Through-composed, not looped: eight bars that keep moving and resolve on the
+# end card. One rolled piano chord per bar under a sustained pad, a legato
+# melody on top, steady bass. Bars start on the global grid (G0 + k·BAR).
 BAR = 4 * BEAT
+#            chord tones (bass first)          melody: (beat, beats, note)
+SCORE = [
+    ([38, 50, 57, 61, 64, 66], [(0, 1.5, 78), (1.5, .5, 81), (2, 2, 76)]),          # Dmaj9
+    ([35, 47, 54, 57, 62, 66], [(0, 1, 74), (1, 1, 78), (2, 2, 81)]),               # Bm9
+    ([31, 43, 50, 54, 59, 62], [(0, 1.5, 83), (1.5, .5, 81), (2, 2, 78)]),          # Gmaj7
+    ([33, 45, 52, 57, 61, 64], [(0, 2, 76), (2, 1, 73), (3, 1, 76)]),               # A6
+    ([30, 42, 49, 52, 57, 61], [(0, 1, 78), (1, 1, 81), (2, 2, 85)]),               # F#m7
+    ([35, 47, 54, 57, 62, 66], [(0, 2, 83), (2, 1, 81), (3, 1, 78)]),               # Bm7
+    ([28, 40, 47, 54, 59, 62], [(0, 1, 79), (1, 1, 81), (2, 2, 83)]),               # Em9
+    ([38, 50, 57, 62, 64, 66], [(0, 4, 81)]),                                       # Dadd9 (resolve)
+]
+NB = len(SCORE)
+bar_at = lambda k: G0 + k * BAR                     # bar k start; bar -1 covers the intro
 
 
-def chord_at(t):
-    return CH[int((t - G0) // BAR) % 4]
-
-
-def felt(f, d=1.6, amp=.08):
-    """Soft felt-piano-like note: mellow partials, gentle decay."""
+def felt(f, d=2.4, amp=.08, bright=1.0):
+    """Soft felt-piano note: mellow partials, gentle hammer, long decay."""
     t = tt(d)
-    v = sum(np.sin(2 * np.pi * f * h * t + h) * np.exp(-t * (1.6 + h * 1.4)) / h ** 1.6 for h in range(1, 6))
-    thump = lp(rng.standard_normal(len(t)), 900) * np.exp(-t * 60) * .04
-    return (v + thump) * env(len(t), .008, .4, 1.5) * amp
+    v = sum(np.sin(2 * np.pi * f * h * t + h) * np.exp(-t * (1.1 + h * 1.5 / bright)) / h ** 1.7 for h in range(1, 6))
+    hammer = lp(rng.standard_normal(len(t)), 700) * np.exp(-t * 80) * .03
+    return (v + hammer) * env(len(t), .012, .5, 1.5) * amp
 
 
-def pad(chord, at, d, amp=.018, cutoff=1400):
-    for k, n in enumerate(chord[1:]):
-        t = tt(d + 1.0)
-        v = sum(signal.sawtooth(2 * np.pi * hz(n) * (1 + x / 100) * t + rng.uniform(0, 6)) for x in (-.07, .08))
-        v = lp(v, cutoff, 2) * env(len(t), .8, 1.0, 1.5) * amp
-        place(music, v, at, pan=-.6 + k * .3)
+def pad_note(n, d, amp, cutoff):
+    t = tt(d)
+    v = sum(signal.sawtooth(2 * np.pi * hz(n) * (1 + x / 100) * t + rng.uniform(0, 6)) for x in (-.07, .08))
+    return lp(v, cutoff, 2) * env(len(t), 1.0, 1.2, 1.5) * amp
 
 
-for t in steps(0, DUR - .5, BAR):
-    full = SEC["full"][0] <= t < SEC["full"][1]
-    pad(chord_at(t), t, BAR, .022 if full else .016, 1900 if full else 1300)
-
-# piano arpeggio in eighths, thinned out in the quiet sections
-ARP = [1, 3, 2, 4, 3, 5, 4, 2]
-for i, t in enumerate(steps(SEC["intro"][1] - BEAT, DUR - 1.2, BEAT / 2)):
-    quiet = SEC["portrait"][0] <= t < SEC["portrait"][1] or SEC["end"][0] <= t
-    if quiet and i % 2:
+for k in range(-1, NB):
+    chord, mel = SCORE[k % NB] if k >= 0 else SCORE[0]
+    t0 = bar_at(k)
+    last = k == NB - 1
+    length = (DUR - t0) if last else BAR
+    full = SEC["full"][0] <= t0 + .1 < SEC["full"][1]
+    # pad: overlapping sustained voices
+    for j, n in enumerate(chord[1:]):
+        place(music, pad_note(n, length + 1.2, .02 if full else .015, 1800 if full else 1300), t0, pan=-.6 + j * .3)
+    # bass: legato, overlaps into the next bar
+    # an octave above the kick's range so the two never cancel each other out
+    tb = tt(length + .6)
+    fb = hz(chord[0] + 12)
+    bass = np.sin(2 * np.pi * fb * tb) + .25 * np.sin(2 * np.pi * 2 * fb * tb) + .08 * np.sin(2 * np.pi * 3 * fb * tb)
+    place(music, bass * env(len(tb), .15, .7, 1.2) * .055, t0)
+    if k < 0:
         continue
-    c = chord_at(t)
-    place(music, felt(hz(c[ARP[i % 8]] + 12), amp=.06 if quiet else .07), t, pan=.35 * np.sin(i * .8))
-# bass on each bar
-for t in steps(0, DUR - 1, BAR):
-    tb = tt(BAR + .5)                                   # notes overlap so the bass never drops out between bars
-    place(music, np.sin(2 * np.pi * hz(chord_at(t)[0] - 12) * tb) * env(len(tb), .12, .6, 1.2) * .06, t)
+    # rolled piano chord on the downbeat (one gentle roll, not a looping arpeggio)
+    for j, n in enumerate(chord[2:]):
+        place(music, felt(hz(n + 12), 3.0, .035), t0 + j * .045, pan=-.3 + j * .15)
+    # melody
+    for beat, beats, n in mel:
+        place(music, felt(hz(n), max(1.2, beats * BEAT + 1.0), .07, 1.3), t0 + beat * BEAT, pan=.1)
 
 
 # ───────────────────────── gentle groove ─────────────────────────
-def kick(g=1.0):
-    t = tt(.35)
-    f = 48 + 70 * np.exp(-t * 30)
-    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 10) * g
+def kick(g=1.0):                              # soft, round: rounded attack and a longer, gentler tail
+    t = tt(.45)
+    f = 46 + 40 * np.exp(-t * 25)
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 6.5) * env(len(t), .006, .05, 1) * g
 
 
 def shaker(g=1.0):
@@ -142,30 +158,21 @@ def shaker(g=1.0):
     return hp(rng.standard_normal(len(t)), 7000) * np.exp(-t * 60) * g
 
 
-def snap(g=1.0):
-    t = tt(.12)
-    return lp(hp(rng.standard_normal(len(t)), 1200), 5000) * np.exp(-t * 45) * g
-
-
-# One continuous groove over the whole piece. Density follows a smooth curve
-# instead of starting and stopping per section, so nothing ever jumps.
-_K = [(0, 0), (1.2, 0), (1.7, 1), (5.6, 1), (6.1, .3), (7.6, .3), (8.0, 1), (13.4, 1), (13.9, .45), (15.6, .45), (16.4, .12), (DUR, 0)]
+# One continuous groove; density follows a smooth curve, every hit evenly weighted.
+_K = [(0, 0), (1.2, 0), (1.8, 1), (5.6, 1), (6.1, .35), (7.6, .35), (8.1, 1), (13.4, 1), (13.9, .45), (15.6, .45), (16.4, .1), (DUR, 0)]
 def groove(t):
     xs, ys = zip(*_K)
     return float(np.interp(t, xs, ys))
 
 
-for i, t in enumerate(steps(0, DUR - .4, BEAT)):
+for t in steps(0, DUR - .4, BEAT):
     g = groove(t)
-    if g <= .01:
-        continue
-    place(drums, kick((.32 if i % 2 == 0 else .2) * g), t)
-    if SEC["google"][0] <= t < SEC["google"][1] and i % 2:     # backbeat lifts the Google section
-        place(drums, snap(.16), t, pan=-.15)
+    if g > .01:
+        place(drums, kick(.16 * g), t)
 for i, t in enumerate(steps(0, DUR - .4, BEAT / 2)):
     g = groove(t)
     if g > .2:
-        place(drums, shaker((.05 if i % 2 else .028) * g), t, pan=.3)
+        place(drums, shaker(.035 * g), t, pan=.3)
 
 
 # ───────────────────────── micro sound design ─────────────────────────
@@ -324,13 +331,21 @@ drums = reverb(drums, .9, .1, 3)
 fx = reverb(fx, 1.6, .28, 4)
 
 mix = music + drums * .9 + fx
+if __import__("os").environ.get("STEMS"):                     # debugging: write each stem
+    for name, st in (("music", music), ("drums", drums), ("fx", fx)):
+        wavfile.write(out_file.replace(".wav", f"-{name}.wav"), SR, (st.T / (np.abs(mix).max() + 1e-9) * .9 * 32767).astype(np.int16))
 fi, fo = int(.3 * SR), int(1.2 * SR)
 mix[:, :fi] *= np.linspace(0, 1, fi) ** 2
 mix[:, -fo:] *= np.linspace(1, 0, fo) ** 2
 mix /= np.abs(mix).max() + 1e-9
 raw = out_file.replace(".wav", "-raw.wav")
 wavfile.write(raw, SR, (mix.T * .9 * 32767).astype(np.int16))
+# two-pass, linear loudness normalisation: one fixed gain for the whole piece, no pumping
+probe = subprocess.run(["ffmpeg", "-hide_banner", "-i", raw, "-af", "loudnorm=I=-15:TP=-1.5:LRA=11:print_format=json", "-f", "null", "-"],
+                       capture_output=True, text=True).stderr
+m = json.loads(probe[probe.rindex("{"):probe.rindex("}") + 1])
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw, "-af",
-                "acompressor=threshold=-20dB:ratio=1.8:attack=20:release=250,loudnorm=I=-15:TP=-1.5:LRA=11",
+                f"loudnorm=I=-15:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
+                f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true",
                 "-ar", str(SR), out_file], check=True)
 print("wrote", out_file)

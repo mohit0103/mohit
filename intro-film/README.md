@@ -27,9 +27,12 @@ Inter Display.
 | 13.6–15.8s | The card's corners round off into a circle around his portrait; the ring draws, the name sets |
 | 15.8–18.4s | The circle shrinks into an avatar above *third_eyef1.7*, the URL and a *Follow* button that gets pressed |
 
-The score is a warm D-major felt-piano and pad bed at 100 bpm. It runs on **one continuous
+The score is a through-composed eight-bar D-major piece at 100 bpm (felt piano, pad and
+a legato melody that resolves on the end card, so nothing loops). It runs on **one continuous
 beat grid** (phase `GRID0`) whose groove density follows a smooth curve, so it never
-restarts or cuts at a section change. Soft lifts build into the full-bleed, Google
+restarts or cuts at a section change. The bass sits an octave above the kick so the two
+never phase-cancel, and loudness is normalised in two linear passes (one fixed gain, no pumping).
+`STEMS=1` writes music/drums/fx stems for debugging. Soft lifts build into the full-bleed, Google
 and portrait moments, each landing on a warm bloom. The sound design is tactile
 and ASMR-like, with no air or whoosh sounds: lens-ring detents for each carousel step, a grainy
 card-on-paper slide, card pats as the stack lands, a paper riffle as it fans out,
