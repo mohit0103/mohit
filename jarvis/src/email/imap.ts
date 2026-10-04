@@ -152,6 +152,28 @@ export class ImapMail implements MailSource {
 			await conn.close();
 		}
 	}
+
+	/** Gmail search over All Mail (not just new inbox mail), e.g. "flight OR boarding OR PNR". Read-only. */
+	async search(query: string, max: number): Promise<MailMessage[]> {
+		const conn = new ImapConnection(await this.open());
+		try {
+			await conn.greeting();
+			await conn.command(`LOGIN ${quote(this.user)} ${quote(this.password.replace(/\s+/g, ''))}`, true);
+			await conn.command('EXAMINE "[Gmail]/All Mail"');
+			const q = /newer_than:|older_than:|after:|before:/.test(query) ? query : `${query} newer_than:1y`;
+			const uids = parseSearch(await conn.command(`UID SEARCH X-GM-RAW ${quote(`${q} -in:chats`)}`)).slice(-max);
+			if (!uids.length) return [];
+			const fetched = await conn.command(
+				`UID FETCH ${uids.join(',')} (UID INTERNALDATE BODY.PEEK[HEADER.FIELDS (FROM SUBJECT CONTENT-TYPE CONTENT-TRANSFER-ENCODING)] BODY.PEEK[TEXT]<0.6000>)`,
+			);
+			return fetched
+				.map(parseFetch)
+				.filter((m): m is MailMessage => m !== null)
+				.sort((a, b) => b.date.getTime() - a.date.getTime());
+		} finally {
+			await conn.close();
+		}
+	}
 }
 
 export function parseSearch(responses: ImapResponse[]): number[] {

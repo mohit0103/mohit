@@ -231,6 +231,19 @@ describe('agent tools', () => {
 		await expect(run('get_weather', { place: 'Nowhere' })).rejects.toThrow(/could not find/);
 	});
 
+	it('searches the whole Gmail mailbox live for specific questions (old bookings too)', async () => {
+		const { w, run } = setup();
+		w.mail.inbox = [
+			{ uid: 7, from: 'IndiGo <noreply@goindigo.in>', subject: 'Your e-ticket: BLR to NAG', date: new Date('2026-09-12T10:00:00Z'), text: 'PNR X7K2LM  Sun 11 Oct  6E 6312  departs 21:40 Bengaluru' },
+			{ uid: 8, from: 'Swiggy', subject: 'Order delivered', date: new Date('2026-10-01T10:00:00Z'), text: 'Enjoy your meal' },
+		];
+		const out: any = await run('check_email', { query: 'flight OR e-ticket OR PNR' });
+		expect(w.mail.searches).toEqual(['flight OR e-ticket OR PNR']);
+		expect(out.emails).toHaveLength(1);
+		expect(out.emails[0]).toMatchObject({ from: 'IndiGo <noreply@goindigo.in>', text: expect.stringContaining('departs 21:40') });
+		expect(((await run('check_email', { query: 'zzz' })) as any).note).toMatch(/No emails match/);
+	});
+
 	it('searches the web through the brain with search turned on', async () => {
 		const { w, run } = setup();
 		w.llm.on('web research helper', (r) => `RCB won (asked: ${r.turns[0].text}, search=${r.search})`);

@@ -200,6 +200,12 @@ export class FakeMail implements MailSource {
 		const fresh = this.inbox.filter((m) => m.uid > sinceUid);
 		return { messages: fresh.slice(-max), lastUid: Math.max(sinceUid, ...fresh.map((m) => m.uid)) };
 	}
+	searches: string[] = [];
+	async search(query: string, max: number) {
+		this.searches.push(query);
+		const words = query.toLowerCase().split(/\s+or\s+|\s+/).filter(Boolean);
+		return this.inbox.filter((m) => words.some((w) => `${m.subject} ${m.text}`.toLowerCase().includes(w))).slice(-max).reverse();
+	}
 }
 
 export const emptyMemory = {

@@ -145,6 +145,8 @@ export interface MailMessage {
 export interface MailSource {
 	/** New messages after `sinceUid` (oldest first), capped at `max`. */
 	fetchNew(sinceUid: number, max: number): Promise<{ messages: MailMessage[]; lastUid: number }>;
+	/** Searches the whole mailbox with Gmail's search syntax, newest first (read-only). */
+	search?(query: string, max: number): Promise<MailMessage[]>;
 }
 
 export interface Deps {

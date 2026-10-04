@@ -131,6 +131,15 @@ describe('IMAP client', () => {
 		expect(String(err)).not.toContain('wrong-pass');
 	});
 
+	it('searches All Mail read-only with Gmail syntax, newest first, within a year by default', async () => {
+		const s = server([5, 9]);
+		const found = await new ImapMail('mohit@gmail.com', 'abcdabcdabcdabcd', s.open).search('flight OR PNR', 5);
+		expect(found.map((m) => m.uid).sort()).toEqual([5, 9]);
+		expect(s.log.some((l) => l.endsWith('EXAMINE "[Gmail]/All Mail"'))).toBe(true);
+		expect(s.log.find((l) => l.includes('SEARCH'))).toContain('X-GM-RAW "flight OR PNR newer_than:1y -in:chats"');
+		expect(s.log.some((l) => /STORE|SELECT /.test(l))).toBe(false);
+	});
+
 	it('returns nothing when there is no new mail', async () => {
 		const mail = new ImapMail('mohit@gmail.com', 'abcdabcdabcdabcd', server([50]).open);
 		expect(await mail.fetchNew(50, 10)).toEqual({ messages: [], lastUid: 50 });
