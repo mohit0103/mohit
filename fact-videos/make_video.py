@@ -117,7 +117,7 @@ def draw_caption(c, th, chunk, t, end_t, highlights):
 	if total > W - 120:
 		half = (len(chunk) + 1) // 2
 		lines = [list(range(half)), list(range(half, len(chunk)))]
-	base_y = 1530 - (len(lines) - 1) * 60
+	base_y = 1320 - (len(lines) - 1) * 60
 	fade = min(ease_out((t - chunk[0][1] + 0.06) / 0.1), 1 - ease_out((t - end_t + 0.06) / 0.08))
 	outline = paint(skia.Color(0, 0, 0), 0.85 * fade, stroke=14)
 	for li, idx in enumerate(lines):

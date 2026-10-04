@@ -107,7 +107,7 @@
 		spark: c => `<svg viewBox="-60 -60 120 120"><path d="M0-54C6-10 10-6 54 0 10 6 6 10 0 54-6 10-10 6-54 0-10-6-6-10 0-54Z" fill="${c}" stroke="#111" stroke-width="7" stroke-linejoin="round"/></svg>`,
 		arrow: c => `<svg viewBox="-60 -60 120 120"><path d="M-12 50V-10H-36L0-54 36-10H12V50Z" fill="${c}" stroke="#111" stroke-width="7" stroke-linejoin="round"/></svg>`,
 	};
-	const SPOTS = [[90, 330], [960, 360], [120, 1260], [950, 1230], [80, 760], [1000, 820], [520, 260], [880, 1050]];
+	const SPOTS = [[90, 330], [960, 360], [110, 1130], [960, 1110], [80, 760], [1000, 820], [520, 250], [880, 1000]];
 
 	function stickers(root, t, dur, colors, n = 5, seed = 1) {
 		let s = seed * 9301 + 49297;

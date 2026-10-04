@@ -24,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 VISUAL_GUIDE = """
 VISUALS - editorial motion design. Every scene has "bg" ("ink" | "paper" | "red"; alternate them, use "red" once for the twist)
 and "layers": 1-3 layers that SHOW the idea. Each layer may have "at": a word from that scene's "say" (it appears exactly when
-that word is spoken) and "y" (vertical centre in px, screen is 1080x1920; keep content between y=450 and y=1350; captions sit at 1640).
+that word is spoken) and "y" (vertical centre in px, screen is 1080x1920; keep content between y=300 and y=1180; captions sit at about 1300 (above Instagram's bottom overlay)).
 Layer types:
   {"type":"headline","text":"2-5 WORDS","font":"display|serif","size":140,"y":800,"accent":["word"],"marker":"word"}   kinetic type
   {"type":"kicker","text":"PLACE · YEAR","y":560}                                     small label above a headline

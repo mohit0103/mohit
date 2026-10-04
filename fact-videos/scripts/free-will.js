@@ -30,12 +30,12 @@ window.REEL = (function () {
 		// 1. HOOK
 		hook(ctx) {
 			const {M, el, stage, start, dur, tl} = ctx;
-			const b = el(`<div class="ill" style="left:260px;top:420px;width:560px;height:490px">${brain()}</div>`, stage);
+			const b = el(`<div class="ill" style="left:270px;top:380px;width:540px;height:470px">${brain()}</div>`, stage);
 			M.pop(b, start + 0.05, {dur: 0.6, sfx: 'pop'});
 			M.float(b, start + 0.7, dur, {amp: 16, period: 1.1});
 			const pupils = b.querySelector('.pupils');
 			tl.to(pupils, {x: -16, duration: 0.25, ease: 'power2.out'}, start + 0.8).to(pupils, {x: 16, duration: 0.25}, start + 1.4).to(pupils, {x: 0, y: -10, duration: 0.25}, start + 2.0);
-			const c = card(ctx, 'Your brain<br>decides <span class="hl">first.</span>', 540, 1120, {rot: -4});
+			const c = card(ctx, 'Your brain<br>decides <span class="hl">first.</span>', 540, 1030, {rot: -4});
 			M.slam(c, ctx.at('before'));
 			M.punchIn(stage, ctx.at('before') + 0.05);
 		},
@@ -69,7 +69,7 @@ window.REEL = (function () {
 		// 3. THE SIGNAL RISES EARLY
 		signal(ctx) {
 			const {M, el, stage, start, dur, tl, at} = ctx;
-			const box = el(`<div class="card" style="left:540px;top:720px;width:900px;height:760px;background:#fff;padding:0;transform:translate(-50%,-50%) rotate(-2deg)"><svg viewBox="0 0 900 760" width="100%" height="100%">
+			const box = el(`<div class="card" style="left:540px;top:650px;width:900px;height:720px;background:#fff;padding:0;transform:translate(-50%,-50%) rotate(-2deg)"><svg viewBox="0 0 900 760" width="100%" height="100%">
 				<line x1="80" y1="620" x2="840" y2="620" stroke="#111" stroke-width="8" stroke-linecap="round"/>
 				<path class="sig" d="M90 600 C 260 600, 300 598, 380 590 C 470 580, 520 470, 600 330 C 650 240, 700 180, 820 150" fill="none" stroke="#8a3cff" stroke-width="16" stroke-linecap="round"/>
 				<g class="fb" transform="translate(400 590)"><line y1="0" y2="-300" stroke="#111" stroke-width="7"/><rect x="0" y="-300" width="190" height="78" rx="14" fill="#ff4fd8" stroke="#111" stroke-width="7"/><text x="95" y="-247" font-size="44" text-anchor="middle" font-family="Bricolage" font-weight="800">BRAIN</text></g>
@@ -80,7 +80,7 @@ window.REEL = (function () {
 			M.draw(box.querySelector('.sig'), start + 0.4, 1.6);
 			M.pop(box.querySelector('.fb'), at('rising'), {dur: 0.45});
 			M.pop(box.querySelector('.fy'), at('urge'), {dur: 0.45});
-			const big = el(`<div class="big" style="left:540px;top:1240px;transform:translate(-50%,-50%);font-size:170px;color:#c6ff3d">0.35s</div>`, stage);
+			const big = el(`<div class="big" style="left:540px;top:1110px;transform:translate(-50%,-50%);font-size:150px;color:#c6ff3d">0.35s</div>`, stage);
 			M.slam(big, at('third'), {endRot: -4});
 		},
 
@@ -89,7 +89,7 @@ window.REEL = (function () {
 			const {M, el, stage, start, dur, tl, at} = ctx;
 			const lab = card(ctx, '2008', 540, 300, {bg: '#3ce7ff', size: 100, rot: -3});
 			M.pop(lab, start + 0.05);
-			const sc = el(`<div class="ill" style="left:190px;top:420px;width:700px;height:600px"><svg viewBox="-230 -200 460 400" width="100%" height="100%">
+			const sc = el(`<div class="ill" style="left:210px;top:400px;width:660px;height:560px"><svg viewBox="-230 -200 460 400" width="100%" height="100%">
 				<g fill="none" stroke="#3ce7ff" stroke-width="7">${LOBES.map(([x, y, r]) => `<circle class="lo" cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>
 				${[[-90, -40], [40, -90], [110, 30], [-30, 70], [10, -10]].map(([x, y], i) => `<circle class="spot" cx="${x}" cy="${y}" r="26" fill="#ff4fd8" stroke="#111" stroke-width="6"/>`).join('')}
 			</svg></div>`, stage);
@@ -98,7 +98,7 @@ window.REEL = (function () {
 				tl.fromTo(p, {scale: 0, transformOrigin: '50% 50%'}, {scale: 1, duration: 0.35, ease: 'back.out(3)'}, start + 0.9 + i * 0.12);
 				tl.to(p, {scale: 1.35, duration: 0.45, repeat: Math.floor(dur / 0.45), yoyo: true, ease: 'sine.inOut', transformOrigin: '50% 50%'}, start + 1.4 + i * 0.1);
 			});
-			const num = el(`<div class="big" style="left:540px;top:1180px;transform:translate(-50%,-50%);font-size:230px;color:#c6ff3d"><span class="n">0</span>s</div>`, stage);
+			const num = el(`<div class="big" style="left:540px;top:1080px;transform:translate(-50%,-50%);font-size:200px;color:#c6ff3d"><span class="n">0</span>s</div>`, stage);
 			M.pop(num, at('ten') - 0.2, {sfx: false, from: 0.5});
 			M.countUp(num.querySelector('.n'), at('ten') - 0.2, 0, 10, 0.9, v => Math.round(v));
 			M.punchIn(stage, at('early'));
@@ -113,14 +113,14 @@ window.REEL = (function () {
 			M.pop(coin, start + 0.05);
 			tl.to(coin, {scaleX: -1, duration: 0.22, repeat: 9, yoyo: true, ease: 'sine.inOut'}, start + 0.4);
 			tl.fromTo(coin, {y: 0}, {y: -260, duration: 0.55, ease: 'power2.out', yoyo: true, repeat: 1, immediateRender: false}, start + 0.4);
-			const c = card(ctx, 'Better than<br><span class="hl">50 / 50</span>', 540, 1140, {bg: '#fff', rot: 3});
+			const c = card(ctx, 'Better than<br><span class="hl">50 / 50</span>', 540, 1040, {bg: '#fff', rot: 3});
 			M.slam(c, at('better'));
 		},
 
 		// 6. SCIENTISTS ARGUE
 		argue(ctx) {
 			const {M, el, stage, start, dur, tl, at} = ctx;
-			const b = el(`<div class="ill" style="left:290px;top:700px;width:500px;height:440px">${brain('#ff7ad9')}</div>`, stage);
+			const b = el(`<div class="ill" style="left:300px;top:660px;width:480px;height:420px">${brain('#ff7ad9')}</div>`, stage);
 			M.pop(b, start + 0.05);
 			tl.to(b.querySelector('.pupils'), {rotation: 360 * 3, svgOrigin: '6 6', duration: dur, ease: 'none'}, start + 0.4);
 			M.wobble(b, start + 0.5, dur, {amp: 5, period: 0.35});
@@ -140,13 +140,13 @@ window.REEL = (function () {
 			const {M, el, stage, start, dur, tl, at} = ctx;
 			const q = card(ctx, 'Is free will<br><span class="hl">real?</span>', 540, 380, {bg: '#fff', rot: -3});
 			M.slam(q, start + 0.1);
-			const b = el(`<div class="ill" style="left:330px;top:620px;width:420px;height:370px">${brain()}</div>`, stage);
+			const b = el(`<div class="ill" style="left:340px;top:560px;width:400px;height:350px">${brain()}</div>`, stage);
 			M.pop(b, start + 0.3);
 			const p = b.querySelector('.pupils');
 			tl.to(p, {x: -20, duration: 0.2}, at('Yes')).to(p, {x: 20, duration: 0.2}, at('no'));
-			const yes = card(ctx, 'YES', 270, 1180, {bg: '#8a3cff', size: 120, rot: -6});
+			const yes = card(ctx, 'YES', 270, 1060, {bg: '#8a3cff', size: 120, rot: -6});
 			yes.style.color = '#fff';
-			const no = card(ctx, 'NO', 810, 1180, {bg: '#ff4fd8', size: 120, rot: 6});
+			const no = card(ctx, 'NO', 810, 1060, {bg: '#ff4fd8', size: 120, rot: 6});
 			M.slideIn(yes, at('Yes') - 0.1, {from: 'left'});
 			ctx.cue('pop', at('Yes'), 0.9);
 			M.slideIn(no, at('no') - 0.1, {from: 'right'});

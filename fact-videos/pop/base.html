@@ -26,7 +26,8 @@ body { font-family: 'Bricolage', sans-serif; font-weight: 800; color: #111; -web
 .ill { position: absolute; z-index: 4; overflow: visible; }
 .ill svg { overflow: visible; }
 /* captions */
-#captions { position: absolute; left: 0; right: 0; top: 1430px; height: 260px; z-index: 900; }
+/* kept clear of Instagram's bottom overlay (username, caption, buttons) */
+#captions { position: absolute; left: 0; right: 0; top: 1235px; height: 260px; z-index: 900; }
 .chunk { position: absolute; left: 40px; right: 40px; top: 0; text-align: center; visibility: hidden; }
 .cbox { display: inline-block; background: #fff; border: 7px solid #111; border-radius: 30px; box-shadow: 11px 11px 0 #111;
         padding: 10px 18px 14px; font-size: 80px; line-height: 1.1; letter-spacing: -1px; white-space: nowrap; }

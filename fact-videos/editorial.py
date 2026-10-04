@@ -223,7 +223,7 @@ def draw_caption(c, sc, t):
 		words = [w for w, _, _ in ch]
 		total = sum(measure(w, f) for w in words) + space * (len(words) - 1)
 		x = W / 2 - total / 2
-		y = 1640
+		y = 1330
 		out = 1 - ease_out((t - end_t + 0.1) / 0.1)
 		for w, s, e in ch:
 			ww = measure(w, f)
