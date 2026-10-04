@@ -180,6 +180,9 @@ class Recorder implements Telegram {
 	async sendVoice(_c: string, _a: Uint8Array, _m: string, caption?: string) {
 		this.texts.push(caption ?? '[voice]');
 	}
+	async sendAudio(_c: string, _a: Uint8Array, _m: string, title: string) {
+		this.texts.push(`[audio: ${title}]`);
+	}
 	async sendChatAction() {}
 	async getFile(): Promise<Uint8Array> {
 		throw new Error('no files in evals');

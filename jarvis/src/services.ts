@@ -42,6 +42,16 @@ export class TelegramApi implements Telegram {
 		await this.call('sendVoice', form, false);
 	}
 
+	async sendAudio(chatId: string, audio: Uint8Array, mime: string, title: string): Promise<void> {
+		const form = new FormData();
+		form.set('chat_id', chatId);
+		const ext = mime.includes('ogg') ? 'ogg' : 'mp3';
+		form.set('audio', new Blob([audio], { type: mime }), `${title.replace(/[^\w -]/g, '').trim() || 'jarvis'}.${ext}`);
+		form.set('title', title);
+		form.set('performer', 'Jarvis');
+		await this.call('sendAudio', form, false);
+	}
+
 	async sendChatAction(chatId: string, action: 'typing' | 'record_voice'): Promise<void> {
 		await this.call('sendChatAction', JSON.stringify({ chat_id: chatId, action })).catch(() => undefined);
 	}
@@ -593,21 +603,32 @@ export class PublicFeeds implements Feeds {
 		}
 	}
 
+	/** AI and tech headlines from several sources in parallel, so one blocked or empty feed never leaves the briefing without news. */
 	async news(): Promise<string[]> {
-		const feeds = [
-			'https://news.google.com/rss/search?q=artificial+intelligence+when:1d&hl=en-IN&gl=IN&ceid=IN:en',
-			'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-IN&gl=IN&ceid=IN:en',
+		const feeds: { url: string; parse: (body: string) => string[] }[] = [
+			{ url: 'https://news.google.com/rss/search?q=artificial+intelligence+when:1d&hl=en-IN&gl=IN&ceid=IN:en', parse: parseRssTitles },
+			{ url: 'https://techcrunch.com/category/artificial-intelligence/feed/', parse: parseRssTitles },
+			{ url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', parse: parseRssTitles },
+			{ url: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-IN&gl=IN&ceid=IN:en', parse: parseRssTitles },
+			{
+				url: 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10',
+				parse: (body) => ((JSON.parse(body)?.hits ?? []) as { title?: string }[]).map((h) => String(h.title ?? '').trim()).filter(Boolean),
+			},
 		];
+		const lists = await Promise.all(
+			feeds.map(async (f) => {
+				try {
+					// Some sites turn away requests without a browser-like User-Agent (Workers send none by default).
+					const res = await this.fetcher(f.url, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; JarvisBot/1.0)', accept: '*/*' } });
+					return res.ok ? f.parse(await res.text()).slice(0, 6) : [];
+				} catch {
+					return []; // one feed failing is fine
+				}
+			}),
+		);
+		// Interleave sources so the top picks aren't all from one site.
 		const titles: string[] = [];
-		for (const url of feeds) {
-			try {
-				const res = await this.fetcher(url);
-				if (!res.ok) continue;
-				titles.push(...parseRssTitles(await res.text()).slice(0, 8));
-			} catch {
-				// one feed failing is fine
-			}
-		}
+		for (let i = 0; i < 6; i++) for (const l of lists) if (l[i]) titles.push(l[i]);
 		const seen = new Set<string>();
 		return titles.filter((t) => {
 			const k = t.toLowerCase().slice(0, 50);
@@ -620,7 +641,8 @@ export class PublicFeeds implements Feeds {
 
 export function parseRssTitles(xml: string): string[] {
 	const out: string[] = [];
-	const re = /<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/g;
+	// RSS <item> and Atom <entry>, titles with or without CDATA or attributes.
+	const re = /<(?:item|entry)\b[^>]*>[\s\S]*?<title\b[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/g;
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(xml))) out.push(decodeEntities(m[1]).trim());
 	return out.filter(Boolean);

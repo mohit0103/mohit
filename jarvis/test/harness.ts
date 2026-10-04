@@ -54,7 +54,7 @@ export function fakeD1(): D1Database & { raw: DatabaseSync } {
 }
 
 export interface Sent {
-	type: 'text' | 'voice' | 'doc' | 'action' | 'callback';
+	type: 'text' | 'voice' | 'audio' | 'doc' | 'action' | 'callback';
 	chatId?: string;
 	text: string;
 	buttons?: InlineButton[][];
@@ -74,6 +74,9 @@ export class FakeTelegram implements Telegram {
 	async sendVoice(chatId: string, _audio: Uint8Array, _mime: string, caption?: string) {
 		this.sent.push({ type: 'voice', chatId, text: caption ?? '' });
 	}
+	async sendAudio(chatId: string, _audio: Uint8Array, _mime: string, title: string) {
+		this.sent.push({ type: 'audio', chatId, text: title });
+	}
 	async sendChatAction(chatId: string, action: string) {
 		this.sent.push({ type: 'action', chatId, text: action });
 	}
@@ -90,7 +93,7 @@ export class FakeTelegram implements Telegram {
 	}
 	/** Messages a person would see (text and voice), not chat actions. */
 	visible() {
-		return this.sent.filter((s) => s.type === 'text' || s.type === 'voice' || s.type === 'doc');
+		return this.sent.filter((s) => s.type === 'text' || s.type === 'voice' || s.type === 'audio' || s.type === 'doc');
 	}
 	clear() {
 		this.sent = [];

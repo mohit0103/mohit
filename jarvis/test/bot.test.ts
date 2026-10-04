@@ -196,7 +196,8 @@ describe('the dentist story, end to end', () => {
 		await tick(w.deps);
 		const followups = w.tg.visible().filter((s) => /How did the interview go/.test(s.text));
 		expect(followups.length).toBe(1);
-		expect(followups[0].type).toBe('voice');
+		expect(followups[0].type).toBe('text');
+		expect(w.tg.visible().some((s) => s.type === 'audio')).toBe(true); // with a tap-to-play audio, not an auto-playing voice note
 	});
 });
 

@@ -37,6 +37,8 @@ export interface InlineButton {
 export interface Telegram {
 	sendMessage(chatId: string, text: string, buttons?: InlineButton[][]): Promise<void>;
 	sendVoice(chatId: string, audio: Uint8Array, mime: string, caption?: string): Promise<void>;
+	/** An audio file: shows a player and only plays when tapped (no auto-play like voice messages). */
+	sendAudio(chatId: string, audio: Uint8Array, mime: string, title: string): Promise<void>;
 	sendChatAction(chatId: string, action: 'typing' | 'record_voice'): Promise<void>;
 	getFile(fileId: string): Promise<Uint8Array>;
 	answerCallback(id: string, text?: string): Promise<void>;

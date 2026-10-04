@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickNudgeTimes, tick } from '../src/scheduler';
+import { otherPlaces, pickNudgeTimes, tick } from '../src/scheduler';
 import { LlmError } from '../src/types';
 import { makeWorld, rows } from './harness';
 
@@ -13,7 +13,7 @@ function scriptDefaults(w: ReturnType<typeof makeWorld>) {
 }
 
 describe('daily rhythm', () => {
-	it('sends the morning briefing once at 07:00 as a voice note with details', async () => {
+	it('sends the morning briefing once at 07:00 as text plus a tap-to-play audio file (never an auto-playing voice note)', async () => {
 		const w = makeWorld('2026-10-05T06:55:00+05:30');
 		scriptDefaults(w);
 		await tick(w.deps);
@@ -22,8 +22,10 @@ describe('daily rhythm', () => {
 		await tick(w.deps);
 		w.clock.advance(5);
 		await tick(w.deps);
-		const voices = w.tg.visible().filter((s) => s.type === 'voice');
-		expect(voices.length).toBe(1);
+		expect(w.tg.visible().filter((s) => s.type === 'voice')).toEqual([]);
+		const audio = w.tg.visible().filter((s) => s.type === 'audio');
+		expect(audio.map((a) => a.text)).toEqual(['Morning briefing']);
+		expect(w.tg.visible().findIndex((s) => s.type === 'text')).toBeLessThan(w.tg.visible().findIndex((s) => s.type === 'audio')); // message lands first
 		expect(w.speech.spoken[0]).toContain('Take an umbrella');
 		expect(w.tg.visible().some((s) => s.type === 'text' && s.text.includes('• item'))).toBe(true);
 		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('morning briefing'))!.turns[0].text;
@@ -31,17 +33,43 @@ describe('daily rhythm', () => {
 		expect(prompt).toMatch(/suggest one small goal/);
 	});
 
+	it('briefs with real headlines, the weather where he is, and without routine bank alerts', async () => {
+		const w = makeWorld('2026-10-05T07:00:00+05:30');
+		scriptDefaults(w);
+		w.db.raw.exec("INSERT INTO facts (text, category, created_at) VALUES ('His hometown is Nagpur.', 'personal', 'x'), ('Lives in Bengaluru', 'personal', 'x')");
+		w.db.raw.exec("INSERT INTO emails (uid, sender, subject, received_at, summary, kind, importance) VALUES (1, 'HDFC', 'Alert', '2026-10-05T00:00:00.000Z', 'Rs 100 debited via UPI', 'finance', 'low'), (2, 'Priya', 'Deck', '2026-10-05T00:00:00.000Z', 'Priya needs the deck by 4', 'work', 'high')");
+		await tick(w.deps);
+		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('morning briefing'))!.turns[0].text;
+		expect(prompt).toContain('WEATHER in Nagpur: Nagpur on today');
+		expect(prompt).not.toContain('WEATHER in Bengaluru:'); // home is listed once, as home base
+		expect(prompt).toContain('Priya needs the deck by 4');
+		expect(prompt).not.toContain('Rs 100 debited');
+		expect(prompt).toMatch(/never say the news is quiet/);
+		expect(otherPlaces(['Lives in Bangalore', 'Currently in Mumbai for work'], 'Bengaluru')).toEqual(['Mumbai']);
+	});
+
+	it('falls back to a live web search when every news feed is empty', async () => {
+		const w = makeWorld('2026-10-05T07:00:00+05:30');
+		scriptDefaults(w);
+		w.deps.feeds.news = async () => [];
+		w.llm.on('You list news headlines', () => '1. OpenAI releases a new reasoning model for coding\n2. India launches a national AI compute grid');
+		await tick(w.deps);
+		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('morning briefing'))!.turns[0].text;
+		expect(prompt).toContain('AI & TECH HEADLINES: OpenAI releases a new reasoning model for coding || India launches a national AI compute grid');
+		expect(w.llm.calls.find((c) => c.system.includes('You list news headlines'))!.search).toBe(true);
+	});
+
 	it('catches up a missed briefing slot, but not hours later', async () => {
 		const w = makeWorld('2026-10-05T08:40:00+05:30');
 		scriptDefaults(w);
 		await tick(w.deps);
-		expect(w.tg.visible().filter((s) => s.type === 'voice').length).toBe(1);
+		expect(w.tg.visible().filter((s) => s.type === 'audio').length).toBe(1);
 
 		const w2 = makeWorld('2026-10-05T11:30:00+05:30');
 		scriptDefaults(w2);
 		w2.llm.on('spontaneous', () => ({ send: false, message: '' }));
 		await tick(w2.deps);
-		expect(w2.tg.visible().filter((s) => s.type === 'voice')).toEqual([]);
+		expect(w2.tg.visible().filter((s) => s.type === 'audio')).toEqual([]);
 	});
 
 	it('still briefs (plain version) when the LLM is down', async () => {
@@ -140,7 +168,7 @@ describe('robustness', () => {
 		const log = await tick(w.deps);
 		expect(log.join()).toMatch(/email failed: Error: imap down/);
 		expect(w.tg.visible().some((s) => /Stretch/.test(s.text))).toBe(true);
-		expect(w.tg.visible().some((s) => s.type === 'voice')).toBe(true);
+		expect(w.tg.visible().some((s) => s.type === 'audio')).toBe(true);
 	});
 
 	it('does nothing before pairing', async () => {

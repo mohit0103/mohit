@@ -21,6 +21,20 @@ export interface SayOptions {
 export async function say(deps: Deps, chatId: string, text: string, opts: SayOptions): Promise<void> {
 	const store = new Store(deps.db);
 	let sentVoice = false;
+	// Messages Jarvis starts himself (briefing, check-in, follow-ups) land as text plus a tap-to-play audio file:
+	// Telegram auto-plays voice messages in a queue (and on raise-to-ear), which he doesn't want for these.
+	if (opts.voice && opts.kind !== 'chat') {
+		const full = opts.details ? `${text}\n\n${opts.details}` : text;
+		await retry(() => deps.tg.sendMessage(chatId, full, opts.buttons));
+		try {
+			const audio = await Promise.race([deps.speech.synthesize(text), new Promise<null>((r) => setTimeout(() => r(null), 12_000))]);
+			if (audio) await deps.tg.sendAudio(chatId, audio.audio, audio.mime, AUDIO_TITLES[opts.kind] ?? 'Jarvis');
+		} catch (e) {
+			console.warn('audio send failed; the text already went out', e);
+		}
+		await store.addMessage('jarvis', text, opts.kind, utc(deps.now()), opts.meta ?? '');
+		return;
+	}
 	if (opts.voice) {
 		try {
 			await deps.tg.sendChatAction(chatId, 'record_voice');
@@ -42,6 +56,14 @@ export async function say(deps: Deps, chatId: string, text: string, opts: SayOpt
 	}
 	await store.addMessage('jarvis', text, opts.kind, utc(deps.now()), opts.meta ?? '');
 }
+
+const AUDIO_TITLES: Record<string, string> = {
+	briefing: 'Morning briefing',
+	checkin: 'Evening check-in',
+	review: 'Weekly review',
+	monthly: 'Monthly recap',
+	followup: 'Jarvis',
+};
 
 async function retry(fn: () => Promise<void>): Promise<void> {
 	try {
