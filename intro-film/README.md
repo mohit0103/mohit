@@ -10,6 +10,27 @@ Rendered films:
 * **`out/reel.mp4`**: 9:16 vertical reel (1080×1920, 60 fps, 18.4 s) for Reels/Shorts.
 * `out/intro.mp4`: 16:9 long-form intro (1920×1080, 60 fps, 50.7 s).
 
+## Uploading to Instagram
+
+Upload **`out/reel-instagram.mp4`**, not `reel.mp4`.
+
+| | `reel.mp4` (archive) | `reel-instagram.mp4` (upload) |
+|---|---|---|
+| Frame rate | 60 fps | **30 fps native**: Reels play at 30, and Instagram drops every other frame of a 60 fps file, which judders |
+| Motion blur | 2 sub-frames | 4 lossless PNG sub-frames, 180° shutter at 30 fps |
+| Grain | animated | static dither (animated grain wastes Instagram's bitrate and turns blocky) |
+| Encode | CRF 19 | H.264 High 4.2, ~20 Mbps, 1 s GOPs, BT.709, AAC 256k |
+
+On the phone:
+1. Get the file onto the phone **untouched**: AirDrop, Google Drive or Files ("download original"). Don't send it through WhatsApp or Telegram, which recompress it.
+2. In Instagram, go to **Settings → Data usage and media quality → turn on "Upload at highest quality"**.
+3. Upload on Wi-Fi. Don't trim or add filters in Instagram's editor (that forces another re-encode).
+4. Fresh uploads often look soft for a few minutes while Instagram processes the HD version.
+
+```bash
+node render.js --page reel.html --ig    # -> out/reel-instagram.mp4 (~10 min on 4 cores)
+```
+
 ## The reel (`reel.html` + `reel_score.py`)
 
 A soft, Apple-style piece on a light canvas. Every photo is a rounded card, a

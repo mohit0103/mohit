@@ -114,6 +114,8 @@ function S(el, o) {
 }
 const setMask = (el, m) => { el.style.webkitMaskImage = m; el.style.maskImage = m; };
 let FRAME = 0;
+const NOGRAIN = new URLSearchParams(location.search).has('nograin');
+if (NOGRAIN) document.getElementById('grain').style.opacity = .025;
 
 function words(el, txt) {
   el.innerHTML = '';
@@ -419,7 +421,8 @@ function render(t) {
     if ($('eBtn').textContent !== label) $('eBtn').textContent = label;
   }
 
-  $('grain').getContext('2d').putImageData(grainFrames[FRAME % grainFrames.length], 0, 0);
+  // for upload masters (?nograin) use one static dither frame: prevents banding, costs no bitrate
+  $('grain').getContext('2d').putImageData(grainFrames[NOGRAIN ? 0 : FRAME % grainFrames.length], 0, 0);
 }
 
 window.seek = t => render(t);

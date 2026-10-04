@@ -9,6 +9,13 @@
 //   node render.js --page reel.html   9:16 reel -> out/reel.mp4
 //   node render.js --stills 3,12   PNG stills at those seconds -> out/still-*.png
 //   node render.js --from 10 --to 14 --out out/clip.mp4   partial render
+//   node render.js --page reel.html --ig   Instagram master -> out/reel-instagram.mp4
+//
+// --ig: Reels play at 30 fps, so a 60 fps upload gets every other frame thrown
+// away (motion judders). Instead we render native 30 fps with 4 lossless PNG
+// sub-frames per frame spread over half the frame (a true 180° shutter at
+// 30 fps), drop the animated film grain (it wastes Instagram's bitrate) for a
+// static dither, and encode to Instagram's preferred spec at a high bitrate.
 const path = require('path');
 const fs = require('fs');
 const { spawn, execFileSync } = require('child_process');
@@ -21,11 +28,16 @@ const arg = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] :
 const OUT = path.resolve(__dirname, 'out');
 fs.mkdirSync(OUT, { recursive: true });
 
-const FPS = 60, SUB = 2;
+const IG = args.includes('--ig');
+const FPS = +arg('--fps', IG ? 30 : 60);
+const SUB = +arg('--sub', IG ? 4 : 2);                    // sub-frames blended into each frame
+const SHUTTER = +arg('--shutter', IG ? .5 : 1);           // fraction of the frame the sub-frames span
+const FORMAT = IG || args.includes('--png') ? 'png' : 'jpeg';
 const WORKERS = +arg('--workers', 3);
 const PAGE = arg('--page', 'index.html');
 const NAME = PAGE === 'index.html' ? 'intro' : path.basename(PAGE, '.html');
-const URL = 'file://' + path.resolve(__dirname, PAGE) + '?render';
+const PARAMS = [arg('--params', ''), IG ? 'nograin' : ''].filter(Boolean).join('&');
+const URL = 'file://' + path.resolve(__dirname, PAGE) + '?render' + (PARAMS ? '&' + PARAMS : '');
 let VW = 1920, VH = 1080;   // replaced by the page's window.STAGE
 const launchOpts = { executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium', args: ['--force-color-profile=srgb', '--disable-lcd-text', '--hide-scrollbars'] };
 
@@ -59,15 +71,15 @@ async function stills(times) {
 async function segment(f0, f1, file, idx) {
   const browser = await chromium.launch(launchOpts);
   const p = await openPage(browser);
-  const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(FPS * SUB), '-c:v', 'mjpeg', '-i', '-',
+  const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(FPS * SUB), '-c:v', FORMAT === 'png' ? 'png' : 'mjpeg', '-i', '-',
     '-vf', `tmix=frames=${SUB},select='not(mod(n+1\\,${SUB}))',setpts=N/(${FPS}*TB)`, '-r', String(FPS),
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', IG ? '8' : '14', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
     '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709', '-g', '120', file], { stdio: ['pipe', 'inherit', 'inherit'] });
   const started = Date.now();
   for (let f = f0; f < f1; f++) {
     for (let s = 0; s < SUB; s++) {
-      const t = (f + s / SUB) / FPS;
-      const buf = await grab(p, t);
+      const t = (f + s / SUB * SHUTTER) / FPS;
+      const buf = await grab(p, t, FORMAT);
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
     }
     if ((f - f0) % 120 === 0) {
@@ -109,12 +121,18 @@ async function film() {
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', video]);
   segs.forEach(s => fs.unlinkSync(s)); fs.unlinkSync(list);
 
-  const out = path.resolve(arg('--out', path.join(OUT, `${NAME}.mp4`)));
+  const out = path.resolve(arg('--out', path.join(OUT, IG ? `${NAME}-instagram.mp4` : `${NAME}.mp4`)));
   const score = path.join(OUT, `${NAME}-score.wav`);
   if (!args.includes('--no-audio')) {
     execFileSync('python3', [path.join(__dirname, scoreScript), cuesFile, score], { stdio: 'inherit' });
+    const vcodec = IG
+      // Instagram-friendly master: H.264 High 4.2, ~20 Mbps, 1 s closed GOPs, BT.709 tags, AAC 48 kHz
+      ? ['-c:v', 'libx264', '-preset', 'slower', '-b:v', '20M', '-maxrate', '25M', '-bufsize', '40M', '-profile:v', 'high', '-level', '4.2',
+         '-pix_fmt', 'yuv420p', '-r', String(FPS), '-g', String(FPS), '-keyint_min', String(FPS), '-sc_threshold', '0', '-bf', '2',
+         '-x264-params', 'aq-mode=3:deblock=-1,-1', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709']
+      : ['-c:v', 'copy'];
     execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', video, '-ss', String(from), '-t', String(to - from), '-i', score,
-      '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '320k', '-shortest', '-movflags', '+faststart', out]);
+      '-map', '0:v', '-map', '1:a', ...vcodec, '-c:a', 'aac', '-b:a', IG ? '256k' : '320k', '-ar', '48000', '-shortest', '-movflags', '+faststart', out]);
     fs.unlinkSync(video);
   } else fs.renameSync(video, out);
   console.log('wrote', out);
