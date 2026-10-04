@@ -396,6 +396,26 @@ def pop():
     return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 35) * .5
 
 
+def bell(f=1568.0, d=1.8):
+    t = tt(d)
+    return sum(np.sin(2 * np.pi * f * m * t) * np.exp(-t * (2.2 + m * 1.3)) / m for m in (1, 2.0, 3.01, 4.2)) * .22
+
+
+def shimmer(d=1.2):
+    o = np.zeros(int((d + 1.0) * SR))
+    for j, n in enumerate([86, 93, 98]):
+        b = bell(hz(n), 1.0) * .45
+        i = int(j * .045 * SR)
+        o[i:i + len(b)] += b
+    return o
+
+
+def air(d=.6):
+    t = tt(d)
+    x = sweep(rng.standard_normal(len(t)), 180, 2600, 1.0, curve=lambda k: k ** .7)
+    return x * np.sin(np.pi * np.clip(t / d, 0, 1)) ** 1.6 * 1.5
+
+
 for c in spec["cues"]:
     ty, at, g = c["type"], c["at"], c["gain"]
     if ty == "whoosh":
@@ -444,6 +464,29 @@ for c in spec["cues"]:
         place(fx, counter(), at, .4 * g)
     elif ty == "pop":
         place(fx, pop(), at, .6 * g, float(rng.uniform(-.5, .5)))
+    elif ty == "match":          # shape-held match cut: whoosh into the cut, soft sub, glassy tail
+        w = whoosh(.36, 300, 5200)
+        place(fx, w, at - .2, .45 * g, pan_sweep(len(w), *(rng.choice([-1, 1]) * np.array([-.6, .6]))))
+        place(fx, boom(.9, .45), at, .55 * g)
+        place(fx, shimmer(), at, .35 * g, float(rng.uniform(-.3, .3)))
+    elif ty == "axis":
+        w = whoosh(.34, 500, 6500)
+        place(fx, w, at - .12, .45 * g, pan_sweep(len(w), -.8, .8))
+        place(fx, boom(.7, .35), at + .02, .45 * g)
+    elif ty == "horizon":
+        a_ = air()
+        place(fx, a_, at - .22, .5 * g)
+        place(fx, boom(.8, .35), at + .02, .45 * g)
+    elif ty == "swipe":
+        w = whoosh(.28, 1200, 7000)
+        place(fx, w, at - .05, .4 * g, pan_sweep(len(w), .8, -.8))
+        place(fx, tick(3200), at + .2, .4 * g)
+    elif ty == "gdraw":          # four ascending plucks, one per colour of the G
+        for j, n in enumerate([74, 78, 81, 86]):
+            place(fx, bell(hz(n), 1.2), at + j * .11, .55 * g, -.5 + j * .33)
+    elif ty == "chime":
+        place(fx, bell(hz(93), 2.4), at, .6 * g)
+        place(fx, bell(hz(98), 2.4), at + .03, .4 * g)
 
 music = reverb(music, 2.4, .35, 2)
 drums = reverb(drums, 1.0, .12, 3)

@@ -7,33 +7,36 @@ Inter, Geist Mono and the Mrs Saint Delafield signature script.
 
 Rendered films:
 
-* **`out/reel.mp4`**: 9:16 vertical trailer (1080×1920, 60 fps, 19.6 s) for Reels/Shorts. Fast cuts, heavy SFX.
+* **`out/reel.mp4`**: 9:16 vertical trailer (1080×1920, 60 fps, 17.2 s) for Reels/Shorts.
 * `out/intro.mp4`: 16:9 long-form intro (1920×1080, 60 fps, 50.7 s).
 
 ## The reel (`reel.html` + `reel_score.py`)
 
-Cut at 120 bpm on half, quarter and eighth beats. It uses 10 kinds of transitions
-(iris snap, whip pans with directional motion blur, zoom-through, strip skyline reveal,
-flash cut, diagonal wipe, RGB-split glitch, punch-ins, split-band choreography, and a
-camera push into a grid card) with tiny mono captions that decode in.
+Every cut is a **match cut**. Each photo is placed by a feature it shares with its
+neighbour (a circle, a person, a horizon or a vanishing point), so at the cut both
+images line up exactly and the camera move carries straight through. Typography is
+Inter Display (optical sizing, tight tracking) in an Apple-keynote style: words
+blur into focus.
 
-| time | beat |
+| time | match |
 |---|---|
-| 0–1s | Black. *THIRD_EYEF1.7* decodes, an amber line collapses to a dot, and the iris snaps open |
-| 1–5s | 8 shots at half-beat, each with a different transition |
-| 5–6s | Break: *chasing the last light* |
-| 6–9s | Three split bands slide in and swap, a 2×2 grid of featured work, push into the Pixel shot |
-| 9–12s | 8 shots at quarter-beat, then an 8-shot eighth-note strobe on a snare roll |
-| 12–14s | Drop to near silence: braam, sub dive, **300K+** counter |
-| 14–17s | Pull out of his camera lens to the portrait and name |
-| 17–19.6s | Strobe recap, braam, the signature writes, @third_eyef1.7 |
+| 0–1s | *third_eyef1.7* → a white dot that becomes the **iris** |
+| 1–4.5s | Circle chain: eye iris → moon → sun → Konark wheel hub → ferris-wheel hub → flower (*See. Moon. Sun. Wheel. Wonder. Bloom.*) |
+| 4.5–5.5s | The iris closes on the flower; *Chasing the last light.* |
+| 5.5–7.5s | A horizon line opens onto the beach; the beach walker splits into the seated man (same axis); the lake and sea horizons lock at the same height |
+| 7.5–9s | Push into the railway's vanishing point → the radial Pixel shot grows out of the same point |
+| 9–11.5s | **Google × photo**: the G draws on, the featured frame pulls out of full screen into a card, and the carousel swipes through the featured shots (*Featured on Google Pixel & Google India*, 300K+ counter) |
+| 11.5–14.5s | The ferris hub becomes **his camera lens** and pulls out to the portrait and name |
+| 14.5–17.2s | Eighth-note recap, *third_eyef1.7* |
+
+`window.checkCoverage()` in the page verifies that every photo fills the frame at every frame.
 
 The score is a D-minor trailer pulse (side-chained bass, stabs, claps, hats, snare roll)
-with a sound for every cut: panned whooshes, zoom risers, glitch zaps, camera-flash
-snaps, booms, braams, sub drops, and typing ticks for every decoding caption.
+with a sound for every cut: shape-match whooshes with glassy tails, airy horizon swells,
+vanishing-point zoom risers, card swipes, the G "draw" plucks, booms and braams.
 
 ```bash
-node render.js --page reel.html      # -> out/reel.mp4 (~8 min on 4 cores)
+node render.js --page reel.html      # -> out/reel.mp4 (~7 min on 4 cores)
 ```
 
 ## The 16:9 intro: story (figures → photos)
