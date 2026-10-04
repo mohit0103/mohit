@@ -49,8 +49,10 @@ export const MEMORY_RULES = `MEMORY RULES (fill the "memory" object; use empty a
 - plans_add: any future event or plan he mentions (appointments, trips, meetings, flights, exams, parties, deadlines).
   starts_at is ISO 8601 with +05:30, resolved from the calendar above (e.g. "Friday" = the coming Friday). Use the stated time; if no time, set all_day true and use T00:00.
   followup_question: a natural, caring question to ask afterwards ("How did the dentist go?"). followup_at: when to ask (ISO +05:30) or "" to let the app choose.
-- plans_update: when he tells you how a plan went (status done + outcome), that it was cancelled, or that it moved (rescheduled + new_starts_at). Use plan ids from PLANS.
+- plans_update: when he tells you how a plan went (status done + outcome), that it was cancelled, or that it moved (rescheduled + new_starts_at),
+  including corrections like "not tomorrow, it's Sunday the 11th". Use plan ids from PLANS.
 - reminders_add: only when he explicitly asks to be reminded. due_at ISO +05:30 ("in 2 hours" = current time + 2h).
+  Never for things Jarvis already does on its own (the 7 AM briefing, the 7 PM check-in, follow-ups) or for questions about them.
 - reminders_cancel: ids of reminders he cancels.
 - goals_add: only goals or habits he agrees to track. goals_checkin: he did a tracked habit today. goals_stop: he wants to stop tracking.
 - admin_done: ids from LIFE ADMIN that he says are paid, received or sorted.

@@ -86,7 +86,14 @@ export default {
 				date: r.k.slice(7),
 				...JSON.parse(r.v),
 			}));
-			return Response.json({ since, messages, reviews, diags: await store.diags(), models: await store.get('llm_health') });
+			const now = new Date();
+			const memory = {
+				facts: (await store.facts()).map((f) => f.text),
+				plans: (await store.plansBetween(new Date(now.getTime() - 7 * 86_400_000).toISOString(), new Date(now.getTime() + 60 * 86_400_000).toISOString())).map((p) => ({ id: p.id, title: p.title, starts_at: p.starts_at, followup_at: p.followup_at })),
+				reminders: (await store.upcomingReminders(now.toISOString(), 20)).map((r) => ({ id: r.id, text: r.text, due_at: r.due_at })),
+				goals: (await store.goals()).map((g) => g.title),
+			};
+			return Response.json({ since, messages, reviews, memory, diags: await store.diags(), models: await store.get('llm_health') });
 		}
 		if (req.method === 'POST' && url.pathname === '/telegram') {
 			if (req.headers.get('x-telegram-bot-api-secret-token') !== (await webhookSecret(env.TELEGRAM_BOT_TOKEN))) {
