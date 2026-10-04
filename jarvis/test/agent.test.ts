@@ -302,7 +302,7 @@ describe('brains with tools', () => {
 		const { f, calls } = fetchOf((_u, body) => (body.contents.length === 1 ? Response.json({ candidates: [{ content: { role: 'model', parts } }] }) : Response.json({ candidates: [{ content: { parts: [{ text: 'Rahul likes beer' }] } }] })));
 		const g = new Gemini('k', 'gemini-3.8-flash', f, async () => {});
 		const s1 = await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'who is Rahul?' }], tools });
-		expect(s1).toMatchObject({ text: '', calls: [{ name: 'recall', args: { query: 'Rahul' } }], by: 'gemini' });
+		expect(s1).toMatchObject({ text: '', calls: [{ name: 'recall', args: { query: 'Rahul' } }], by: 'gemini:3.8-flash' });
 		expect(calls[0].body.tools[0].functionDeclarations[0].name).toBe('recall');
 		expect(calls[0].body.generationConfig.thinkingConfig).toEqual({ thinkingLevel: 'low' });
 		const s2 = await g.agentStep({

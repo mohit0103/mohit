@@ -179,7 +179,7 @@ export class Gemini implements Llm {
 				if (i === lastUser) for (const img of req.images ?? []) parts.push({ inline_data: { mime_type: img.mime, data: toBase64(img.data) } });
 				contents.push({ role: 'user', parts });
 			} else if (m.role === 'model') {
-				if (m.by === 'gemini' && m.raw) contents.push(m.raw);
+				if (m.by?.startsWith('gemini') && m.raw) contents.push(m.raw);
 				else {
 					// Steps answered by another brain carry no thought signature; Gemini accepts this documented placeholder.
 					const parts: any[] = m.text ? [{ text: m.text }] : [];
@@ -235,6 +235,7 @@ export class Gemini implements Llm {
 		};
 		let lastKind: LlmError['kind'] = 'unavailable';
 		let lastMsg = '';
+		const skipped: string[] = [];
 		for (const model of order) {
 			let thinking = opts.fast || opts.agent ? thinkingFor(model) : undefined;
 			let search = Boolean(opts.search);
@@ -259,6 +260,7 @@ export class Gemini implements Llm {
 					if (out !== undefined) {
 						delete health[model];
 						await save();
+						if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `${model.replace(/^gemini-/, 'gemini:')}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
 						return out;
 					}
 					lastKind = 'bad_response';
@@ -266,6 +268,7 @@ export class Gemini implements Llm {
 					break; // try the next model
 				}
 				lastMsg = `${model}: ${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`;
+				skipped.push(`${model.replace(/^gemini-/, '')}:${res.status}`);
 				if (res.status === 429) {
 					lastKind = 'quota';
 					benched(model, 10, 'free quota hit');
