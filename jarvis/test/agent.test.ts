@@ -151,7 +151,7 @@ describe('self-check', () => {
 		expect(verifyReply('Forgotten, never happened 😄', [])).toMatch(/forgetting/);
 		expect(verifyReply('Haha nice, enjoy the movie!', [])).toBeNull();
 		expect(verifyReply("No more pineapple pizza, got it. I'll forget that fact about you.", [])).toMatch(/forgetting/);
-		expect(verifyReply('Consider that memory officially deleted, dude.', [t('forget', true)])).toBeNull();
+		expect(verifyReply('Consider that memory officially deleted, Mohit.', [t('forget', true)])).toBeNull();
 	});
 	it('flags names presented as his memories that nothing supports', () => {
 		const known = 'FACTS: He enjoys fish fry. His hometown is Nagpur. Office is at Bhoruka Tech Park in Bangalore.';
@@ -165,6 +165,12 @@ describe('self-check', () => {
 		expect(verifyReply('Last time you went to Toit with Rahul, right?', [], known)).toMatch(/"Toit", "Rahul"/);
 	});
 
+	it('flags slang names he asked not to be called', () => {
+		expect(verifyReply("Man, that's really rough, Mohit. Hang in there, man.", [])).toMatch(/calls him "man"/);
+		expect(verifyReply('No worries, dude.', [])).toMatch(/calls him/);
+		expect(verifyReply("That's rough, Mohit. Hang in there, it'll settle down. A man needs rest too.", [])).toBeNull();
+	});
+
 	it('flags assistant-style service offers', () => {
 		expect(verifyReply('Back to the grind tomorrow, Mohit. Let me know if you need anything before you head out.', [])).toMatch(/service offer/);
 		expect(verifyReply('Back to the grind tomorrow, Mohit. Hope the week treats you well!', [])).toBeNull();
@@ -172,7 +178,7 @@ describe('self-check', () => {
 
 	it('flags promises to look something up later, since there is no later', () => {
 		for (const d of ['Wait, seriously? Let me check that for you.', 'Mumbai tomorrow! Let me check the weather for you.', "One sec, I'll look it up"]) expect(verifyReply(d, [])).toMatch(/promises to check/);
-		expect(verifyReply("It's Satya Nadella, dude.", [t('web_search', true, 'read')])).toBeNull();
+		expect(verifyReply("It's Satya Nadella, Mohit.", [t('web_search', true, 'read')])).toBeNull();
 	});
 	it('flags a failed action the reply glosses over', () => {
 		const failed = [t('set_reminder', false, 'write', { error: 'time is in the past' })];
@@ -362,6 +368,14 @@ describe('brains with tools', () => {
 		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'hi', by: 'gemini:model-b(after model-a:503)' });
 		expect(waits).toEqual([]);
 		expect(calls.map((c) => c.url.split('/models/')[1].split(':')[0])).toEqual(['model-a', 'model-b']);
+	});
+
+	it('Gemini: hands a live reply to the next brain once failures have eaten 5 seconds', async () => {
+		let t = 0;
+		const { f, calls } = fetchOf(() => ((t += 3_000), new Response('overloaded', { status: 503 })));
+		const g = new Gemini('k', 'a,b,c,d', f, async () => {}, undefined, () => t);
+		await expect(g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).rejects.toThrow(/too slow right now/);
+		expect(calls).toHaveLength(2); // a and b, then it stops instead of trying c and d
 	});
 
 	it('Gemini: turns from another brain get the placeholder signature', async () => {

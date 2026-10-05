@@ -246,7 +246,13 @@ export class Gemini implements Llm {
 		let lastKind: LlmError['kind'] = 'unavailable';
 		let lastMsg = '';
 		const skipped: string[] = [];
+		const started = this.clock();
 		for (const model of order) {
+			// He's waiting: if Gemini has already burned 5 s on failures, hand over to the next brain instead of trying more models.
+			if ((opts.fast || opts.agent) && skipped.length && this.clock() - started > 5_000) {
+				await save();
+				throw new LlmError(`Gemini too slow right now (${skipped.join(', ')})`, lastKind);
+			}
 			let thinking = opts.fast || opts.agent ? thinkingFor(model) : undefined;
 			let search = Boolean(opts.search);
 			for (let attempt = 0; attempt < 2; attempt++) {

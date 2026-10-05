@@ -23,6 +23,9 @@ const PROMISE = /\b(let me|lemme|i'?ll|i will|gonna|going to)( quickly| just| go
 /** Assistant-style service offers his buddy shouldn't end on. */
 const SERVICE_OFFER = /\b(let me know if (you need|there'?s) anything|anything else (i can|you need)|is there anything else|i'?d be happy to help|feel free to (ask|reach out)|how can i (help|assist))\b/i;
 
+/** Slang ways of addressing him that he asked Jarvis not to use. */
+const SLANG_ADDRESS = /\b(dude|bro|bruh|buddy)\b|(^|[.!?]\s+)man,|,\s*man\b/i;
+
 const ADMITS_FAILURE = /\b(couldn'?t|could not|can'?t|cannot|didn'?t|did not|wasn'?t able|failed|not able|glitch|problem|issue|sorry|oops|hmm)\b/i;
 
 /** Sentences that present something as his own memory or taste. */
@@ -62,6 +65,7 @@ export function verifyReply(draft: string, trace: TraceEntry[], known?: string):
 	for (const c of CLAIMS) {
 		if (c.pattern.test(draft) && !c.tools.some((t) => okTools.has(t))) problems.push(`your reply claims ${c.what}, but no ${c.tools.join('/')} call succeeded this turn. Either call the tool now, or don't claim it.`);
 	}
+	if (SLANG_ADDRESS.test(draft)) problems.push('it calls him "man", "dude", "bro" or similar, which he asked you not to. Use his name or nothing.');
 	if (SERVICE_OFFER.test(draft)) problems.push('it ends with an assistant-style service offer ("let me know if you need anything" and the like). Drop that line; end like a friend would.');
 	if (PROMISE.test(draft)) problems.push('your reply promises to check or look something up, but this reply is final: there is no later. Call the right tool now (web_search, get_weather, check_email, recall) and answer with the result.');
 	const failed = trace.filter((t) => !t.ok && t.effect === 'write' && !okTools.has(t.tool));
