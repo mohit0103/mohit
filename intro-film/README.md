@@ -48,17 +48,22 @@ Inter Display.
 | 13.6–15.8s | The card's corners round off into a circle around his portrait; the ring draws, the name sets |
 | 15.8–18.4s | The circle shrinks into an avatar above *third_eyef1.7*, the URL and a *Follow* button that gets pressed |
 
-The score is a through-composed eight-bar D-major piece at 100 bpm (felt piano, pad and
-a legato melody that resolves on the end card, so nothing loops). It runs on **one continuous
-beat grid** (phase `GRID0`) whose groove density follows a smooth curve, so it never
-restarts or cuts at a section change. The bass sits an octave above the kick so the two
-never phase-cancel, and loudness is normalised in two linear passes (one fixed gain, no pumping).
-`STEMS=1` writes music/drums/fx stems for debugging. Soft lifts build into the full-bleed, Google
-and portrait moments, each landing on a warm bloom. The sound design is tactile
-and ASMR-like, with no air or whoosh sounds: lens-ring detents for each carousel step, a grainy
-card-on-paper slide, card pats as the stack lands, a paper riffle as it fans out,
-focus-ring ratchets into each big moment, pebble pops as tiles land, bell notes as
-the G draws, and a button click.
+The score (`reel_score.py`) is a catchy D-major pop track at 100 bpm (I–vi–IV–V), locked
+to the composition's beat grid so cuts land on beats:
+
+* **Hook**: a two-bar marimba/pluck melody with a dotted-eighth ping-pong echo; it returns
+  with variations and resolves on D as the Follow button is pressed
+* **Groove**: punchy kick, snaps on 2 & 4, swung 16th shakers, off-beat octave bass, a wide
+  detuned pad that softly pumps against the kick
+* **Arc**: filtered teaser intro → groove under the carousel → breakdown with a snare build
+  under the full-bleed moment → drop as the grid lands → peak at Google (open hats + a bell
+  counter-melody) → half-time portrait → resolve
+* **UI sound design**: tactile and tuned to the key. Each carousel step pairs a lens-ring
+  detent with a bell that walks up the chord; slides pan right → left with the cards, and
+  the stack riffle pans as the hand fans out. Ratchets build into each big moment and land
+  on a warm chord bloom. No whooshes.
+* **Master**: bus saturation, glue compression, limiter, two-pass linear loudness to −14 LUFS.
+  `STEMS=1` writes music/drums/fx stems for debugging.
 
 ```bash
 node render.js --page reel.html      # -> out/reel.mp4 (~7 min on 4 cores)
