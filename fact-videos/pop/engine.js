@@ -190,7 +190,7 @@
 
 	window.FL = {
 		tl, cues,
-		seek(t) { tl.time(t, true); return true; },
+		seek(t) { tl.time(t, false); return true; },  // events on, so count-up onUpdate handlers run
 		total: D.total,
 	};
 })();

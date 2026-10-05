@@ -1,0 +1,50 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-05-372-day-year.js
+channel: factloop
+reel_js: 2026-10-05-372-day-year.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "3.8": three point eight
+  "1.7": one point seven
+scenes:
+  - id: hook
+    say: Seventy million years ago, a year had 372 days.
+    highlight: ["372"]
+    bg: "#8a3cff"
+  - id: day
+    say: Because each day was only about twenty-three and a half hours long.
+    highlight: [half]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: clam
+    say: Scientists counted the daily growth rings inside a fossil clam shell.
+    highlight: [daily]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: brake
+    say: The reason? The Moon. Its pull slows Earth's spin, like a brake.
+    highlight: [Moon]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: drift
+    say: And it's drifting away from us, about 3.8 centimetres every year.
+    highlight: [drifting]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+  - id: longer
+    say: So our days keep getting longer. About 1.7 milliseconds every century.
+    highlight: [longer]
+    bg: "#c6ff3d"
+  - id: cta
+    say: If days became twenty-five hours, would you love it? Yes, or no?
+    highlight: [love]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+post_caption: "70 million years ago a year had 372 days 🦕 The Moon has been slowing Earth down ever since — and it's still drifting away. Would you want 25-hour days? Yes or no 👇"
+hashtags: ["#space", "#science", "#moon", "#earth", "#dinosaurs", "#facts", "#reels"]
+sources:
+  - "Winter et al. (2020), Paleoceanography and Paleoclimatology: daily growth layers in a 70-million-year-old rudist clam shell show 372 days per year (~23.5-hour days)"
+  - "Lunar laser ranging: the Moon recedes ~3.8 cm per year (38.3 mm/yr)"
+  - "Stephenson et al. (2016), Proc. Royal Society A: day length increasing ~1.7-1.8 ms per century from historical eclipse records"
