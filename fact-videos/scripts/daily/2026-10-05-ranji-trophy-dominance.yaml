@@ -1,0 +1,121 @@
+channel: factloop
+kicker: CRICKET · INDIA
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Forty-two Ranji Trophies. Just one team. Impossible?
+  highlight:
+  - Forty-two
+  - Impossible
+  bg: ink
+  layers:
+  - type: photo
+    query: Ranji Trophy cricket cup
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: 42 TROPHIES
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: IMPOSSIBLE?
+    at: Impossible
+    y: 1080
+    rotate: -8
+- say: India's top domestic cricket tournament began in 1934.
+  highlight:
+  - '1934'
+  bg: paper
+  layers:
+  - type: photo
+    query: old cricket match India 1930s
+    frame: print
+    treatment: bw
+  - type: kicker
+    text: INDIA · 1934
+    y: 560
+- say: The powerhouse behind this? Mumbai. They hold all 42 titles.
+  highlight:
+  - Mumbai
+  - 42 titles
+  bg: ink
+  layers:
+  - type: photo
+    query: Mumbai cricket team celebration generic
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 42
+    suffix: ' titles'
+    label: Mumbai
+    plain: false
+    y: 800
+- say: The next closest team, Karnataka, has only 8 titles. Eight!
+  highlight:
+  - 8 titles
+  - Eight
+  bg: red
+  layers:
+  - type: photo
+    query: cricket stadium crowd India wide angle
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: bars
+    items:
+    - label: Mumbai
+      value: 42
+    - label: Karnataka
+      value: 8
+    unit: ' titles'
+    y: 900
+- say: Cricket legends like Tendulkar and Gavaskar started here.
+  highlight:
+  - legends
+  bg: paper
+  layers:
+  - type: photo
+    query: Sachin Tendulkar Sunil Gavaskar young cricketers
+    frame: strip
+    treatment: color
+  - type: chips
+    items:
+    - TENDULKAR
+    - GAVASKAR
+    y: 1100
+- say: Should domestic tournaments cap wins to share talent? Yes or No?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: Mumbai's cricket dominance in the Ranji Trophy is legendary! Does one team winning so much make the sport less
+  exciting, or does it push others to be better? Share your thoughts below!
+hashtags:
+- '#RanjiTrophy'
+- '#IndianCricket'
+- '#CricketFacts'
+- '#MumbaiCricket'
+- '#SportsHistory'
+- '#FactVideo'
+sources:
+- https://www.hindustantimes.com/cricket/all-of-mumbais-42-ranji-trophy-title-wins-101710427301077.html
+- https://www.britannica.com/sports/Ranji-Trophy
+- https://en.wikipedia.org/wiki/Ranji_Trophy
+- https://www.crictracker.com/ranji-trophy-winners-list
+- https://en.wikipedia.org/wiki/Karnataka_cricket_team
+- https://en.wikipedia.org/wiki/Mumbai_cricket_team
+- https://timesofindia.indiatimes.com/sports/cricket/news/top-5-teams-with-most-titles-in-ranji-trophy/articleshow/108543788.cms
+topic: Ranji Trophy Dominance
