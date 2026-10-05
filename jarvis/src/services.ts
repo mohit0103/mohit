@@ -270,7 +270,7 @@ export class Gemini implements Llm {
 					if (out !== undefined) {
 						delete health[model];
 						await save();
-						if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `${model.replace(/^gemini-/, 'gemini:')}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
+						if (out && typeof out === 'object' && 'by' in out) (out as { by?: string }).by = `gemini:${model.replace(/^gemini-/, '')}${skipped.length ? `(after ${skipped.join(',')})` : ''}`;
 						return out;
 					}
 					lastKind = 'bad_response';
@@ -305,6 +305,11 @@ export class Gemini implements Llm {
 				}
 				if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
 				lastKind = 'unavailable';
+				if (opts.fast || opts.agent) {
+					// He's waiting for this reply: an overloaded model gets a short rest and the next model answers now.
+					benched(model, 2, 'overloaded');
+					break;
+				}
 				await this.sleep(800 * (attempt + 1));
 			}
 		}

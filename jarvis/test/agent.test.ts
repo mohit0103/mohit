@@ -355,6 +355,15 @@ describe('brains with tools', () => {
 		expect(sent.toolConfig.functionCallingConfig.mode).toBe('NONE');
 	});
 
+	it('Gemini: a live reply skips an overloaded model at once (no waiting and retrying)', async () => {
+		const waits: number[] = [];
+		const { f, calls } = fetchOf((url) => (url.includes('model-a') ? new Response('overloaded', { status: 503 }) : Response.json({ candidates: [{ content: { parts: [{ text: 'hi' }] } }] })));
+		const g = new Gemini('k', 'model-a,model-b', f, async (ms) => void waits.push(ms));
+		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'hi', by: 'gemini:model-b(after model-a:503)' });
+		expect(waits).toEqual([]);
+		expect(calls.map((c) => c.url.split('/models/')[1].split(':')[0])).toEqual(['model-a', 'model-b']);
+	});
+
 	it('Gemini: turns from another brain get the placeholder signature', async () => {
 		const { f, calls } = fetchOf(() => Response.json({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }));
 		const g = new Gemini('k', 'm', f, async () => {});
