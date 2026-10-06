@@ -825,6 +825,19 @@ export class OpenAiCompatLlm implements Llm {
 	readonly name: string;
 	/** Models that hit a rate limit, resting until the time the provider gave (per invocation). */
 	private resting = new Map<string, number>();
+	/** Models the provider has retired (404/410), found out on the first failure. */
+	private gone?: Set<string>;
+
+	private async liveModels(): Promise<Set<string> | null> {
+		try {
+			const res = await this.fetcher(this.opts.url.replace(/\/chat\/completions$/, '/models'), { headers: { authorization: `Bearer ${this.opts.key}` } });
+			if (!res.ok) return null;
+			const data: any = await res.json();
+			return new Set(((data?.data ?? []) as { id?: string }[]).map((m) => String(m.id)));
+		} catch {
+			return null;
+		}
+	}
 	constructor(
 		protected opts: OpenAiCompatOptions,
 		protected fetcher: typeof fetch = (input, init) => fetch(input, init),
@@ -894,8 +907,10 @@ export class OpenAiCompatLlm implements Llm {
 		let lastMsg = '';
 		let lastKind: LlmError['kind'] = 'unavailable';
 		const skipped: string[] = [];
-		const awake = models.filter((m) => !((this.resting.get(m) ?? 0) > this.clock()));
+		let awake = models.filter((m) => !((this.resting.get(m) ?? 0) > this.clock()) && !(this.gone?.has(m)));
+		if (!awake.length) awake = models.filter((m) => !this.gone?.has(m));
 		for (const [i, model] of (awake.length ? awake : models).entries()) {
+			if (this.gone?.has(model)) continue;
 			let res: Response;
 			try {
 				res = await this.fetcher(this.opts.url, {
@@ -923,6 +938,14 @@ export class OpenAiCompatLlm implements Llm {
 			if (res.status === 401 || res.status === 403) throw new LlmError(lastMsg, 'config');
 			lastKind = res.status === 429 ? 'quota' : 'unavailable';
 			skipped.push(`${model.split('/').pop()}:${res.status}`);
+			if (res.status === 404 || res.status === 410) {
+				// The model was retired: learn which ones still exist and skip the missing ones from now on.
+				this.gone ??= new Set();
+				this.gone.add(model);
+				const live = await this.liveModels();
+				if (live) for (const m of models) if (!live.has(m)) this.gone.add(m);
+				continue;
+			}
 			if (res.status === 429) {
 				// Per-minute limits clear in seconds: for the best model, a short wait beats a weaker model.
 				const wait = Number(res.headers.get('retry-after')) || 20;
@@ -962,12 +985,13 @@ export class MistralLlm extends OpenAiCompatLlm {
 	}
 }
 
-export const NVIDIA_MODELS = ['openai/gpt-oss-120b', 'meta/llama-3.3-70b-instruct', 'openai/gpt-oss-20b'];
+// NVIDIA retires models without notice; any of these that has disappeared is skipped via the live model list.
+export const NVIDIA_MODELS = ['deepseek-ai/deepseek-v4.1-flash', 'z-ai/glm-5.3-flash', 'moonshotai/kimi-k2.6', 'nvidia/nemotron-3-super-120b-a12b', 'openai/gpt-oss-20b'];
 
 /** NVIDIA NIM: free hosted open models (no card), OpenAI-compatible. */
 export class NvidiaLlm extends OpenAiCompatLlm {
 	constructor(key: string, models?: string, fetcher?: typeof fetch, sleep?: (ms: number) => Promise<void>, clock?: () => number) {
-		super({ name: 'nvidia', url: 'https://integrate.api.nvidia.com/v1/chat/completions', key, models, defaults: NVIDIA_MODELS, agentFirst: 'openai/gpt-oss-120b' }, fetcher, sleep, clock);
+		super({ name: 'nvidia', url: 'https://integrate.api.nvidia.com/v1/chat/completions', key, models, defaults: NVIDIA_MODELS }, fetcher, sleep, clock);
 	}
 }
 

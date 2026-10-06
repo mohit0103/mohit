@@ -359,7 +359,7 @@ async function sendHeadsUps(deps: Deps, store: Store, chatId: string, now: Date,
 export function pickNudgeTimes(random: () => number): number[] {
 	// One around midday/afternoon, one in the evening after the check-in.
 	const a = 11 * 60 + Math.floor(random() * (6.5 * 60)); // 11:00-17:30
-	const b = 20 * 60 + 15 + Math.floor(random() * 90); // 20:15-21:45
+	const b = 19 * 60 + 45 + Math.floor(random() * 45); // 19:45-20:30, never late at night
 	return [a, b];
 }
 
@@ -388,6 +388,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 	const yearAgo = await store.diaryOn(`${Number(today.slice(0, 4)) - 1}${today.slice(4)}`);
 	const monthAgo = await store.diaryOn(addDays(today, -30));
 	const people = (await store.people()).filter((p) => p.last_contact && now.getTime() - new Date(p.last_contact).getTime() > 10 * 86_400_000);
+	const recentChat = (await store.recentMessages(10)).filter((m) => m.kind === 'chat' || m.role === 'user');
 	const ideas = [
 		yearAgo ? `ON THIS DAY last year: ${yearAgo.summary || yearAgo.notes}` : '',
 		monthAgo ? `A MONTH AGO: ${monthAgo.summary || monthAgo.notes}` : '',
@@ -400,11 +401,14 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 		turns: [
 			{
 				role: 'user',
-				text: `Send ${deps.config.name} one short, spontaneous friendly text message (1-2 sentences), like a buddy would.\n${ideas}\n` +
-					`Pick the best of: an "on this day" memory, a nudge to call someone he hasn't mentioned in a while, a goal nudge, ` +
-					`asking about something he told you recently, an interesting AI/tech fact, or a light joke. Don't repeat recent messages. ` +
+				text: `Decide whether to send ${deps.config.name} one short, caring text (1-2 sentences), like a close friend would.\n${ideas}\n` +
+					`RECENT CHAT: ${recentChat.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'}: ${m.text.slice(0, 160)}`).join(' | ') || 'none'}\n` +
+					`Only send something with a real, personal reason: following up on something he told you recently (how did X go, is Y sorted), ` +
+					`an "on this day" memory, a nudge to call someone he hasn't mentioned in a while, or a goal he is tracking. ` +
+					`Never send random jokes, trivia or facts (he dislikes them). If he seems stressed, upset or mid-conflict, at most a gentle check-in, never anything playful. ` +
+					`Don't repeat recent messages. ` +
 					`Every personal detail must come from WHAT YOU KNOW or the ideas above: never invent places he likes, people or past events, and don't name restaurants or spots. ` +
-					`Set "send" false if nothing feels natural right now.`,
+					`Set "send" false unless there is a genuinely useful or caring reason to text him right now; silence is better than filler.`,
 			},
 		],
 		schema: {

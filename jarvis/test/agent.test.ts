@@ -444,8 +444,23 @@ describe('brains with tools', () => {
 
 	it('NVIDIA NIM speaks the same protocol at its own address', async () => {
 		const { f, calls } = fetchOf(() => Response.json({ choices: [{ message: { content: 'yo' } }] }));
-		expect(await new NvidiaLlm('nk', undefined, f).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'yo', by: 'nvidia:gpt-oss-120b' });
+		expect(await new NvidiaLlm('nk', undefined, f).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'yo', by: 'nvidia:deepseek-v4.1-flash' });
 		expect(calls[0].url).toBe('https://integrate.api.nvidia.com/v1/chat/completions');
+	});
+
+	it('skips retired models after one 410, using the live model list', async () => {
+		const seen: string[] = [];
+		const f = (async (input: any, init?: RequestInit) => {
+			const url = String(input);
+			if (url.endsWith('/models')) return Response.json({ data: [{ id: 'm/c' }] });
+			const model = JSON.parse(String(init!.body)).model;
+			seen.push(model);
+			return model === 'm/c' ? Response.json({ choices: [{ message: { content: 'ok' } }] }) : new Response('gone', { status: 410 });
+		}) as typeof fetch;
+		const g = new NvidiaLlm('nk', 'm/a,m/b,m/c', f);
+		expect(await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'ok', by: 'nvidia:c(after a:410)' });
+		await g.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools });
+		expect(seen).toEqual(['m/a', 'm/c', 'm/c']); // b was never tried: the list showed it's gone
 	});
 
 	it('Groq looks things up with its web-search model when asked to search', async () => {

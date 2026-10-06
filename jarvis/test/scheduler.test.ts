@@ -7,7 +7,7 @@ function scriptDefaults(w: ReturnType<typeof makeWorld>) {
 	w.llm.on('morning briefing', (req) => ({ spoken: `Good morning Mohit! ${req.turns[0].text.includes('light rain') ? 'Take an umbrella.' : ''}`, details: '• item' }));
 	w.llm.on('evening check-in', () => ({ spoken: 'Hey Mohit, how was your day?', details: '' }));
 	w.llm.on('weekly review', () => ({ spoken: 'What a week!', details: '' }));
-	w.llm.on('spontaneous', () => ({ send: true, message: 'Random buddy message!' }));
+	w.llm.on('caring text', () => ({ send: true, message: 'Random buddy message!' }));
 	w.llm.on('for his diary', () => ({ summary: 'Mohit had a good day.', mood_label: 'good', mood_score: 4 }));
 	w.llm.on('month in review', () => ({ spoken: 'Your month!', details: '' }));
 }
@@ -111,13 +111,13 @@ describe('daily rhythm', () => {
 });
 
 describe('chatty nudges', () => {
-	it('picks one afternoon and one evening slot', () => {
+	it('picks one afternoon and one early-evening slot (never late at night)', () => {
 		for (const seed of [0, 0.5, 0.999]) {
 			const [a, b] = pickNudgeTimes(() => seed);
 			expect(a).toBeGreaterThanOrEqual(11 * 60);
 			expect(a).toBeLessThanOrEqual(17 * 60 + 30);
-			expect(b).toBeGreaterThanOrEqual(20 * 60 + 15);
-			expect(b).toBeLessThanOrEqual(21 * 60 + 45);
+			expect(b).toBeGreaterThanOrEqual(19 * 60 + 45);
+			expect(b).toBeLessThanOrEqual(20 * 60 + 30);
 		}
 	});
 
@@ -140,6 +140,9 @@ describe('chatty nudges', () => {
 		w.clock.advance(5);
 		await tick(w.deps);
 		expect(w.tg.visible().filter((s) => /Random buddy/.test(s.text)).length).toBe(1);
+		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('caring text'))!.turns[0].text;
+		expect(prompt).toMatch(/Never send random jokes, trivia or facts/);
+		expect(prompt).toContain('RECENT CHAT: Mohit: busy chatting');
 	});
 });
 
