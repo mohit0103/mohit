@@ -1,0 +1,46 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-06-cant-tickle-yourself.js
+channel: factloop
+reel_js: 2026-10-06-cant-tickle-yourself.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: You can't tickle yourself. Your brain won't let you.
+    highlight: [can't]
+    bg: "#8a3cff"
+  - id: predict
+    say: Every time you move, your brain predicts exactly what you'll feel.
+    highlight: [predicts]
+    bg: "#c6ff3d"
+  - id: cancel
+    say: And that prediction quietly turns the tickle down.
+    highlight: [down]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: robot
+    say: So scientists built a tickle robot. People moved one robot arm, and a second robot stroked their palm.
+    highlight: [robot]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: delay
+    say: Then they added a tiny delay. The longer the delay, the more it tickled.
+    highlight: [tickled]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: why
+    say: Because your brain stopped recognising the touch as its own.
+    highlight: [own]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: Would you want to be able to tickle yourself? Yes, or no?
+    highlight: [tickle]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Your brain cancels your own tickles 🪶 But scientists fooled it with a tickle robot and a tiny delay. Would you want to be able to tickle yourself? Yes or no 👇"
+hashtags: ["#brain", "#psychology", "#neuroscience", "#tickle", "#science", "#facts", "#reels"]
+sources:
+  - "Blakemore, Wolpert & Frith (1998), Nature Neuroscience: self-produced tickles are attenuated; the cerebellum predicts the sensory consequences of our own movements"
+  - "Blakemore, Frith & Wolpert (1999), Journal of Cognitive Neuroscience: in a two-robot setup, tickliness ratings increased significantly with increasing delay between the movement and the touch"
