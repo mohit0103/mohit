@@ -1,0 +1,109 @@
+channel: factloop
+kicker: INDIA · CURRENCY ECONOMICS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: India LOSES money on every single ₹1 coin it mints.
+  highlight:
+  - LOSES money
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: dim
+  - type: headline
+    text: ₹1 LOSS
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: LOSS
+    at: LOSES
+    y: 1080
+- say: An RTI in 2018 revealed each ₹1 coin costs ₹1.11 to mint.
+  highlight:
+  - ₹1.11
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian currency minting machine
+    frame: print
+    treatment: color
+  - type: counter
+    value: 1.11
+    suffix: ₹
+    label: Cost to mint ₹1
+    y: 1000
+- say: ₹2 coins also cost ₹1.28. But ₹5 and ₹10 coins are profitable.
+  highlight:
+  - profitable
+  bg: ink
+  layers:
+  - type: photo
+    query: stack of Indian coins
+    frame: strip
+    treatment: bw
+  - type: chips
+    items:
+    - '₹2: ₹1.28'
+    - '₹5: ₹3.69'
+    - '₹10: ₹5.54'
+    y: 1000
+- say: Rising metal prices globally make small coins costly.
+  highlight:
+  - metal prices
+  bg: paper
+  layers:
+  - type: photo
+    query: global commodity market graphs metal prices
+    frame: full
+    treatment: duotone
+  - type: icon
+    name: trending-up
+    label: Metal Prices
+    y: 1000
+- say: Yet, India keeps minting them to support daily transactions.
+  highlight:
+  - daily transactions
+  bg: red
+  layers:
+  - type: photo
+    query: Indian street market vendor exchanging coins
+    frame: full
+    treatment: dim
+  - type: icon
+    name: users
+    label: Public Need
+    y: 1000
+- say: Should India stop making coins that cost more than their value?
+  highlight:
+  - stop making
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: 'This ₹1 coin in your pocket is a financial mystery! It actually costs the government more to make than its
+  value. Is this a necessary expense or a drain? Tell us: Should India stop minting coins that cost more than their face value?
+  Yes or No?'
+hashtags:
+- '#IndianRupee'
+- '#CoinFacts'
+- '#IndianEconomy'
+- '#MoneyFacts'
+- '#RBI'
+- '#Currency'
+- '#FactVideo'
+sources:
+- India TV News
+- Upstox
+- Angel One
+- Finshots
+topic: Cost of Minting Indian Coins
