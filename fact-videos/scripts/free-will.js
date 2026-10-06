@@ -122,7 +122,7 @@ window.REEL = (function () {
 			const {M, el, stage, start, dur, tl, at} = ctx;
 			const b = el(`<div class="ill" style="left:300px;top:660px;width:480px;height:420px">${brain('#ff7ad9')}</div>`, stage);
 			M.pop(b, start + 0.05);
-			tl.to(b.querySelector('.pupils'), {rotation: 360 * 3, svgOrigin: '6 6', duration: dur, ease: 'none'}, start + 0.4);
+			tl.fromTo(b.querySelector('.pupils'), {x: -14}, {x: 14, duration: 0.18, repeat: Math.floor(dur / 0.18), yoyo: true, ease: 'sine.inOut', immediateRender: false}, start + 0.3);  // darting eyes stay inside the eye whites
 			M.wobble(b, start + 0.5, dur, {amp: 5, period: 0.35});
 			const bub = (txt, x, y, col, flip) => el(`<div class="ill" style="left:${x}px;top:${y}px;width:400px;height:300px"><svg viewBox="0 0 400 300" width="100%" height="100%">
 				<path d="M40 30 H360 Q380 30 380 50 V190 Q380 210 360 210 H${flip ? 120 : 280} L${flip ? 60 : 340} 280 L${flip ? 150 : 250} 210 H40 Q20 210 20 190 V50 Q20 30 40 30Z" fill="#111" transform="translate(10 10)"/>

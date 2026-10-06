@@ -128,7 +128,7 @@ window.REEL = (function () {
 			const {M, el, stage, start, dur, tl, at} = ctx;
 			const b = el(`<div class="ill" style="left:300px;top:380px;width:480px;height:420px">${brain()}</div>`, stage);
 			M.pop(b, start + 0.05);
-			tl.to(b.querySelector('.pupils'), {rotation: 360 * 2, svgOrigin: '6 6', duration: dur, ease: 'none'}, start + 0.3);
+			tl.fromTo(b.querySelector('.pupils'), {x: -14}, {x: 14, duration: 0.18, repeat: Math.floor(dur / 0.18), yoyo: true, ease: 'sine.inOut', immediateRender: false}, start + 0.3);  // darting eyes stay inside the eye whites
 			M.wobble(b, start + 0.4, dur, {amp: 5, period: 0.35});
 			const q = el(`<div class="big" style="left:810px;top:420px;transform:translate(-50%,-50%) rotate(12deg);font-size:220px;color:#ffd23c">?</div>`, stage);
 			M.pop(q, at('recognising') - 0.2, {rot: 40});
