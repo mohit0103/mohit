@@ -366,6 +366,18 @@ describe('memory saving', () => {
 });
 
 describe('watchdog', () => {
+	it('records which stage a cut-off turn died in', async () => {
+		const w = makeWorld();
+		onChat(w, () => 'hi');
+		await handleUpdate(w.deps, textUpdate('hey'));
+		expect(rows(w, "SELECT count(*) AS c FROM kv WHERE k = 'turn_stage'")[0].c).toBe(0); // cleared after a normal reply
+		w.db.raw.prepare("INSERT INTO kv (k, v) VALUES ('turn_stage', ?)").run(JSON.stringify({ stage: 'sending after 9.1s of thinking (nvidia)' }));
+		new Store(w.db).addMessage('user', 'still there?', 'chat', w.clock.now.toISOString());
+		w.clock.advance(3);
+		await tick(w.deps);
+		expect(rows(w, "SELECT v FROM kv WHERE k = 'diag:stall'")[0].v).toContain('stopped while sending after 9.1s of thinking (nvidia)');
+	});
+
 	it('answers a message whose reply never went out (e.g. the run was cut off)', async () => {
 		const w = makeWorld();
 		new Store(w.db).addMessage('user', 'What time is my flight?', 'chat', w.clock.now.toISOString());
@@ -375,6 +387,7 @@ describe('watchdog', () => {
 		w.clock.advance(3);
 		await tick(w.deps);
 		expect(w.tg.visible().map((m) => m.text)).toEqual(['Your flight is at 9:40 PM on Sunday!']);
+		expect(rows(w, "SELECT meta FROM messages WHERE role = 'jarvis'").at(-1).meta).toBe('via=watchdog');
 		w.clock.advance(5);
 		await tick(w.deps);
 		expect(w.tg.visible()).toHaveLength(1); // answered once

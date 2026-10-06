@@ -193,7 +193,9 @@ async function converseInner(
 ): Promise<void> {
 	const now = deps.now();
 	const t0 = Date.now();
-	await Promise.all([store.addMessage('user', text, 'chat', utc(now)), deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing')]);
+	// Progress marker: if this run is cut off, the watchdog can say which stage it died in.
+	const stage = (name: string) => store.set('turn_stage', JSON.stringify({ stage: name, at: new Date().toISOString(), voice: viaVoice })).catch(() => undefined);
+	await Promise.all([store.addMessage('user', text, 'chat', utc(now)), deps.tg.sendChatAction(chatId, viaVoice ? 'record_voice' : 'typing'), stage('thinking')]);
 	let reply: string;
 	let trace: TraceEntry[] = [];
 	let by: string | undefined;
@@ -217,6 +219,7 @@ async function converseInner(
 		return;
 	}
 	timings.brain = Date.now() - tl;
+	await stage(`sending after ${Math.round(timings.brain / 100) / 10}s of thinking (${by ?? '?'}${trace.length ? `, tools ${trace.map((t) => t.tool).join('+')}` : ''})`);
 	const ts = Date.now();
 	const meta = [
 		...Object.entries({ ...timings, voice: viaVoice ? 1 : 0 }).map(([k, v]) => `${k}=${v}`),
@@ -229,7 +232,7 @@ async function converseInner(
 	await say(deps, chatId, reply, { voice: viaVoice && Date.now() - t0 < 25_000, kind: 'chat', meta });
 	timings.send = Date.now() - ts;
 	timings.total = Date.now() - t0 + (timings.listen ?? 0);
-	await store.del('pending_reply');
+	await Promise.all([store.del('pending_reply'), store.del('turn_stage')]);
 	await store.diag('brain', true, 'replying normally', utc(now));
 	await store.diag('latency', true, Object.entries(timings).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', '), utc(now));
 	// Background memory runs from the next cron tick: this invocation has spent much of its 50-query allowance.
@@ -522,7 +525,8 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 		if (age > 2 * 60_000 && age < 6 * 3600_000 && !(await store.get('pending_reply'))) {
 			await store.set('pending_reply', last.at);
 			await store.del('pending_reply_try');
-			await store.diag('brain', false, 'a message went unanswered; answering it from the watchdog', utc(now));
+			const died = await store.get('turn_stage');
+			await store.diag('stall', false, `a message went unanswered (the run stopped while ${died ? JSON.parse(died).stage : 'unknown'}); answering it from the watchdog`, utc(now));
 		}
 	}
 	const pending = await store.get('pending_reply');
@@ -542,5 +546,5 @@ export async function retryPendingReply(deps: Deps, store: Store, chatId: string
 		return; // still down; try again next tick
 	}
 	await store.del('pending_reply');
-	await say(deps, chatId, reply, { voice: false, kind: 'chat' });
+	await say(deps, chatId, reply, { voice: false, kind: 'chat', meta: 'via=watchdog' });
 }
