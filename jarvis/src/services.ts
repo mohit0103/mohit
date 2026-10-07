@@ -751,7 +751,7 @@ export class FallbackLlm implements Llm {
 	}
 
 	/** Each brain but the last gets at most this long, so one slow provider can't use up the whole reply. */
-	brainTimeoutMs = 12_000;
+	brainTimeoutMs = 8_000;
 
 	private capped<T>(p: Promise<T>, isLast: boolean, name: string): Promise<T> {
 		if (isLast) return p;
