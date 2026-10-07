@@ -21,7 +21,7 @@ const CLAIMS: { tools: string[]; pattern: RegExp; what: string }[] = [
 const PROMISE = /\b(let me|lemme|i'?ll|i will|gonna|going to)( quickly| just| go)? (check|look( it)? up|look into|search|find out|pull up|dig|see what|get back to you)\b|\bone (sec|moment|min)\b|\bhold on\b/i;
 
 /** Assistant-style service offers his buddy shouldn't end on. */
-const SERVICE_OFFER = /\b(let me know if (you need|there'?s) anything|anything else (i can|you need)|is there anything else|i'?d be happy to help|feel free to (ask|reach out)|how can i (help|assist))\b/i;
+const SERVICE_OFFER = /\b((holler|ping me|shout|hit me up|let me know|reach out) if you need (anything|me|help|something)|if you need anything( else)?|let me know if (you need|there'?s) anything|anything else (i can|you need)|is there anything else|i'?d be happy to help|feel free to (ask|reach out)|how can i (help|assist))\b/i;
 
 /** Slang ways of addressing him that he asked Jarvis not to use. */
 const SLANG_ADDRESS = /\b(dude|bro|bruh|buddy)\b|(^|[.!?]\s+)man,|,\s*man\b/i;

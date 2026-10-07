@@ -174,6 +174,7 @@ describe('self-check', () => {
 	it('flags assistant-style service offers', () => {
 		expect(verifyReply('Back to the grind tomorrow, Mohit. Let me know if you need anything before you head out.', [])).toMatch(/service offer/);
 		expect(verifyReply('Back to the grind tomorrow, Mohit. Hope the week treats you well!', [])).toBeNull();
+		expect(verifyReply('Hope work goes smoothly for you today, Mohit. Holler if you need anything!', [])).toMatch(/service offer/);
 	});
 
 	it('flags promises to look something up later, since there is no later', () => {
@@ -474,6 +475,14 @@ describe('brains with tools', () => {
 		const out = await new WorkersLlm(ai).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools });
 		expect(out.calls).toEqual([{ id: 'cf_1', name: 'recall', args: { query: 'Rahul' } }]);
 		expect((await new WorkersLlm(ai).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools, toolChoice: 'none' })).text).toBe('hi');
+	});
+
+	it('says why every brain failed when none can answer', async () => {
+		const down = (msg: string): Llm => ({ generate: async () => Promise.reject(new LlmError(msg, 'unavailable')), agentStep: async () => Promise.reject(new LlmError(msg, 'quota')) });
+		const fb = new FallbackLlm(down('3.8-flash: 503'), [{ name: 'nvidia', llm: down('400 tool format') }, { name: 'groq', llm: down('429 rate limit') }]);
+		const err = await fb.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools }).catch((e) => e);
+		expect(err.message).toBe('every brain failed: gemini: 3.8-flash: 503 | nvidia: 400 tool format | groq: 429 rate limit');
+		expect(err.kind).toBe('quota');
 	});
 
 	it('falls back to the next brain for an agent step, but photos only go to Gemini', async () => {

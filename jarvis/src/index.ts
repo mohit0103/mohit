@@ -10,7 +10,8 @@ import type { Deps, Env, Llm } from './types';
 import { countQueries } from './db';
 import { EVAL_CASES, runEvalStep } from './eval';
 
-export function makeDeps(env: Env): Deps {
+/** `only` limits thinking to one brain (e.g. "nvidia"), for testing each backup live through /eval. */
+export function makeDeps(env: Env, only?: string): Deps {
 	const db = countQueries(env.DB);
 	const store = new Store(db);
 	const gemini = new Gemini(env.GEMINI_API_KEY, env.GEMINI_MODELS, undefined, undefined, {
@@ -29,7 +30,9 @@ export function makeDeps(env: Env): Deps {
 		...(groq ? [{ name: 'groq', llm: groq }] : []),
 		...(env.AI ? [{ name: 'cloudflare', llm: new WorkersLlm(env.AI) }] : []),
 	];
-	const llm = new FallbackLlm(gemini, backups, (why) => store.diag('backup brain', true, why.slice(0, 200), new Date().toISOString()));
+	const chosen = only && only !== 'gemini' ? backups.find((b) => b.name === only) : null;
+	if (only && only !== 'gemini' && !chosen) throw new Error(`no brain called ${only} (has a key been set?)`);
+	const llm = new FallbackLlm(chosen ? chosen.llm : gemini, only ? [] : backups, (why) => store.diag('backup brain', true, why.slice(0, 200), new Date().toISOString()));
 	const now = () => new Date();
 	return {
 		db,
@@ -126,7 +129,7 @@ export default {
 			}
 			if (!env.EVAL_DB) return Response.json({ error: 'EVAL_DB is not bound' }, { status: 500 });
 			try {
-				const out = await runEvalStep(makeDeps(env), countQueries(env.EVAL_DB), name, Number(url.searchParams.get('step')) || 0);
+				const out = await runEvalStep(makeDeps(env, url.searchParams.get('brain') || undefined), countQueries(env.EVAL_DB), name, Number(url.searchParams.get('step')) || 0);
 				if (out.result) await new Store(env.DB).set(`eval:${name}`, JSON.stringify(out.result));
 				return Response.json(out);
 			} catch (e) {

@@ -208,6 +208,8 @@ async function converseInner(
 		console.error('chat failed', e);
 		const kind = e instanceof LlmError ? e.kind : 'unavailable';
 		await store.diag('brain', false, String(e), utc(now));
+		// Kept apart from 'brain' (which the next good reply overwrites) so failures can be reviewed later.
+		await store.diag('brain_failure', false, String(e), utc(now));
 		await store.set('pending_reply', utc(now));
 		const sorry =
 			kind === 'quota'
@@ -216,6 +218,7 @@ async function converseInner(
 					? "I can't reach my brain. The Gemini API key looks wrong or missing, so please check the GEMINI_API_KEY secret."
 					: "My brain is having a hiccup right now. I've saved your message and will reply shortly.";
 		await deps.tg.sendMessage(chatId, sorry);
+		await Promise.all([store.addMessage('jarvis', sorry, 'error', utc(deps.now()), `error=${String(e).slice(0, 300)}`), store.del('turn_stage')]);
 		return;
 	}
 	timings.brain = Date.now() - tl;

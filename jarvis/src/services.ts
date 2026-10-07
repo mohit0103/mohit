@@ -756,6 +756,7 @@ export class FallbackLlm implements Llm {
 		const ordered = req.tier === 'light' && this.chain.length > 1 ? [...this.chain.slice(1, -1), this.chain[0], ...this.chain.slice(-1)] : this.chain;
 		const usable = ordered.filter((b) => b.media || !hasMedia);
 		let lastError: unknown;
+		const errors: string[] = [];
 		for (let i = 0; i < usable.length; i++) {
 			try {
 				const text = await usable[i].llm.generate(req);
@@ -763,14 +764,16 @@ export class FallbackLlm implements Llm {
 				return text;
 			} catch (e) {
 				lastError = e;
+				errors.push(`${usable[i].name}: ${String(e instanceof Error ? e.message : e).slice(0, 160)}`);
 			}
 		}
-		throw lastError instanceof Error ? lastError : new LlmError(String(lastError), 'unavailable');
+		throw allFailed(errors, lastError);
 	}
 
 	async agentStep(req: AgentStepRequest): Promise<AgentStepResult> {
 		const usable = this.chain.filter((b) => b.media || !req.images?.length);
 		let lastError: unknown;
+		const errors: string[] = [];
 		for (let i = 0; i < usable.length; i++) {
 			const { llm, name } = usable[i];
 			try {
@@ -781,10 +784,17 @@ export class FallbackLlm implements Llm {
 				return { ...out, by: out.by ?? name };
 			} catch (e) {
 				lastError = e;
+				errors.push(`${usable[i].name}: ${String(e instanceof Error ? e.message : e).slice(0, 160)}`);
 			}
 		}
-		throw lastError instanceof Error ? lastError : new LlmError(String(lastError), 'unavailable');
+		throw allFailed(errors, lastError);
 	}
+}
+
+/** Every brain failed: one error that says why each did, so the cause is visible in /status and reviews. */
+function allFailed(errors: string[], last: unknown): LlmError {
+	const kind = last instanceof LlmError ? last.kind : 'unavailable';
+	return new LlmError(errors.length ? `every brain failed: ${errors.join(' | ')}` : String(last), kind);
 }
 
 // ---------- Groq (OpenAI-compatible, very fast, generous free tier) ----------
