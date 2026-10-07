@@ -1,0 +1,124 @@
+channel: factloop
+kicker: CRICKET · FEB 2023
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Shubman Gill: Shoob-mun Gill
+  T20I: T-twenty-I
+  ODIs: O-D-Is
+scenes:
+- say: Only six Indian cricketers have cracked this ultimate batting code.
+  highlight:
+  - six Indian
+  - ultimate batting code
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket stadium packed crowd wide shot
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: ULTIMATE CODE
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - ULTIMATE
+  - type: stamp
+    text: ONLY SIX
+    at: six
+    y: 1080
+    rotate: -8
+- say: Shubman Gill just joined this elite club. He's scored centuries in Tests, ODIs, and T20Is.
+  highlight:
+  - Shubman Gill
+  - elite club
+  bg: paper
+  layers:
+  - type: photo
+    query: Shubman Gill cricket celebration during match
+    frame: print
+    treatment: color
+  - type: chips
+    items:
+    - TESTS
+    - ODIS
+    - T20IS
+    y: 800
+  - type: lower_third
+    name: Shubman Gill
+    role: Indian Batter
+- say: 'It requires mastering three distinct game styles: Test patience, ODI strategy, T20 aggression.'
+  highlight:
+  - three distinct
+  - Test patience
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket player thinking on field close up
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: headline
+    text: THREE STYLES
+    font: display
+    size: 100
+    y: 700
+    accent:
+    - THREE
+- say: His blazing 126-run T20I knock secured his spot, making him the youngest to achieve this.
+  highlight:
+  - 126-run T20I knock
+  - youngest to achieve
+  bg: red
+  layers:
+  - type: photo
+    query: Shubman Gill hitting six during T20I match
+    frame: strip
+    treatment: color
+  - type: counter
+    value: 126
+    suffix: ' runs'
+    label: T20I CENTURY
+    y: 800
+    plain: false
+  - type: stamp
+    text: YOUNGEST
+    at: youngest
+    y: 1080
+    rotate: 5
+- say: Is this all-format century feat the true mark of a complete batsman? Yes or no?
+  highlight:
+  - true mark
+  - complete batsman
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 800
+post_caption: Shubman Gill has joined an exclusive club of Indian cricketers! Scoring a century in Tests, ODIs, and T20Is
+  is an incredibly rare feat. Do you think this is the ultimate measure of a batsman's skill and adaptability? Let us know
+  in the comments!
+hashtags:
+- '#CricketFacts'
+- '#ShubmanGill'
+- '#IndianCricket'
+- '#Century'
+- '#CricketRecords'
+- '#SportsFacts'
+sources:
+- Shubman Gill completes unique all-format century feat - ICC Cricket (February 01 2023)
+- Shubman Gill becomes fifth Indian to score a century in all three formats - India Today (February 01 2023)
+- Shubman Gill breaks Virat Kohli’s T20I record, becomes youngest Indian to score century in all formats - Hindustan Times
+  (February 01 2023)
+- Shubman Gill joins Rohit Sharma, Virat Kohli in elite list with maiden T20I century - Zee News (February 01 2023)
+- Shubman Gill's Cricket Profile - ESPNcricinfo
+topic: Shubman Gill's All-Format Century Feat
