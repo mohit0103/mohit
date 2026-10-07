@@ -477,6 +477,14 @@ describe('brains with tools', () => {
 		expect((await new WorkersLlm(ai).agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools, toolChoice: 'none' })).text).toBe('hi');
 	});
 
+	it('gives up on a brain that is too slow and lets the next one answer', async () => {
+		const slow: Llm = { generate: async () => '', agentStep: () => new Promise(() => {}) };
+		const fast: Llm = { generate: async () => '', agentStep: async () => ({ text: 'fast answer', calls: [] }) };
+		const fb = new FallbackLlm(slow, [{ name: 'groq', llm: fast }]);
+		fb.brainTimeoutMs = 20;
+		expect(await fb.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'fast answer', by: 'groq' });
+	});
+
 	it('says why every brain failed when none can answer', async () => {
 		const down = (msg: string): Llm => ({ generate: async () => Promise.reject(new LlmError(msg, 'unavailable')), agentStep: async () => Promise.reject(new LlmError(msg, 'quota')) });
 		const fb = new FallbackLlm(down('3.8-flash: 503'), [{ name: 'nvidia', llm: down('400 tool format') }, { name: 'groq', llm: down('429 rate limit') }]);

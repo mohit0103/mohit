@@ -19,15 +19,16 @@ export function makeDeps(env: Env, only?: string): Deps {
 		set: (h) => store.set('llm_health', h),
 	});
 	const groq = env.GROQ_API_KEY ? new GroqLlm(env.GROQ_API_KEY, env.GROQ_MODELS) : null;
-	// Gemini first (best, sees photos), then whichever free backups have keys, with Cloudflare as the last resort.
+	// Gemini first (best, sees photos), then the fast backups (Groq answers agent steps in under a second),
+	// then the slower ones (NVIDIA's free tier queues requests for many seconds), with Cloudflare as the last resort.
 	const optional: [string, string | undefined, (key: string) => Llm][] = [
+		['cerebras', env.CEREBRAS_API_KEY, (k) => new CerebrasLlm(k, env.CEREBRAS_MODELS)],
 		['mistral', env.MISTRAL_API_KEY, (k) => new MistralLlm(k, env.MISTRAL_MODELS)],
 		['nvidia', env.NVIDIA_API_KEY, (k) => new NvidiaLlm(k, env.NVIDIA_MODELS)],
-		['cerebras', env.CEREBRAS_API_KEY, (k) => new CerebrasLlm(k, env.CEREBRAS_MODELS)],
 	];
 	const backups = [
-		...optional.filter(([, key]) => key).map(([name, key, make]) => ({ name, llm: make(key!) })),
 		...(groq ? [{ name: 'groq', llm: groq }] : []),
+		...optional.filter(([, key]) => key).map(([name, key, make]) => ({ name, llm: make(key!) })),
 		...(env.AI ? [{ name: 'cloudflare', llm: new WorkersLlm(env.AI) }] : []),
 	];
 	const chosen = only && only !== 'gemini' ? backups.find((b) => b.name === only) : null;
