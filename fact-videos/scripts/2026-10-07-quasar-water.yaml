@@ -1,0 +1,42 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-07-quasar-water.js
+channel: factloop
+reel_js: 2026-10-07-quasar-water.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: The biggest water reservoir ever found isn't on Earth. It's around a black hole.
+    highlight: [black, hole]
+    bg: "#8a3cff"
+  - id: far
+    say: It's more than 12 billion light-years away.
+    highlight: ["12"]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: quasar
+    say: It surrounds a quasar, a giant black hole eating a disk of gas and dust.
+    highlight: [quasar]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: amount
+    say: And it holds about 140 trillion times the water in all of Earth's oceans.
+    highlight: ["140", trillion]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: older
+    say: Its light set off before Earth even existed.
+    highlight: [before]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: So if water was out there that early, is life out there too? Yes, or no?
+    highlight: [life]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "The biggest water reservoir ever found is around a black hole 🕳️💧 140 trillion times all of Earth's oceans, more than 12 billion light-years away. If water existed that early, is life out there too? Yes or no 👇"
+hashtags: ["#space", "#blackhole", "#astronomy", "#quasar", "#science", "#facts", "#reels"]
+sources:
+  - "NASA JPL (2011), 'Astronomers Find Largest, Most Distant Reservoir of Water': water vapour around quasar APM 08279+5255, more than 12 billion light-years away, equal to 140 trillion times all the water in the world's ocean; a quasar is powered by a black hole consuming a surrounding disk of gas and dust"
+  - "Earth formed about 4.5 billion years ago (NASA / USGS), so light that left over 12 billion years ago predates Earth"
