@@ -1,0 +1,100 @@
+channel: factloop
+kicker: INDIA · JUDICIARY
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Dipankar Dutta: Dee-pank-ar Dut-ta
+scenes:
+- say: India's courts are making crime WORSE. A judge admits it.
+  highlight:
+  - WORSE
+  bg: ink
+  layers:
+  - type: photo
+    query: Supreme Court of India building exterior, evening
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: CRIME WORSENS
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: ADMITTED
+    at: admits
+    y: 1080
+    rotate: -8
+- say: Justice Dipankar Dutta believes courts are often too lenient.
+  highlight:
+  - lenient
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian judge portrait, serious expression
+    frame: print
+    treatment: bw
+  - type: lower_third
+    name: Justice Dipankar Dutta
+    role: Supreme Court Judge
+    y: 1200
+- say: This leniency, he warns, allows criminals to get away.
+  highlight:
+  - get away
+  bg: red
+  layers:
+  - type: photo
+    query: handcuffs on table, dark mood
+    frame: full
+    treatment: duotone
+    dim: 0.15
+  - type: icon
+    name: alert-triangle
+    label: CRIME RISES
+    size: 250
+    y: 800
+- say: Such forgiving justice emboldens offenders across India.
+  highlight:
+  - emboldens
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian map silhouette with glowing cities
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: stamp
+    text: EMBOLDENS
+    at: emboldens
+    y: 1080
+    rotate: -10
+- say: Should Indian courts be stricter to truly deter crime? Yes or no?
+  highlight:
+  - stricter
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: A Supreme Court judge's candid remarks have sparked a national debate. Does a lenient justice system encourage
+  more crime, or is there a bigger picture? What do you think? Should courts be stricter? Yes or no?
+hashtags:
+- '#IndianJustice'
+- '#LawAndOrder'
+- '#SupremeCourt'
+- '#CrimeInIndia'
+- '#JudiciaryFacts'
+sources:
+- LawBeat (October 8, 2026)
+- India Today (October 9, 2026)
+- Deccan Chronicle (October 8, 2026)
+- The Lallantop (October 8, 2026)
+- Jagran (October 8, 2026)
+- Hindustan (October 8, 2026)
+topic: Supreme Court judge criticizes judicial leniency
