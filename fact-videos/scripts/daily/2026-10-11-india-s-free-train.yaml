@@ -1,0 +1,134 @@
+channel: factloop
+kicker: INDIA · UNIQUE RAIL
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Bhakra-Nangal: Bha-kra Nang-gul
+scenes:
+- say: This train has given FREE rides since 1948, and it still runs.
+  highlight:
+  - FREE rides
+  - '1948'
+  bg: ink
+  layers:
+  - type: photo
+    query: vintage Indian train exterior steam engine
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: FREE RIDES
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - FREE
+  - type: stamp
+    text: '1948'
+    at: '1948'
+    y: 1080
+    rotate: -8
+- say: It’s the Bhakra-Nangal train, built for dam workers and locals.
+  highlight:
+  - Bhakra-Nangal train
+  bg: paper
+  layers:
+  - type: photo
+    query: Bhakra Nangal train exterior dam background
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: kicker
+    text: PUNJAB · HIMACHAL
+    y: 560
+- say: For 75+ years, it’s carried thousands of people daily, totally free!
+  highlight:
+  - 75+ years
+  - thousands
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian passengers boarding vintage train
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 75
+    suffix: + years
+    label: FREE RIDES
+    plain: false
+    y: 880
+- say: It's not Indian Railways! This heritage train burns 18-20 litres of fuel hourly.
+  highlight:
+  - not Indian Railways
+  - 18-20 litres
+  bg: red
+  layers:
+  - type: photo
+    query: vintage diesel train engine close up India
+    frame: full
+    treatment: duotone
+    dim: 0.3
+  - type: stamp
+    text: REAL COST
+    at: burns
+    y: 1100
+    rotate: 5
+- say: The Bhakra Dam board maintains it as a tribute to its builders and legacy.
+  highlight:
+  - Bhakra Dam board
+  - tribute
+  bg: paper
+  layers:
+  - type: photo
+    query: Bhakra Dam aerial view India
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: TRIBUTE
+    at: tribute
+    y: 900
+    rotate: -5
+- say: Should India keep more such heritage services running free? Yes or no?
+  highlight:
+  - Yes or no?
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: Imagine a train that's been giving free rides for over 75 years! The Bhakra-Nangal train is a living legacy,
+  but it still has real costs. Should India keep more such heritage services running free for everyone? Let us know in the
+  comments!
+hashtags:
+- '#facts'
+- '#india'
+- '#train'
+- '#freeride'
+- '#BhakraNangal'
+- '#IndianRailways'
+- '#travelindia'
+- '#uniquefacts'
+sources:
+- The Economic Times (November 27, 2024)
+- Shepherd-Nama (February 18, 2025)
+- 'Experience India''s Historic Fare-Free Train: The Bhakra-Nangal Journey (February 06, 2025)'
+- THIS is India's only free train where passengers don't need a ticket to travel, runs from..., its name is.. (January 04,
+  2026)
+- 'India''s Free Train: No Tickets, No Fare! The Historic Bhakra-Nangal Railway‪@SakshiTVDigital‬ (October 10, 2026)'
+- India's only train which does not require any ticket to travel, 75 years of free service (January 23, 2025)
+- 'Bhakra-Nangal train: India''s only train offering free rides for 75 years! - The Times of India (November 22, 2024)'
+- '75 years of Bhakra-Nangal train: Keeping the world of wooden coaches & vintage engines alive, one free ride at a time (November
+  27, 2023)'
+- The train that has been giving free rides for the last 73 years - The Indian Express (May 15, 2022)
+- Did You Know - Train in India that runs fare free | Dhanraj Nathwani - Facebook (February 11, 2023)
+- Want to travel by train without tickets? This 75-year-old train allows you to - Mint (November 27, 2024)
+topic: India's Free Train
