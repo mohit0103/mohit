@@ -1,0 +1,114 @@
+channel: factloop
+kicker: UTTAR PRADESH · UNCONNECTED CITIES
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: 'Mathura and Aligarh: just 60km apart, yet NO direct train link!'
+  highlight:
+  - NO direct train
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian railway tracks diverging countryside daytime
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: headline
+    text: NO DIRECT TRAIN
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - 'NO'
+    marker: TRAIN
+  - type: stamp
+    text: WAIT, WHAT?
+    at: NO direct train
+    y: 1080
+    rotate: -8
+- say: Passengers detour 100+ km, or change multiple trains. For *decades*.
+  highlight:
+  - 100+ km
+  - decades
+  bg: paper
+  layers:
+  - type: photo
+    query: Crowded Indian train compartment interior, standing passengers
+    frame: strip
+    treatment: bw
+  - type: counter
+    value: 100
+    suffix: ' km'
+    label: DETOUR
+    plain: false
+    y: 1080
+- say: Blame the British-era network. It connected bigger cities, *bypassing* this route entirely.
+  highlight:
+  - British-era
+  - bypassing
+  bg: red
+  layers:
+  - type: photo
+    query: Vintage map of Indian railway network British Raj lines
+    frame: print
+    treatment: duotone
+  - type: kicker
+    text: COLONIAL LEGACY
+    y: 560
+  - type: stamp
+    text: BYPASSED
+    at: bypassing
+    y: 1080
+    rotate: 5
+- say: This bottleneck costs commuters and trade. Now, after 79 years, a survey has finally begun.
+  highlight:
+  - 79 years
+  bg: ink
+  layers:
+  - type: photo
+    query: Busy Indian local market street traders selling goods
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: counter
+    value: 79
+    suffix: ' years'
+    label: WAIT OVER
+    plain: true
+    y: 800
+  - type: chips
+    items:
+    - COMMUTERS
+    - TRADE
+    y: 1200
+- say: Should India prioritize connecting long-forgotten routes, even if decades late?
+  highlight:
+  - prioritize connecting
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: Can you believe two major UP cities, just 60km apart, have no direct train link even today? This oversight lasted
+  79 years! Should India prioritize connecting these forgotten routes? Yes or no, comment below!
+hashtags:
+- '#IndianRailways'
+- '#FactVideo'
+- '#UntoldStories'
+- '#InfrastructureIndia'
+- '#TravelIndia'
+- '#UttarPradesh'
+sources:
+- Railways begin final survey to connect Mathura & Aligarh; Vande Bharat extension also on the cards - The Economic Times
+- 'UP: Railways conduct final location survey for Mathura-Aligarh railway line - ThePrint'
+- Mathura Jn to Aligarh Jn - 6 ways to travel via train, line 20176 train - Rome2Rio
+- Mathura to Alīgarh - 6 ways to travel via train, line 04164 train, bus, and car - Rome2Rio
+- Distance Between Mathura to Aligarh Is 66 Kms , Flight Duration, Driving Directions & Route Map - Yatra.com
+topic: Mathura-Aligarh Railway Line
