@@ -1,0 +1,42 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-12-stopped-clock.js
+channel: factloop
+reel_js: 2026-10-12-stopped-clock.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: Look at a clock and the second hand can seem frozen. Your brain is lying to you.
+    highlight: [frozen, lying]
+    bg: "#8a3cff"
+  - id: eyes
+    say: Your eyes don't glide. They jump, and your vision dims during every jump.
+    highlight: [jump, dims]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: gap
+    say: So your brain edits out the blur and fills the gap.
+    highlight: [edits, gap]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: stretch
+    say: It stretches what you see next backward in time, to just before your eyes moved.
+    highlight: [backward]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: clock
+    say: So when your eyes land on a clock, that first second looks longer.
+    highlight: [first, longer]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: So, do you trust your eyes? Yes, or no?
+    highlight: [trust]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Ever glance at a clock and the second hand looks frozen for a moment? 👁️⏱️ It's the stopped-clock illusion: your brain edits out the gap when your eyes jump, then stretches what you see back in time. Do you still trust your eyes? Yes or no 👇"
+hashtags: ["#brain", "#psychology", "#illusion", "#neuroscience", "#science", "#facts", "#reels"]
+sources:
+  - "Yarrow, Haggard, Heal, Brown & Rothwell (2001), Nature 414:302-305, 'Illusory perceptions of space and time preserve cross-saccadic perceptual continuity': after an eye movement the brain extends the perceived onset of the new target backward to just before the movement began; observers sometimes report the second hand of a clock seeming to stop"
+  - "Saccadic masking (Wikipedia): the brain reduces visual processing during rapid eye movements so the gap is not noticed"
