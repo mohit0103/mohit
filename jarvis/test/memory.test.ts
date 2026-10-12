@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyMemory, chooseFollowup } from '../src/memory';
+import { factLine } from '../src/context';
 import { Store } from '../src/store';
 import { atLocal, isoLocal } from '../src/time';
 import { emptyMemory, makeWorld, rows } from './harness';
@@ -108,5 +109,25 @@ describe('applyMemory', () => {
 		w.clock.advance(3 * 24 * 60); // missed days reset the streak
 		await checkin();
 		expect(rows(w, 'SELECT streak FROM goals')[0].streak).toBe(1);
+	});
+});
+
+describe('factLine', () => {
+	const now = new Date('2026-10-12T19:00:00+05:30');
+	const fact = (text: string, created_at = '2026-10-08T10:00:00.000Z') => ({ id: 7, text, category: 'personal', created_at });
+	it('marks a fact whose date is already over, so an old flight is not "tomorrow"', () => {
+		expect(factLine(fact('He is traveling from Nagpur to Bangalore on Oct 11 via IndiGo at 10:25 AM.'), now)).toBe(
+			'7: [Oct 8] He is traveling from Nagpur to Bangalore on Oct 11 via IndiGo at 10:25 AM. (that date has passed)',
+		);
+		expect(factLine(fact('Exam on 3rd October'), now)).toContain('(that date has passed)');
+	});
+	it('leaves today, future dates and undated facts alone, and anchors "tonight" to the day it was said', () => {
+		expect(factLine(fact('Dinner with Rahul on Oct 12'), now)).not.toContain('passed');
+		expect(factLine(fact('Wedding on November 2'), now)).not.toContain('passed');
+		expect(factLine(fact('Going out for street food tonight.'), now)).toBe('7: [Oct 8] Going out for street food tonight.');
+		expect(factLine(fact('Enjoys spicy food.', 'x'), now)).toBe('7: Enjoys spicy food.');
+	});
+	it('reads a December date mentioned in January as last year', () => {
+		expect(factLine(fact('Trip to Goa on Dec 30'), new Date('2026-01-05T10:00:00+05:30'))).toContain('(that date has passed)');
 	});
 });

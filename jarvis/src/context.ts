@@ -1,5 +1,5 @@
 // Builds the persona and the memory snapshot that every LLM call sees.
-import { Store, type Plan } from './store';
+import { Store, type Fact, type Plan } from './store';
 import { addDays, atLocal, calendarHint, human, isoLocal, localDate, utc } from './time';
 
 export function persona(name: string, city: string): string {
@@ -63,7 +63,11 @@ export async function memorySnapshot(store: Store, now: Date): Promise<string> {
 		store.recentEmails(utc(new Date(now.getTime() - 3 * 86_400_000))),
 	]);
 	const sections: string[] = [];
-	sections.push(`FACTS ABOUT HIM (id: fact)\n${facts.length ? facts.map((f) => `${f.id}: ${f.text}`).join('\n') : '(none yet)'}`);
+	sections.push(
+		`FACTS ABOUT HIM (id: [when you learned it] fact; words like "tonight" or "tomorrow" are relative to that day, and a date marked passed is over)\n${
+			facts.length ? facts.map((f) => factLine(f, now)).join('\n') : '(none yet)'
+		}`,
+	);
 	if (people.length)
 		sections.push(
 			`PEOPLE IN HIS LIFE\n${people
@@ -82,6 +86,35 @@ export async function memorySnapshot(store: Store, now: Date): Promise<string> {
 	if (diary.length)
 		sections.push(`RECENT DIARY\n${diary.map((d) => `${d.date}: ${[d.summary, d.notes].filter(Boolean).join(' | ')}${d.mood_label ? ` (mood: ${d.mood_label})` : ''}`).join('\n')}`);
 	return sections.join('\n\n');
+}
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const MONTH = '(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?';
+const DAY_MONTH = new RegExp(`\\b(?:(\\d{1,2})(?:st|nd|rd|th)?\\s+${MONTH}|${MONTH}\\s+(\\d{1,2})(?:st|nd|rd|th)?)\\b`, 'gi');
+
+/**
+ * A fact with its time anchors: the day it was learned (so "tonight" or "tomorrow" in it can be read correctly),
+ * and a note when a calendar date it mentions is already over. Without these, a stored "flying on Oct 11"
+ * reads as still upcoming days later.
+ */
+export function factLine(f: Fact, now: Date): string {
+	const learned = new Date(f.created_at);
+	const when = Number.isNaN(learned.getTime()) ? '' : `[${shortDate(localDate(learned))}] `;
+	const today = localDate(now);
+	const passed = [...f.text.matchAll(DAY_MONTH)].some((m) => {
+		const day = Number(m[1] ?? m[4]);
+		const month = MONTHS.indexOf((m[2] ?? m[3]).slice(0, 3).toLowerCase());
+		if (!(day >= 1 && day <= 31) || month < 0) return false;
+		let year = Number(today.slice(0, 4));
+		let date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		if (date > addDays(today, 180)) date = `${--year}${date.slice(4)}`; // "Dec 30" said in January is last year's
+		return date < today;
+	});
+	return `${f.id}: ${when}${f.text}${passed ? ' (that date has passed)' : ''}`;
+}
+
+function shortDate(iso: string): string {
+	return `${MONTHS[Number(iso.slice(5, 7)) - 1].replace(/^./, (c) => c.toUpperCase())} ${Number(iso.slice(8, 10))}`;
 }
 
 export function planLine(p: Plan, now: Date): string {
