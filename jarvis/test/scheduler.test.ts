@@ -30,20 +30,22 @@ describe('daily rhythm', () => {
 		expect(w.tg.visible().some((s) => s.type === 'text' && s.text.includes('• item'))).toBe(true);
 		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('morning briefing'))!.turns[0].text;
 		expect(prompt).toContain('AI & TECH HEADLINES: OpenAI ships new model');
-		expect(prompt).toMatch(/suggest one small goal/);
+		expect(prompt).toMatch(/never invent a goal, suggestion, fun fact/);
+		expect(prompt).not.toMatch(/fun fact or quote/);
 	});
 
 	it('briefs with real headlines, the weather where he is, and without routine bank alerts', async () => {
 		const w = makeWorld('2026-10-05T07:00:00+05:30');
 		scriptDefaults(w);
 		w.db.raw.exec("INSERT INTO facts (text, category, created_at) VALUES ('His hometown is Nagpur.', 'personal', 'x'), ('Lives in Bengaluru', 'personal', 'x')");
-		w.db.raw.exec("INSERT INTO emails (uid, sender, subject, received_at, summary, kind, importance) VALUES (1, 'HDFC', 'Alert', '2026-10-05T00:00:00.000Z', 'Rs 100 debited via UPI', 'finance', 'low'), (2, 'Priya', 'Deck', '2026-10-05T00:00:00.000Z', 'Priya needs the deck by 4', 'work', 'high')");
+		w.db.raw.exec("INSERT INTO emails (uid, sender, subject, received_at, summary, kind, importance) VALUES (1, 'HDFC', 'Alert', '2026-10-05T00:00:00.000Z', 'Rs 100 debited via UPI', 'finance', 'low'), (2, 'Priya', 'Deck', '2026-10-05T00:00:00.000Z', 'Priya needs the deck by 4', 'work', 'high'), (3, 'Uber', 'Cab', '2026-10-03T06:00:00.000Z', 'Your cab was reassigned', 'travel', 'normal')");
 		await tick(w.deps);
 		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('morning briefing'))!.turns[0].text;
 		expect(prompt).toContain('WEATHER in Nagpur: Nagpur on today');
 		expect(prompt).not.toContain('WEATHER in Bengaluru:'); // home is listed once, as home base
 		expect(prompt).toContain('Priya needs the deck by 4');
 		expect(prompt).not.toContain('Rs 100 debited');
+		expect(prompt).not.toContain('cab was reassigned'); // two days old: stale by the morning
 		expect(prompt).toMatch(/never say the news is quiet/);
 		expect(otherPlaces(['Lives in Bangalore', 'Currently in Mumbai for work'], 'Bengaluru')).toEqual(['Mumbai']);
 	});

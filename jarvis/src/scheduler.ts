@@ -175,7 +175,10 @@ export async function runBriefing(deps: Deps, store: Store, chatId: string, now:
 	// He travels: also fetch the weather where memory says he might be, and let the briefing pick the right place.
 	const elsewhere = otherPlaces(facts.map((f) => f.text), deps.config.city);
 	const awayWeather = deps.feeds.weatherFor ? await Promise.all(elsewhere.map(async (p) => [p, await deps.feeds.weatherFor!(p).catch(() => null)] as const)) : [];
-	const worthReading = emails.filter((e) => e.importance !== 'low'); // routine alerts, receipts, OTPs stay out of the briefing
+	// Routine alerts, receipts and OTPs stay out, and so does anything older than a day: those were already live
+	// while he was chatting (e.g. yesterday's cab and flight mails), so repeating them next morning is stale.
+	const freshSince = utc(new Date(now.getTime() - 26 * 3_600_000));
+	const worthReading = emails.filter((e) => e.importance !== 'low' && e.received_at >= freshSince);
 	const todaysReminders = reminders.filter((r) => r.due_at < dayEnd);
 	const adminSoon = admin.filter((a) => a.due_at && a.due_at >= utc(atLocal(today, 0)) && a.due_at < utc(atLocal(addDays(today, 4), 0)));
 	const birthdays = people.filter((p) => p.birthday === today.slice(5));
@@ -201,9 +204,9 @@ export async function runBriefing(deps: Deps, store: Store, chatId: string, now:
 					role: 'user',
 					text: `Write ${deps.config.name}'s morning briefing as a friendly voice note.\n\n${data}\n\n` +
 						`"spoken": about 120-170 words, natural speech. Order: cheerful greeting; weather in one line for where he is today (use RECENT CHAT and memory; mention an umbrella if rain is likely); ` +
-						`today's plans and reminders; important emails in plain words (skip newsletters, promos and routine bank/UPI alerts); anything due soon; birthdays; ` +
-						`2 real AI/tech headlines from the list that he'd find most interesting, one sentence each (never say the news is quiet); one short fun fact or quote; ` +
-						`if he has no goals, suggest one small goal that fits what you know about him and ask if he wants you to track it, otherwise nudge one goal. End warmly.\n` +
+						`today's plans and reminders; important emails in plain words (skip newsletters, promos, routine bank/UPI alerts, and anything about a trip, ride or event that is already over or that RECENT CHAT already covered); anything due soon; birthdays; ` +
+						`2 real AI/tech headlines from the list that he'd find most interesting, one sentence each (never say the news is quiet); ` +
+						`if GOALS lists one, nudge it in a line; never invent a goal, suggestion, fun fact, joke or trivia, and don't offer help (no "let me know"). End with a short warm line.\n` +
 						`"details": a short plain-text list for reading (emails, plans, dues, headlines), one item per line starting with "• ". Empty string if nothing.`,
 				},
 			],
