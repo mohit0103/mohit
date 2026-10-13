@@ -1,0 +1,136 @@
+channel: factloop
+kicker: INDIA · ECONOMICS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This ₹1 coin costs more than ₹1 to make.
+  highlight:
+  - ₹1 coin
+  - more than ₹1
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: COSTS MORE
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - More
+  - type: stamp
+    text: SHOCKING
+    at: more
+    y: 1080
+    rotate: -8
+- say: It's true. Many Indian coins cost more than their face value to produce.
+  highlight:
+  - Indian coins
+  - more than their face value
+  bg: paper
+  layers:
+  - type: photo
+    query: pile of assorted Indian coins
+    frame: print
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: Rupee Costs
+    size: 300
+    y: 800
+- say: A ₹1 coin costs ₹1.11. The ₹2 coin costs ₹1.28.
+  highlight:
+  - ₹1.11
+  - ₹1.28
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee and two rupee coins stack
+    frame: strip
+    treatment: color
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹1 Coin
+      value: 1.11
+    - label: ₹2 Coin
+      value: 1.28
+    unit: ' ₹'
+    y: 800
+- say: Even ₹5 and ₹10 coins are expensive to mint, costing ₹3.69 and ₹5.54 respectively.
+  highlight:
+  - ₹5
+  - ₹10
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian five rupee and ten rupee coins
+    frame: strip
+    treatment: color
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹5 Coin
+      value: 3.69
+    - label: ₹10 Coin
+      value: 5.54
+    unit: ' ₹'
+    y: 800
+- say: So why make them? Coins last decades, unlike notes. It's about stability, not profit.
+  highlight:
+  - last decades
+  - stability
+  bg: red
+  layers:
+  - type: photo
+    query: old and new Indian coins
+    frame: full
+    treatment: duotone
+    dim: 0.3
+  - type: icon
+    name: hourglass
+    label: Lasts Long
+    size: 300
+    y: 800
+- say: Should the government keep minting these high-cost coins? Yes or no?
+  highlight:
+  - high-cost coins
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 800
+post_caption: Did you know your loose change costs more to make than its value? 🤯 What do you think? Should India keep minting
+  these coins? Yes or no! 👇
+hashtags:
+- '#IndianCoins'
+- '#CurrencyFacts'
+- '#MoneyMystery'
+- '#IndiaEconomy'
+- '#CoinProduction'
+sources:
+- RTI Response Reveals High Minting Costs of Indian Coins | Todayq News on Binance Square
+- How much money does govt spend to make ₹1, ₹2, ₹5 and ₹10 coins? - Inshorts
+- How much does the government spend to mint coins and print notes in India?
+- 'Currency Design: How much does it cost to manufacture a 5 rupee coin?'
+- A ₹1 coin may look small, but its production cost tells a bigger story about money. According to reports, minting one ₹1
+  coin costs around ₹1.11, which is more than its own value. Other coins also - Instagram
+- What does it cost to make 10 rupee coins in India? - Quora
+- Cost of minting a One-Rupee coin is more than its face value, the cost is..., cost of making Rs 2, Rs 10, Rs 2000 is...
+  - India.com
+- How Much Does It Cost To Mint A Coin? - YouTube
+- You use cash every day But have you ever wondered how much it actually costs to print it? A ₹500 note costs the government
+  just ₹2.29 to make. Even a ₹10 note costs less than ₹1 Next time you - Instagram
+- 'The Hidden Cost Behind India''s Money: How Notes and Coins Are Really Made'
+topic: Indian Coin Manufacturing Cost
