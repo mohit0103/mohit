@@ -1,0 +1,45 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-13-storm-antimatter.js
+channel: factloop
+reel_js: 2026-10-13-storm-antimatter.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "2,800": twenty-eight hundred
+  "511,000": five hundred eleven thousand
+scenes:
+  - id: hook
+    say: Thunderstorms shoot antimatter into space. NASA caught it happening.
+    highlight: [shoot, antimatter]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: twin
+    say: Antimatter is the mirror twin of matter. When the two touch, both vanish in a flash of energy.
+    highlight: [mirror, vanish]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: zambia
+    say: In 2009, a storm over Zambia beamed antimatter into space.
+    highlight: [Zambia, beamed]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: travel
+    say: It followed Earth's magnetic field and hit NASA's Fermi telescope over Egypt, about 2,800 miles away.
+    highlight: [Fermi, "2,800"]
+    bg: "#8a3cff"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: flash
+    say: Fermi's detector saw the flash of that meeting, gamma rays at 511,000 electron volts.
+    highlight: [flash, "511,000"]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: Did you think storms could do that? Yes, or no?
+    highlight: [think]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Thunderstorms shoot ANTIMATTER into space ⚡🌩️ In 2009 a storm over Zambia beamed it all the way up to NASA's Fermi telescope. Did you think storms could do that? Yes or no 👇"
+hashtags: ["#space", "#nasa", "#antimatter", "#physics", "#thunderstorm", "#science", "#facts", "#reels"]
+sources:
+  - "NASA Fermi / AAS press release (Jan 2011), 'Fermi catches thunderstorms hurling antimatter into space': first direct evidence that thunderstorms make beams of antimatter; Fermi's Gamma-ray Burst Monitor saw 511,000 eV gamma rays, the signature of electron-positron annihilation; on 14 Dec 2009 Fermi, over Egypt, was hit by a beam from a storm over Zambia about 2,800 miles away"
