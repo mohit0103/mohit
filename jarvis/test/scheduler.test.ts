@@ -7,7 +7,7 @@ function scriptDefaults(w: ReturnType<typeof makeWorld>) {
 	w.llm.on('morning briefing', (req) => ({ spoken: `Good morning Mohit! ${req.turns[0].text.includes('light rain') ? 'Take an umbrella.' : ''}`, details: '• item' }));
 	w.llm.on('evening check-in', () => ({ spoken: 'Hey Mohit, how was your day?', details: '' }));
 	w.llm.on('weekly review', () => ({ spoken: 'What a week!', details: '' }));
-	w.llm.on('caring text', () => ({ send: true, message: 'Random buddy message!' }));
+	w.llm.on('caring text', () => ({ send: true, message: 'Random buddy message! Let me know if you need anything.' }));
 	w.llm.on('for his diary', () => ({ summary: 'Mohit had a good day.', mood_label: 'good', mood_score: 4 }));
 	w.llm.on('month in review', () => ({ spoken: 'Your month!', details: '' }));
 }
@@ -142,6 +142,7 @@ describe('chatty nudges', () => {
 		w.clock.advance(5);
 		await tick(w.deps);
 		expect(w.tg.visible().filter((s) => /Random buddy/.test(s.text)).length).toBe(1);
+		expect(w.tg.visible().find((s) => /Random buddy/.test(s.text))!.text).toBe('Random buddy message!'); // assistant sign-off dropped
 		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('caring text'))!.turns[0].text;
 		expect(prompt).toMatch(/Never send random jokes, trivia or facts/);
 		expect(prompt).toContain('RECENT CHAT: Mohit: busy chatting');

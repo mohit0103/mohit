@@ -23,6 +23,16 @@ const PROMISE = /\b(let me|lemme|i'?ll|i will|gonna|going to)( quickly| just| go
 /** Assistant-style service offers his buddy shouldn't end on. */
 const SERVICE_OFFER = /\b((holler|ping me|shout|hit me up|let me know|reach out) if you need (anything|me|help|something)|if you need anything( else)?|let me know if (you need|there'?s) anything|anything else (i can|you need)|is there anything else|i'?d be happy to help|feel free to (ask|reach out)|how can i (help|assist))\b/i;
 
+/**
+ * Messages Jarvis starts himself (briefing, check-in, nudges) have no self-check round, so the assistant-style
+ * sign-off he dislikes ("let me know if you need anything") is removed here, sentence by sentence.
+ */
+export function dropServiceOffers(text: string): string {
+	const sentences = text.match(/[^.!?\n]+[.!?]*[^\S\n]*|\n+/g) ?? [text];
+	const kept = sentences.filter((s) => !SERVICE_OFFER.test(s)).join('').trim();
+	return kept || text;
+}
+
 /** Slang ways of addressing him that he asked Jarvis not to use. */
 const SLANG_ADDRESS = /\b(dude|bro|bruh|buddy)\b|(^|[.!?]\s+)man,|,\s*man\b/i;
 

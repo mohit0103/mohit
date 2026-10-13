@@ -1,4 +1,5 @@
 // Sending messages to Mohit, as voice or text, and logging them in the conversation history.
+import { dropServiceOffers } from './agent/verify';
 import { Store } from './store';
 import type { Deps, InlineButton } from './types';
 import { utc } from './time';
@@ -20,6 +21,7 @@ export interface SayOptions {
 /** Sends a message. Voice falls back to text if speech fails; a send failure is logged, not thrown, after one retry. */
 export async function say(deps: Deps, chatId: string, text: string, opts: SayOptions): Promise<void> {
 	const store = new Store(deps.db);
+	if (opts.kind !== 'chat') text = dropServiceOffers(text); // chat replies already pass the agent's self-check
 	let sentVoice = false;
 	// Messages Jarvis starts himself (briefing, check-in, follow-ups) land as text plus a tap-to-play audio file:
 	// Telegram auto-plays voice messages in a queue (and on raise-to-ear), which he doesn't want for these.

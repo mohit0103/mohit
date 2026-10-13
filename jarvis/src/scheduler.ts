@@ -409,7 +409,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 					`Only send something with a real, personal reason: following up on something he told you recently (how did X go, is Y sorted), ` +
 					`an "on this day" memory, a nudge to call someone he hasn't mentioned in a while, or a goal he is tracking. ` +
 					`Never send random jokes, trivia or facts (he dislikes them). If he seems stressed, upset or mid-conflict, at most a gentle check-in, never anything playful. ` +
-					`Don't repeat recent messages. ` +
+					`Don't repeat recent messages. Receipts, invoices and trip summaries from email record things already done and paid: they are not to-dos, so never ask him to settle or pay them. ` +
 					`Every personal detail must come from WHAT YOU KNOW or the ideas above: never invent places he likes, people or past events, and don't name restaurants or spots. ` +
 					`Set "send" false unless there is a genuinely useful or caring reason to text him right now; silence is better than filler.`,
 			},

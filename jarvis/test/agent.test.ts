@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { runAgent, type Tool } from '../src/agent/loop';
 import { TOOLS, keywords, type ToolCtx } from '../src/agent/tools';
-import { unsupportedNames, verifyReply } from '../src/agent/verify';
+import { dropServiceOffers, unsupportedNames, verifyReply } from '../src/agent/verify';
 import { persona } from '../src/context';
 import { handleUpdate } from '../src/bot';
 import { tick } from '../src/scheduler';
@@ -519,5 +519,15 @@ describe('quota routing', () => {
 		expect(await fb.generate({ system: 's', turns: [], tier: 'light' })).toBe('groq');
 		expect(await fb.generate({ system: 's', turns: [] })).toBe('gemini');
 		expect(await fb.generate({ system: 's', turns: [], tier: 'light', images: [{ mime: 'image/jpeg', data: new Uint8Array(1) }] })).toBe('gemini');
+	});
+});
+
+describe('dropServiceOffers', () => {
+	it('removes assistant-style sign-offs from messages Jarvis starts', () => {
+		expect(dropServiceOffers('Hey Mohit, did the cab invoice get sorted? Let me know if you need anything.')).toBe('Hey Mohit, did the cab invoice get sorted?');
+		expect(dropServiceOffers('Hope the flight was smooth! Holler if you need anything 🙂')).toBe('Hope the flight was smooth!');
+		expect(dropServiceOffers('Good morning, Mohit!\nClear skies today. Feel free to ask me anything.')).toBe('Good morning, Mohit!\nClear skies today.');
+		expect(dropServiceOffers('How did the talk with Lubhna go?')).toBe('How did the talk with Lubhna go?');
+		expect(dropServiceOffers('Let me know if you need anything.')).toBe('Let me know if you need anything.'); // never sends an empty message
 	});
 });
