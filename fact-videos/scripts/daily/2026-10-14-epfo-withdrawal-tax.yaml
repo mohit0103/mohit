@@ -1,0 +1,115 @@
+channel: factloop
+kicker: FINANCE · EPF RULES
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your own PF savings? The government can TAX them!
+  highlight:
+  - TAX
+  bg: ink
+  layers:
+  - type: photo
+    query: Pile of Indian rupee notes
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: TAX
+    at: TAX
+    y: 800
+    rotate: 5
+- say: Most see EPF as simple, tax-free retirement savings.
+  highlight:
+  - tax-free
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian family with piggy bank savings
+    frame: print
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: shield
+    label: TAX-FREE
+    y: 850
+    at: tax-free
+    size: 250
+- say: Withdraw before 5 years service? Your money gets taxed!
+  highlight:
+  - 5 years
+  bg: ink
+  layers:
+  - type: photo
+    query: Person leaving an Indian office building
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 5
+    suffix: ' years'
+    label: service
+    plain: true
+    y: 800
+- say: Employer's share and all interest become fully taxable income.
+  highlight:
+  - taxable
+  bg: red
+  layers:
+  - type: photo
+    query: Close-up of Indian income tax form
+    frame: strip
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: TAXABLE
+    at: taxable
+    y: 800
+    rotate: 0
+- say: Exceed ₹50,000? Banks deduct TDS automatically!
+  highlight:
+  - automatically
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian bank counter, hand with money
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: ₹50,000+
+    y: 850
+    at: ₹50,000
+    size: 250
+- say: Should early PF withdrawals always be taxed? Yes or no?
+  highlight:
+  - 'Yes'
+  - 'no'
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: Your own PF savings getting taxed? Early EPF withdrawals have hidden rules! Should this money always be taxed?
+  Tell us below! 👇
+hashtags:
+- '#PF'
+- '#EPFO'
+- '#India'
+- '#MoneyFacts'
+- '#PersonalFinance'
+- '#TaxRules'
+- '#Savings'
+sources:
+- 'EPF Withdrawal Tax Rules: Tax-Free vs Taxable PF - Ujjivan Small Finance Bank'
+- 'PF Withdrawal Tax Implications in India (2026): TDS, Exemptions and Rules'
+- 'EPF Withdrawal Tax 2026: 5-Year Rule, TDS & Exemptions | Kotak811'
+- 'EPF withdrawal tax rules explained: When your corpus is tax-free, when it is taxable and how TDS works | Mint'
+topic: EPFO Withdrawal Tax
