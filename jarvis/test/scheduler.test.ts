@@ -150,6 +150,37 @@ describe('chatty nudges', () => {
 	});
 });
 
+describe('nudges that are not answered', () => {
+	const atSlot = async (w: ReturnType<typeof makeWorld>, i: number) => {
+		await tick(w.deps);
+		const times = rows(w, "SELECT v FROM kv WHERE k = 'nudges:2026-10-05'")[0].v.split(',').map(Number);
+		w.clock.set(new Date(Date.UTC(2026, 9, 5, 0, 0) - 330 * 60_000 + times[i] * 60_000).toISOString());
+		await tick(w.deps);
+		w.clock.advance(5);
+		await tick(w.deps);
+	};
+
+	it('shows the brain its own recent texts so it does not repeat a topic', async () => {
+		const w = makeWorld('2026-10-05T10:00:00+05:30');
+		scriptDefaults(w);
+		w.db.raw.exec("INSERT INTO runs (key, at) VALUES ('briefing:2026-10-05', 'x'), ('checkin:2026-10-05', 'x')");
+		w.db.raw.exec("INSERT INTO messages (role, text, kind, at) VALUES ('user', 'landed!', 'chat', '2026-10-04T08:00:00.000Z'), ('jarvis', 'Hope the flight was smooth', 'nudge', '2026-10-04T10:00:00.000Z')");
+		await atSlot(w, 0);
+		const prompt = w.llm.calls.find((c) => c.turns[0].text.includes('caring text'))!.turns[0].text;
+		expect(prompt).toContain('YOUR OWN RECENT TEXTS TO HIM (never raise these topics again): [nudge] Hope the flight was smooth');
+	});
+
+	it('stays quiet after two nudges in a row got no reply', async () => {
+		const w = makeWorld('2026-10-05T10:00:00+05:30');
+		scriptDefaults(w);
+		w.db.raw.exec("INSERT INTO runs (key, at) VALUES ('briefing:2026-10-05', 'x'), ('checkin:2026-10-05', 'x')");
+		w.db.raw.exec("INSERT INTO messages (role, text, kind, at) VALUES ('user', 'ok bye', 'chat', '2026-10-03T08:00:00.000Z'), ('jarvis', 'How was the trip?', 'nudge', '2026-10-03T10:00:00.000Z'), ('jarvis', 'Good morning', 'briefing', '2026-10-04T01:30:00.000Z'), ('jarvis', 'Settled in?', 'nudge', '2026-10-04T10:00:00.000Z')");
+		await atSlot(w, 0);
+		expect(w.llm.calls.some((c) => c.turns[0].text.includes('caring text'))).toBe(false);
+		expect(w.tg.visible().filter((s) => /Random buddy/.test(s.text))).toEqual([]);
+	});
+});
+
 describe('pause', () => {
 	it('stays quiet while paused but still delivers explicit reminders', async () => {
 		const w = makeWorld('2026-10-05T06:00:00+05:30');

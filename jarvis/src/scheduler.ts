@@ -391,7 +391,12 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 	const yearAgo = await store.diaryOn(`${Number(today.slice(0, 4)) - 1}${today.slice(4)}`);
 	const monthAgo = await store.diaryOn(addDays(today, -30));
 	const people = (await store.people()).filter((p) => p.last_contact && now.getTime() - new Date(p.last_contact).getTime() > 10 * 86_400_000);
-	const recentChat = (await store.recentMessages(10)).filter((m) => m.kind === 'chat' || m.role === 'user');
+	const recent = await store.recentMessages(30);
+	// Two unanswered nudges in a row: he's busy or not in the mood, so a third would be nagging.
+	const lastUser = recent.map((m) => m.role).lastIndexOf('user');
+	if (recent.slice(lastUser + 1).filter((m) => m.kind === 'nudge').length >= 2) return false;
+	const recentChat = recent.filter((m) => m.kind === 'chat' || m.role === 'user').slice(-10);
+	const ownTexts = recent.filter((m) => m.role === 'jarvis' && m.kind !== 'chat' && now.getTime() - new Date(m.at).getTime() < 3 * 86_400_000);
 	const ideas = [
 		yearAgo ? `ON THIS DAY last year: ${yearAgo.summary || yearAgo.notes}` : '',
 		monthAgo ? `A MONTH AGO: ${monthAgo.summary || monthAgo.notes}` : '',
@@ -406,6 +411,7 @@ async function sendNudge(deps: Deps, store: Store, chatId: string, now: Date): P
 				role: 'user',
 				text: `Decide whether to send ${deps.config.name} one short, caring text (1-2 sentences), like a close friend would.\n${ideas}\n` +
 					`RECENT CHAT: ${recentChat.map((m) => `${m.role === 'user' ? deps.config.name : 'Jarvis'}: ${m.text.slice(0, 160)}`).join(' | ') || 'none'}\n` +
+					`YOUR OWN RECENT TEXTS TO HIM (never raise these topics again): ${ownTexts.map((m) => `[${m.kind}] ${m.text.slice(0, 120)}`).join(' | ') || 'none'}\n` +
 					`Only send something with a real, personal reason: following up on something he told you recently (how did X go, is Y sorted), ` +
 					`an "on this day" memory, a nudge to call someone he hasn't mentioned in a while, or a goal he is tracking. ` +
 					`Never send random jokes, trivia or facts (he dislikes them). If he seems stressed, upset or mid-conflict, at most a gentle check-in, never anything playful. ` +
