@@ -47,6 +47,7 @@ describe('daily rhythm', () => {
 		expect(prompt).not.toContain('Rs 100 debited');
 		expect(prompt).not.toContain('cab was reassigned'); // two days old: stale by the morning
 		expect(prompt).toMatch(/never say the news is quiet/);
+		expect(prompt).toMatch(/keeping every company, product and person exactly as the headline names them/);
 		expect(otherPlaces(['Lives in Bangalore', 'Currently in Mumbai for work'], 'Bengaluru')).toEqual(['Mumbai']);
 	});
 

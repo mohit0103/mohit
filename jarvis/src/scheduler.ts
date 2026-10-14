@@ -205,7 +205,7 @@ export async function runBriefing(deps: Deps, store: Store, chatId: string, now:
 					text: `Write ${deps.config.name}'s morning briefing as a friendly voice note.\n\n${data}\n\n` +
 						`"spoken": about 120-170 words, natural speech. Order: cheerful greeting; weather in one line for where he is today (use RECENT CHAT and memory; mention an umbrella if rain is likely); ` +
 						`today's plans and reminders; important emails in plain words (skip newsletters, promos, routine bank/UPI alerts, and anything about a trip, ride or event that is already over or that RECENT CHAT already covered); anything due soon; birthdays; ` +
-						`2 real AI/tech headlines from the list that he'd find most interesting, one sentence each (never say the news is quiet); ` +
+						`2 real AI/tech headlines from the list that he'd find most interesting, one sentence each, keeping every company, product and person exactly as the headline names them and adding no facts it doesn't state (never say the news is quiet); ` +
 						`if GOALS lists one, nudge it in a line; never invent a goal, suggestion, fun fact, joke or trivia, and don't offer help (no "let me know"). End with a short warm line.\n` +
 						`"details": a short plain-text list for reading (emails, plans, dues, headlines), one item per line starting with "• ". Empty string if nothing.`,
 				},
