@@ -27,7 +27,7 @@ import numpy as np
 SAMPLE_RATE = 24000
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, '.cache')
-PIPER_VOICE_URL = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high/en_US-ryan-high.onnx'
+PIPER_VOICE_URL = os.environ.get('PIPER_VOICE_URL', 'https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high/en_US-ryan-high.onnx')
 
 STYLE = (
 	'Read this like a gripping short-video storyteller: warm, curious and confident, '
@@ -143,7 +143,7 @@ def _piper_tts(text, rate):
 	from piper import PiperVoice, SynthesisConfig
 
 	if _piper is None:
-		model = os.path.join(CACHE, 'voice.onnx')
+		model = os.path.join(CACHE, 'voice.onnx' if 'ryan' in PIPER_VOICE_URL else os.path.basename(PIPER_VOICE_URL))
 		if not os.path.exists(model):
 			os.makedirs(CACHE, exist_ok=True)
 			print('Downloading Piper voice (one time)...')

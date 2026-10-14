@@ -1,0 +1,42 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-14-rubber-hand.js
+channel: factloop
+reel_js: 2026-10-14-rubber-hand.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: Your brain can be tricked into owning a rubber hand. Here's how.
+    highlight: [tricked, rubber]
+    bg: "#8a3cff"
+  - id: setup
+    say: Hide your real hand behind a screen. Put a fake one in view. Then stroke both at the same time.
+    highlight: [Hide, fake, stroke]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: feel
+    say: Soon, you feel the touch on the fake hand, not your real one. Your brain decides it's yours.
+    highlight: [touch, yours]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: threat
+    say: Then someone threatens the rubber hand, and your body reacts as if it were real.
+    highlight: [threatens, reacts]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: why
+    say: Because your sense of your own body is not fixed. It's built by your brain, from what you see and feel.
+    highlight: [built, see]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: Would you try it? Yes, or no?
+    highlight: [try]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Your brain can be tricked into owning a RUBBER HAND 🖐️🧠 Hide your real hand, stroke it and a fake one at the same time, and the fake one starts to feel like yours. Would you try it? Yes or no 👇"
+hashtags: ["#brain", "#psychology", "#illusion", "#neuroscience", "#science", "#facts", "#reels"]
+sources:
+  - "Botvinick & Cohen (1998), Nature 391:756, 'Rubber hands feel touch that eyes see': stroking a visible rubber hand and the person's hidden real hand in synchrony produces the feeling that the rubber hand is one's own; the illusion breaks down with asynchronous stroking"
+  - "Armel & Ramachandran (2003), Proceedings of the Royal Society B, 'Projecting sensations to external objects: evidence from skin conductance response': once the illusion has formed, threatening the rubber hand produces a bodily stress response"
