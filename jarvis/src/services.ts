@@ -752,14 +752,16 @@ export class FallbackLlm implements Llm {
 
 	/** Each brain but the last gets at most this long, so one slow provider can't use up the whole reply. */
 	brainTimeoutMs = 8_000;
+	/** Scheduled writing (briefing, check-in) has nobody waiting, so the best brain gets longer before a backup writes it. */
+	scheduledTimeoutMs = 25_000;
 
-	private capped<T>(p: Promise<T>, isLast: boolean, name: string): Promise<T> {
+	private capped<T>(p: Promise<T>, isLast: boolean, name: string, ms = this.brainTimeoutMs): Promise<T> {
 		if (isLast) return p;
 		let timer: ReturnType<typeof setTimeout> | undefined;
 		return Promise.race([
 			p,
 			new Promise<never>((_, rej) => {
-				timer = setTimeout(() => rej(new LlmError(`${name} too slow (over ${this.brainTimeoutMs / 1000}s)`, 'unavailable')), this.brainTimeoutMs);
+				timer = setTimeout(() => rej(new LlmError(`${name} too slow (over ${ms / 1000}s)`, 'unavailable')), ms);
 			}),
 		]).finally(() => clearTimeout(timer));
 	}
@@ -773,8 +775,8 @@ export class FallbackLlm implements Llm {
 		const errors: string[] = [];
 		for (let i = 0; i < usable.length; i++) {
 			try {
-				// Background work (light tier) has time to spare; live replies don't.
-				const text = req.tier === 'light' ? await usable[i].llm.generate(req) : await this.capped(usable[i].llm.generate(req), i === usable.length - 1, usable[i].name);
+				// Background work (light tier) has time to spare; live replies don't; scheduled writing (best) waits longer for quality.
+				const text = req.tier === 'light' ? await usable[i].llm.generate(req) : await this.capped(usable[i].llm.generate(req), i === usable.length - 1, usable[i].name, req.tier === 'best' ? this.scheduledTimeoutMs : this.brainTimeoutMs);
 				if (i > 0 && req.tier !== 'light') await this.onBackup?.(`answered by ${usable[i].name} (${String(lastError).slice(0, 100)})`).catch(() => undefined);
 				return text;
 			} catch (e) {

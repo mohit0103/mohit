@@ -485,6 +485,16 @@ describe('brains with tools', () => {
 		expect(await fb.agentStep({ system: 's', messages: [{ role: 'user', text: 'x' }], tools })).toMatchObject({ text: 'fast answer', by: 'groq' });
 	});
 
+	it('gives scheduled writing (best tier) longer before handing it to a backup', async () => {
+		const gemini: Llm = { generate: () => new Promise((r) => setTimeout(() => r('gemini briefing'), 40)) };
+		const groq: Llm = { generate: async () => 'groq briefing' };
+		const fb = new FallbackLlm(gemini, [{ name: 'groq', llm: groq }]);
+		fb.brainTimeoutMs = 20;
+		fb.scheduledTimeoutMs = 200;
+		expect(await fb.generate({ system: 's', turns: [{ role: 'user', text: 'x' }] })).toBe('groq briefing'); // live: capped at 20ms
+		expect(await fb.generate({ system: 's', turns: [{ role: 'user', text: 'x' }], tier: 'best' })).toBe('gemini briefing');
+	});
+
 	it('says why every brain failed when none can answer', async () => {
 		const down = (msg: string): Llm => ({ generate: async () => Promise.reject(new LlmError(msg, 'unavailable')), agentStep: async () => Promise.reject(new LlmError(msg, 'quota')) });
 		const fb = new FallbackLlm(down('3.8-flash: 503'), [{ name: 'nvidia', llm: down('400 tool format') }, { name: 'groq', llm: down('429 rate limit') }]);

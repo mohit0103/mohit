@@ -212,6 +212,7 @@ export async function runBriefing(deps: Deps, store: Store, chatId: string, now:
 			],
 			schema: spokenSchema,
 			temperature: 0.8,
+			tier: 'best', // nobody is waiting: give the strongest brain time rather than a weaker backup
 		});
 	} catch (e) {
 		console.error('briefing generation failed, using plain version', e);
@@ -311,6 +312,7 @@ export async function runCheckin(deps: Deps, store: Store, chatId: string, now: 
 			turns: [{ role: 'user', text: `${task}\n\n${lines.join('\n')}\n\n"details": plain text lines starting with "• " for tomorrow's schedule and dues, or "".` }],
 			schema: spokenSchema,
 			temperature: 0.8,
+			tier: 'best', // nobody is waiting: give the strongest brain time rather than a weaker backup
 		});
 	} catch (e) {
 		console.error('checkin generation failed, using plain version', e);
