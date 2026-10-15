@@ -1,0 +1,145 @@
+name: Jarvis
+
+on:
+  push:
+    branches: [main, claude/personal-ai-voice-assistant-wzofxu]
+    paths: ['jarvis/**', '.github/workflows/jarvis.yml']
+  workflow_dispatch:
+    inputs:
+      evals:
+        description: 'Live evals after deploy: quick (3 cases), all, or none'
+        default: quick
+
+concurrency:
+  group: jarvis-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: jarvis
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: jarvis/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Unit and scenario tests
+        run: npx vitest run
+      - name: Smoke test in the Workers runtime
+        run: ./scripts/smoke.sh
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GOOGLE_API_KEY }}
+      PAIR_CODE: ${{ secrets.JARVIS_PAIR_CODE }}
+      GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: jarvis/package-lock.json
+      - run: npm ci
+
+      - name: Check secrets
+        id: check
+        run: |
+          missing=""
+          for s in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID TELEGRAM_BOT_TOKEN GEMINI_API_KEY PAIR_CODE; do
+            [ -n "${!s}" ] || missing="$missing $s"
+          done
+          if [ -n "$missing" ]; then
+            echo "::warning::Not deploying yet. Missing repo secrets:$missing (see jarvis/SETUP.md)"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create the databases if needed
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          ensure() {
+            local name=$1 placeholder=$2 id
+            id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));const d=l.find(x=>x.name==='$name');console.log(d?d.uuid:'')")
+            if [ -z "$id" ]; then
+              npx wrangler d1 create "$name" > /dev/null
+              id=$(npx wrangler d1 list --json | node -e "const t=require('fs').readFileSync(0,'utf8');const l=JSON.parse(t.slice(t.indexOf('[')));console.log(l.find(x=>x.name==='$name').uuid)")
+            fi
+            sed -i "s/database_id = \"$placeholder\"/database_id = \"$id\"/" wrangler.toml
+            npx wrangler d1 migrations apply "$name" --remote
+          }
+          ensure jarvis 00000000-0000-0000-0000-000000000000
+          ensure jarvis_eval 11111111-1111-1111-1111-111111111111
+
+      - name: Deploy the Worker
+        if: steps.check.outputs.ready == 'true'
+        id: deploy
+        run: |
+          npx wrangler deploy 2>&1 | tee deploy.log
+          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          if [ -z "$url" ]; then
+            echo "::error::No workers.dev URL. Open dash.cloudflare.com > Workers & Pages once to create your workers.dev subdomain, then re-run."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Store secrets in the Worker
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          node -e '
+            const keys = ["TELEGRAM_BOT_TOKEN","GEMINI_API_KEY","PAIR_CODE","GMAIL_ADDRESS","GMAIL_APP_PASSWORD","ELEVENLABS_API_KEY","GROQ_API_KEY","CEREBRAS_API_KEY","MISTRAL_API_KEY","NVIDIA_API_KEY"];
+            const out = {};
+            for (const k of keys) if (process.env[k]) out[k] = process.env[k];
+            require("fs").writeFileSync("secrets.json", JSON.stringify(out));
+          '
+          npx wrangler secret bulk secrets.json
+          rm secrets.json
+
+      - name: Connect Telegram to the Worker
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          secret=$(node -e "console.log(require('crypto').createHash('sha256').update('jarvis-webhook:'+process.env.TELEGRAM_BOT_TOKEN).digest('hex').slice(0,48))")
+          curl -sf "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+            -H 'content-type: application/json' \
+            -d "{\"url\":\"${{ steps.deploy.outputs.url }}/telegram\",\"secret_token\":\"$secret\",\"allowed_updates\":[\"message\",\"callback_query\"]}" > /dev/null
+          curl -sf "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setMyCommands" \
+            -H 'content-type: application/json' \
+            -d '{"commands":[{"command":"memory","description":"What I remember"},{"command":"plans","description":"Upcoming plans and reminders"},{"command":"briefing","description":"Morning briefing now"},{"command":"checkin","description":"Evening check-in now"},{"command":"pause","description":"Pause proactive messages (hours)"},{"command":"resume","description":"Resume messages"},{"command":"export","description":"Download my memory"},{"command":"emails","description":"Check my inbox now"},{"command":"voices","description":"Hear and pick a voice"},{"command":"status","description":"Is everything working?"},{"command":"ping","description":"Check I am alive"},{"command":"help","description":"How to use Jarvis"}]}' > /dev/null
+          curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo" | node -e "const r=JSON.parse(require('fs').readFileSync(0,'utf8')).result;console.log('webhook:',r.url?'set':'NOT SET','pending:',r.pending_update_count,'last error:',r.last_error_message||'none')"
+
+      - name: Live health check
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          for i in 1 2 3 4 5; do
+            curl -sf "${{ steps.deploy.outputs.url }}/health" | grep -q '"ok":true' && echo "Jarvis is live" && exit 0
+            sleep 5
+          done
+          echo "::error::Health check failed"
+          exit 1
+
+      - name: Live evals (real conversations with the deployed brain)
+        if: steps.check.outputs.ready == 'true'
+        continue-on-error: true
+        run: |
+          key=$(node -e "console.log(require('crypto').createHash('sha256').update('jarvis-webhook:'+process.env.TELEGRAM_BOT_TOKEN).digest('hex').slice(0,48))")
+          URL="${{ steps.deploy.outputs.url }}" KEY="$key" EVALS="${{ github.event.inputs.evals || 'quick' }}" node scripts/evals.mjs
