@@ -1,0 +1,114 @@
+channel: factloop
+kicker: CRICKET · RANKINGS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Indian stars make Top 4, but T20I ranks *vanish* fast.
+  highlight:
+  - vanish
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian T20I cricket player celebrating crowd
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: T20I RANKS
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - RANKS
+  - type: stamp
+    text: VANISH
+    at: vanish
+    y: 1080
+    rotate: -8
+- say: Just like Shreyas Iyer, Indian batters often hit the Top 4.
+  highlight:
+  - Top 4
+  bg: paper
+  layers:
+  - type: photo
+    query: Shreyas Iyer batting action shot
+    frame: print
+    treatment: color
+  - type: icon
+    name: trending-up
+    label: TOP 4
+    size: 300
+    y: 1080
+- say: But in T20Is, your points *drop* faster than any other format.
+  highlight:
+  - drop
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket score board points change graphic
+    frame: strip
+    treatment: bw
+  - type: icon
+    name: trending-down
+    label: POINTS DROP
+    size: 300
+    y: 1080
+- say: Play weaker teams, or if your team loses, points *slash* instantly.
+  highlight:
+  - slash
+  bg: red
+  layers:
+  - type: photo
+    query: cricket team losing match sad faces stadium
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: chips
+    items:
+    - WEAKER TEAMS
+    - TEAM LOSS
+    cross: true
+    y: 1080
+- say: One bad series can instantly undo *months* of hard work and rankings.
+  highlight:
+  - months
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket player training hard practice nets close up
+    frame: print
+    treatment: color
+  - type: icon
+    name: hourglass
+    label: HARD WORK
+    size: 300
+    y: 1080
+- say: Should T20I rankings be more *individual* or stay *team-focused*?
+  highlight:
+  - individual
+  - team-focused
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: user
+      label: INDIVIDUAL
+    right:
+      icon: users
+      label: TEAM
+      accent: true
+    y: 900
+post_caption: T20I rankings are wild! Should individual brilliance matter more, or team performance? Tell us what you think!
+  👇
+hashtags:
+- '#cricketfacts'
+- '#T20I'
+- '#ICCRankings'
+- '#IndianCricket'
+- '#ShreyasIyer'
+- '#SportsDebate'
+sources:
+- ICC-cricket.com
+topic: ICC T20I Rankings
