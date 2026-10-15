@@ -1,0 +1,52 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-15-voyager-hum.js
+channel: factloop
+reel_js: 2026-10-15-voyager-hum.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "1977": nineteen seventy-seven
+  "2012": twenty twelve
+  "2021": twenty twenty-one
+scenes:
+  - id: hook
+    say: Even empty space hums. And one 1977 spacecraft is listening.
+    highlight: [hums, "1977"]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: exit
+    say: Voyager 1 left the solar system in 2012 and kept flying into interstellar space.
+    highlight: [left, "2012"]
+    bg: "#8a3cff"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: miles
+    say: By 2021, it was more than 14 billion miles from Earth.
+    highlight: ["14", billion]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: drone
+    say: Its plasma wave instrument picked up a steady, faint drone from the gas between the stars.
+    highlight: [drone, stars]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: rain
+    say: Scientists compared it to gentle rain, and solar outbursts to lightning.
+    highlight: [rain, lightning]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: track
+    say: Now they can track that gas, without waiting for a solar storm.
+    highlight: [track, storm]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: If space hums, would you listen? Yes, or no?
+    highlight: [hums, listen]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Even empty space hums 🎧🛰️ Voyager 1, launched in 1977, picked up a faint, steady drone from the gas between the stars. Scientists compared it to gentle rain. If space hums, would you listen? Yes or no 👇"
+hashtags: ["#space", "#nasa", "#voyager", "#astronomy", "#science", "#facts", "#reels"]
+sources:
+  - "Ocker, Cordes, Chatterjee, Gurnett, Spangler & Kurth (2021), Nature Astronomy, 'Persistent plasma waves in interstellar space detected by Voyager 1'"
+  - "Cornell Chronicle / Cornell Astronomy (May 2021), 'In the emptiness of space, Voyager 1 detects plasma hum': Voyager 1 launched Sept 1977, crossed the heliopause in Aug 2012, was more than 14 billion miles from Earth; the signal is a faint, persistent hum of interstellar gas; Cordes compared it to gentle rain, with solar outbursts like lightning in a thunderstorm; scientists can now track plasma density continuously"
