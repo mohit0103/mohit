@@ -36,6 +36,9 @@ def norm(w):
 def chunk_words(words, hl, max_words=3, max_chars=16):
 	chunks, cur = [], []
 	for w in words:
+		if cur and len(' '.join(x[0] for x in cur + [w])) > max_chars + 6:
+			chunks.append(cur)
+			cur = []
 		cur.append(w)
 		text = ' '.join(x[0] for x in cur)
 		if len(cur) >= max_words or len(text) >= max_chars or re.search(r'[,.;:!?]$', w[0]):

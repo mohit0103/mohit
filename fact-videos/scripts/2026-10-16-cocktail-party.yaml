@@ -1,0 +1,50 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-16-cocktail-party.js
+channel: factloop
+reel_js: 2026-10-16-cocktail-party.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "65": sixty-five
+  "20": twenty
+scenes:
+  - id: hook
+    say: Hear your name across a noisy room? That might mean your focus is weaker.
+    highlight: [name, weaker]
+    bg: "#8a3cff"
+  - id: test
+    say: In the test, people repeat one voice and ignore the other ear. Sometimes the ignored voice says their own name.
+    highlight: [repeat, ignore, name]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: third
+    say: Only about one in three people noticed.
+    highlight: [one, three]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: split
+    say: Researchers split people by working memory, their mental workspace.
+    highlight: [working, workspace]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: numbers
+    say: Low scorers, 65 percent heard their name. High scorers, just 20 percent.
+    highlight: ["65", "20"]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: why
+    say: Researchers think they're worse at blocking out distractions.
+    highlight: [blocking, distractions]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: Do you always catch your name in a crowd? Yes, or no?
+    highlight: [name, crowd]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Hear your name across a noisy room? 🎧🗣️ In a classic attention test only about 1 in 3 people noticed their name in the voice they were told to ignore, and they were more likely to be people with LOWER working memory (65% vs 20%). Do you always catch your name in a crowd? Yes or no 👇"
+hashtags: ["#psychology", "#brain", "#attention", "#cocktailparty", "#science", "#facts", "#reels"]
+sources:
+  - "Conway, Cowan & Bunting (2001), Psychonomic Bulletin & Review 8(2):331-335, 'The cocktail party phenomenon revisited: The importance of working memory capacity': in a dichotic listening/shadowing task 20% of high-span and 65% of low-span subjects reported hearing their own name in the ignored message; the authors suggest low-span people have more difficulty blocking out distracting information"
+  - "Moray (1959) and Wood & Cowan (1995): about one third of subjects (33%, 34.6%) report hearing their own name in the unattended message"
