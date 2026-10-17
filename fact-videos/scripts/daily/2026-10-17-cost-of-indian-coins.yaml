@@ -1,0 +1,125 @@
+channel: factloop
+kicker: INDIA · CURRENCY SECRETS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This tiny ₹1 coin costs more than ₹1 to make.
+  highlight:
+  - more
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+    dim: 0.2
+    y: 950
+  - type: headline
+    text: HIDDEN COST
+    font: display
+    size: 140
+    y: 700
+  - type: stamp
+    text: MORE
+    at: more
+    y: 1080
+    rotate: -8
+- say: Minting small coins often costs more than their face value.
+  highlight:
+  - costs more
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian minting factory machinery coins production
+    frame: print
+    treatment: bw
+    dim: 0.25
+    y: 950
+  - type: icon
+    name: currency-rupee
+    label: MINTING COST
+    size: 300
+    y: 1000
+- say: An RTI in 2018 showed one ₹1 coin cost ₹1.11 to produce.
+  highlight:
+  - ₹1.11
+  bg: ink
+  layers:
+  - type: photo
+    query: pile of Indian one rupee coins
+    frame: strip
+    treatment: color
+    dim: 0.2
+    y: 950
+  - type: counter
+    value: 1.11
+    suffix: ' ₹'
+    label: TO MAKE
+    y: 700
+- say: So why does government keep making them, losing money?
+  highlight:
+  - losing money
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian market vendor accepting coins transaction
+    frame: full
+    treatment: color
+    dim: 0.2
+    y: 950
+  - type: icon
+    name: question-mark
+    label: WHY?
+    size: 300
+    y: 1000
+- say: They're crucial for daily transactions and fighting fake currency.
+  highlight:
+  - crucial
+  - fake currency
+  bg: red
+  layers:
+  - type: photo
+    query: hands exchanging Indian rupees coins
+    frame: print
+    treatment: bw
+    dim: 0.2
+    y: 950
+  - type: icon
+    name: shield
+    label: PROTECTION
+    size: 300
+    y: 1000
+- say: Should the government stop making coins if their production costs more than their value?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: Did you know your ₹1 coin might be a loss for the government? 🤔 Should they stop making coins that cost more
+  than their face value? Yes or No!
+hashtags:
+- '#IndianCurrency'
+- '#MoneyFacts'
+- '#RBI'
+- '#IndianEconomy'
+- '#CoinFacts'
+- '#India'
+sources:
+- Inshorts
+- Times Now
+- India Today
+- Angel One
+- India TV News
+- Instagram
+- Mintage World
+- Finshots
+topic: Cost of Indian Coins
