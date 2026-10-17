@@ -1,0 +1,51 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-17-glass-rain-planet.js
+channel: factloop
+reel_js: 2026-10-17-glass-rain-planet.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "63": sixty-three
+  "2,000": two thousand
+  "2.9": two point nine
+  "4,500": forty-five hundred
+scenes:
+  - id: hook
+    say: There's a planet that possibly rains glass. Sideways.
+    highlight: [glass, Sideways]
+    bg: "#8a3cff"
+  - id: blue
+    say: It's 63 light-years away, and a deep cobalt blue.
+    highlight: ["63", cobalt]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: why
+    say: But that blue isn't ocean. Glass-like drops in its clouds scatter blue light.
+    highlight: [ocean, drops, scatter]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: heat
+    say: The day side is nearly 2,000 degrees Fahrenheit, only 2.9 million miles from its star.
+    highlight: ["2,000", million]
+    bg: "#111111"
+    sticker_colors: ["#ffd23c", "#ff4fd8", "#3ce7ff"]
+  - id: wind
+    say: Winds there may howl at 4,500 miles per hour.
+    highlight: [howl, "4,500"]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: color
+    say: Hubble found its color as it passed behind its star. The light that vanished was blue.
+    highlight: [behind, vanished]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: cta
+    say: Would you ever visit? Yes, or no?
+    highlight: [visit]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "A planet that POSSIBLY rains glass. Sideways. 💎🌬️ HD 189733 b is 63 light-years away, deep cobalt blue, and NASA says it may have 4,500-mph winds. Would you ever visit? Yes or no 👇"
+hashtags: ["#space", "#nasa", "#exoplanet", "#hubble", "#astronomy", "#science", "#facts", "#reels"]
+sources:
+  - "NASA, 'NASA's Hubble Finds a True Blue Planet' (11 July 2013, RELEASE 13-202): exoplanet HD 189733 b, 63 light-years away; cobalt blue from a hazy atmosphere with silicate particles that could form tiny glass droplets scattering blue light; it 'possibly rains glass, sideways, in howling 4,500-mph winds'; daytime temperature nearly 2,000 °F; only 2.9 million miles from its star; colour deduced from Hubble measurements before, during and after the planet passed behind its star"
