@@ -1,0 +1,52 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-18-mcgurk-effect.js
+channel: factloop
+reel_js: 2026-10-18-mcgurk-effect.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "ba": bah
+  "ga": gah
+  "da": dah
+  "1976": nineteen seventy-six
+scenes:
+  - id: hook
+    say: You don't just hear with your ears. Your eyes can change what you hear. Here's the proof.
+    highlight: [ears, eyes]
+    bg: "#8a3cff"
+  - id: test
+    say: Scientists played the sound ba over a video of a mouth saying ga.
+    highlight: [ba, ga]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: result
+    say: Listeners didn't hear ba. They didn't hear ga. They heard da.
+    highlight: [ba, ga, da]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: named
+    say: That's the McGurk effect, found in 1976. Your brain blends what it sees and hears.
+    highlight: [McGurk, "1976"]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: robust
+    say: And it keeps working even when you know about it.
+    highlight: [working, know]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: babies
+    say: Babies show signs of it from four months old.
+    highlight: [Babies, four]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: Which do you trust more, your ears or your eyes?
+    highlight: [ears, eyes]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+post_caption: "Your eyes can change what you HEAR 👁️👂 Play the sound \"ba\" over a mouth saying \"ga\" and most people hear \"da\". It's the McGurk effect, and it works even when you know the trick. Which do you trust more, your ears or your eyes? Comment EARS or EYES 👇"
+hashtags: ["#psychology", "#brain", "#illusion", "#mcgurkeffect", "#science", "#facts", "#reels"]
+sources:
+  - "McGurk & MacDonald (1976), Nature 264:746-748, 'Hearing lips and seeing voices': auditory /ba/ dubbed over visual /ga/ is typically heard as /da/"
+  - "McGurk effect (Wikipedia, citing the research literature): the effect is robust and knowing about it has little effect on perception; first evidence in infants at about four months; works across every tested language"
