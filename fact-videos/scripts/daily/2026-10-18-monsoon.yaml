@@ -1,0 +1,131 @@
+channel: factloop
+kicker: TODAY · MONSOON MYSTERY
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Mawsynram: Mawsynram
+  Meghalaya: Me-gha-laya
+scenes:
+- say: India has Earth's wettest place, yet millions struggle for water.
+  highlight:
+  - wettest place
+  - struggle
+  bg: ink
+  layers:
+  - type: photo
+    query: Mawsynram village Meghalaya rainy landscape
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: headline
+    text: WETTEST PLACE
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - WETTEST
+  - type: stamp
+    text: SCARCITY
+    at: water
+    y: 1080
+    rotate: -8
+- say: Mawsynram in Meghalaya records over 11,872 millimeters of rain yearly.
+  highlight:
+  - 11,872 millimeters
+  bg: paper
+  layers:
+  - type: photo
+    query: Mawsynram village rain measurement gauge extreme rain
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: counter
+    value: 11872
+    suffix: ' mm'
+    label: Annual Rainfall
+    plain: false
+    y: 900
+- say: Yet, much of India battles severe water scarcity, despite the monsoon.
+  highlight:
+  - scarcity
+  - monsoon
+  bg: red
+  layers:
+  - type: photo
+    query: Dry cracked earth India drought
+    frame: full
+    treatment: duotone
+    dim: 0.15
+  - type: icon
+    name: alert-triangle
+    label: Water Crisis
+    size: 300
+    y: 900
+- say: Almost half of India's farms rely on unpredictable monsoon rains.
+  highlight:
+  - half
+  - unpredictable
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian farmers looking at sky monsoon fields
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: counter
+    value: 50
+    suffix: '%'
+    label: Farms Reliant
+    plain: false
+    y: 900
+- say: Too much rain also means devastating floods, displacing millions yearly.
+  highlight:
+  - floods
+  - displacing millions
+  bg: paper
+  layers:
+  - type: photo
+    query: India monsoon flood displacement village
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: stamp
+    text: DISPLACED
+    at: displacing
+    y: 1080
+    rotate: 8
+- say: Should India invest more in large-scale rainwater harvesting? Yes or No?
+  highlight:
+  - rainwater harvesting
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: 'India''s monsoon brings extremes: the world''s wettest place and widespread water scarcity, then devastating
+  floods. Should we invest more in large-scale rainwater harvesting? Tell us: Yes or No! 👇'
+hashtags:
+- '#MonsoonFacts'
+- '#India'
+- '#WaterScarcity'
+- '#RainHarvesting'
+- '#FactVideo'
+- '#ClimateIndia'
+sources:
+- Mawsynram - Wikipedia
+- 'Wettest place on Earth: Mawsynram - The Itinerant Analyst'
+- Indian Monsoon
+- In India, Reducing the Dependency on Monsoon Precipitation - State of the Planet
+- Indian Agriculture's Relationship with Monsoon - Taro Pumps
+- Agriculture Dependence on Monsoon - Indian Journals
+- Water scarcity in India - Wikipedia
+- The Water Crisis In India
+- India flood displacement statistics - IDMC
+topic: Monsoon
