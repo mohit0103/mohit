@@ -1,0 +1,110 @@
+channel: factloop
+kicker: INDIA · FINANCE
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This ₹1 coin costs more than it's worth.
+  highlight:
+  - more than it's worth
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian 1 rupee coin macro close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: ₹1 COIN MYSTERY
+    font: display
+    size: 140
+    y: 600
+    accent:
+    - MYSTERY
+  - type: stamp
+    text: ₹1.11
+    at: worth
+    y: 1050
+    rotate: -8
+- say: RBI data from 2018 shows the bank loses money on each ₹1 coin.
+  highlight:
+  - loses money
+  bg: paper
+  layers:
+  - type: photo
+    query: Stack of Indian rupee coins background blur
+    frame: strip
+    treatment: color
+    y: 1100
+  - type: kicker
+    text: RBI REPORT · 2018
+    y: 500
+  - type: icon
+    name: trending-down
+    label: LOSING MONEY
+    size: 300
+    y: 800
+- say: But coins last for decades, essential for daily transactions.
+  highlight:
+  - decades
+  - essential
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian street vendor taking coins hand close up
+    frame: print
+    treatment: color
+    y: 1100
+  - type: icon
+    name: hourglass
+    label: LASTS DECADES
+    size: 300
+    y: 700
+- say: Surprisingly, ₹5 coins cost ₹3.69. And ₹10 coins? Just ₹5.54.
+  highlight:
+  - ₹3.69
+  - ₹5.54
+  bg: red
+  layers:
+  - type: photo
+    query: Indian 5 rupee and 10 rupee coins side by side
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹5
+      value: 3.69
+    - label: ₹10
+      value: 5.54
+    unit: ' ₹'
+    y: 850
+- say: Should India stop minting coins that cost more than their face value? Yes or no?
+  highlight:
+  - 'Yes'
+  - 'no'
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: Did you know some Indian coins cost more to make than they are worth? What do you think India should do about
+  it? Should we stop minting them? Yes or no!
+hashtags:
+- '#IndiaFacts'
+- '#IndianEconomy'
+- '#MoneyFacts'
+- '#Coins'
+- '#RBI'
+sources:
+- Inshorts - How much money does govt spend to make ₹1, ₹2, ₹5 and ₹10 coins? (Dec 2018)
+- Angel One - What Is the Cost of Minting 1 Rupee Coin? (Aug 2025)
+- India Today - Govt spends Rs 1.11 to mint a Re 1 coin (Dec 2018)
+- Times Now - Rs 1 Coin Production Cost Exceeds Its Value – What About Rs 2, Rs 5 And Rs 10 Coins (Feb 2025)
+topic: Indian Coin Production Cost
