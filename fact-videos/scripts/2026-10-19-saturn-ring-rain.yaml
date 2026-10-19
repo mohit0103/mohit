@@ -1,0 +1,51 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-19-saturn-ring-rain.js
+channel: factloop
+reel_js: 2026-10-19-saturn-ring-rain.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "300": three hundred
+  "100": one hundred
+scenes:
+  - id: hook
+    say: Saturn's rings are raining down onto the planet.
+    highlight: [raining]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: field
+    say: NASA scientists say it's a dusty rain of ice, guided by Saturn's magnetic field.
+    highlight: [dusty, magnetic]
+    bg: "#8a3cff"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: pool
+    say: Every half hour, enough drains away to fill an Olympic swimming pool.
+    highlight: [half, Olympic]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: a300
+    say: At that rate, the rings could be gone in about 300 million years.
+    highlight: ["300", gone]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: less
+    say: Add in other material falling in, and they have less than 100 million years left.
+    highlight: [less, "100"]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: young
+    say: Saturn is over 4 billion years old, so its rings may be quite young.
+    highlight: [billion, young]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: Would you want to see them before they're gone? Yes, or no?
+    highlight: [see, gone]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Saturn's rings are RAINING down onto the planet 🪐🌧️ NASA says enough drains away every half hour to fill an Olympic swimming pool, and the rings may have less than 100 million years left. Would you want to see them before they're gone? Yes or no 👇"
+hashtags: ["#space", "#nasa", "#saturn", "#astronomy", "#science", "#facts", "#reels"]
+sources:
+  - "NASA (17 Dec 2018), 'NASA Research Reveals Saturn Is Losing Its Rings at Worst-Case-Scenario Rate' (O'Donoghue et al., Icarus): ring material falls into Saturn as a dusty rain of ice guided by its magnetic field; the 'ring rain' drains an amount of water products that could fill an Olympic-sized swimming pool in half an hour; ring rain alone would remove the rings in about 300 million years, and with material measured by Cassini falling into the equator they have less than 100 million years to live; the rings are unlikely to be older than 100 million years"
+  - "Saturn itself is more than 4 billion years old (NASA)"
