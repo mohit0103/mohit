@@ -1,0 +1,122 @@
+channel: factloop
+kicker: INDIA · MONEY FACTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your ₹1 coin? It costs the government ₹1.11 to make.
+  highlight:
+  - ₹1.11
+  - make
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian 1 rupee coin close up on a table
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: COSTS ₹1.11
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: LOSS
+    at: costs
+    y: 1080
+    rotate: -8
+  pronounce:
+    ₹1.11: one point one one rupees
+- say: And it's not just ₹1. A ₹2 coin costs ₹1.28, ₹5 costs ₹3.69!
+  highlight:
+  - ₹1.28
+  - ₹3.69
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian coins production line conveyor belt
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹1
+      value: 1.11
+    - label: ₹2
+      value: 1.28
+    - label: ₹5
+      value: 3.69
+    unit: ₹
+    y: 800
+  pronounce:
+    ₹1.28: one point two eight rupees
+    ₹3.69: three point six nine rupees
+- say: So why does the RBI mint them, losing money? To ensure cash for everyone.
+  highlight:
+  - RBI
+  - everyone
+  bg: red
+  layers:
+  - type: photo
+    query: RBI building Mumbai street view
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: CASH FLOW
+    size: 300
+    y: 800
+  pronounce:
+    RBI: R B I
+- say: This means millions of rupees lost annually, paid by Indian taxpayers.
+  highlight:
+  - millions
+  - taxpayers
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian tax documents pile with rupee symbol
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: icon
+    name: trending-down
+    label: TAXPAYER LOSS
+    size: 300
+    y: 800
+- say: Should India stop minting coins that cost more than their face value?
+  highlight:
+  - stop minting
+  - face value
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 800
+post_caption: 'Did you know your small change costs more to make than its actual value? The government bears this loss to
+  keep coins in circulation. Should India stop minting coins that cost more than their face value? Tell us: Yes or No in the
+  comments!'
+hashtags:
+- '#IndianCoins'
+- '#MoneyFacts'
+- '#RBI'
+- '#IndianEconomy'
+- '#FinanceFacts'
+- '#DidYouKnow'
+- '#India'
+sources:
+- RTI Response Reveals High Minting Costs of Indian Coins | Todayq News on Binance Square
+- 'Why RBI Loses Money Making Your Coins. #IndianEconomy # ReserveBank #Finance2026 #MoneyFacts - YouTube'
+- How much does the government spend to mint coins and print notes in India?
+- What Is the Cost of Minting 1 Rupee Coin? - Angel One
+- How much money does govt spend to make ₹1, ₹2, ₹5 and ₹10 coins? - Inshorts
+- 'The Hidden Cost Behind India''s Money: How Notes and Coins Are Really Made'
+- 'US Goes Penniless: India''s Re 1 Coin Costs More Than It''s Worth — So Why Are We Still Minting It? | Times Now'
+topic: Cost of Minting Indian Coins
