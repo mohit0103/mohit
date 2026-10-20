@@ -1,0 +1,46 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-20-ears-make-sound.js
+channel: factloop
+reel_js: 2026-10-20-ears-make-sound.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+pronounce:
+  "1978": nineteen seventy-eight
+  "35": thirty-five
+  "50": fifty
+scenes:
+  - id: hook
+    say: Your ears don't just hear. They make sound.
+    highlight: [hear, make]
+    bg: "#8a3cff"
+  - id: cells
+    say: Tiny hair cells in your inner ear amplify sound. That makes noise you can record from your ear canal.
+    highlight: [hair, amplify, record]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: kemp
+    say: Physicist David Kemp first showed it in 1978.
+    highlight: [Kemp, "1978"]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: percent
+    say: Roughly 35 to 50 percent of people have an ear that makes a faint sound by itself. Most never notice.
+    highlight: ["35", itself, notice]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: newborn
+    say: Doctors play a click into a baby's ear and listen for the ear's own response.
+    highlight: [click, listen]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: cta
+    say: Would you want to hear your own ears? Yes, or no?
+    highlight: [hear]
+    bg: "#ff8a1f"
+    sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
+post_caption: "Your ears don't just hear. They MAKE sound 👂🔊 Hair cells in your inner ear amplify what you hear, and in roughly 35-50% of people an ear even makes a faint sound all by itself. Doctors use it to test newborn hearing. Would you want to hear your own ears? Yes or no 👇"
+hashtags: ["#body", "#hearing", "#biology", "#science", "#humanbody", "#facts", "#reels"]
+sources:
+  - "Otoacoustic emission (Wikipedia, citing the audiology literature): sounds generated within the inner ear, produced by the amplifying action of cochlear outer hair cells; first demonstrated experimentally by David Kemp in 1978; at least one spontaneous emission can be detected in approximately 35-50% of the population, and most people are unaware of it; click-evoked emissions are the primary tool in newborn hearing screening"
+  - "StatPearls, 'Otoacoustic Emissions': emissions can be recorded in the ear canal with a sensitive microphone and are a standard part of newborn hearing screening"
