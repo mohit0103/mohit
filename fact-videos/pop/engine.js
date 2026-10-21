@@ -151,7 +151,7 @@
 		const ctx = {
 			tl, M, C, el, cue, stickers, W, H, s, root: s.root, stage: s.stage, start, end, dur: end - start,
 			at(word, n = 1) {
-				const norm = w => String(w).toLowerCase().replace(/[^a-z0-9']/g, '');
+				const norm = w => String(w).toLowerCase().replace(/[^\p{L}\p{M}\p{N}']/gu, '');
 				let k = 0;
 				for (const [w, ws] of s.words) if (norm(w).startsWith(norm(word)) && ++k === n) return ws - 0.06;
 				return start + 0.2;
