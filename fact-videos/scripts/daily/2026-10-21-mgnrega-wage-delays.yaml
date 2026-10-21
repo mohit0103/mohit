@@ -1,0 +1,121 @@
+channel: factloop
+kicker: INDIA · JOB SCHEMES
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  MGNREGA: M-G-N-R-E-G-A
+scenes:
+- say: India's job scheme guarantees work, but over 75% of states delay wages.
+  highlight:
+  - guarantees
+  - delay
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian rural laborers working on road construction
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: BROKEN PROMISE?
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - BROKEN
+  - type: stamp
+    text: DELAYED
+    at: delay
+    y: 1080
+    rotate: -8
+- say: MGNREGA guarantees 100 days of rural work per year.
+  highlight:
+  - 100 days
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian rural women working together in field
+    frame: strip
+    treatment: color
+  - type: counter
+    value: 100
+    suffix: ' days'
+    label: work guarantee
+    plain: false
+    y: 900
+- say: ₹86,000 crore allocated for 25 crore workers this year.
+  highlight:
+  - ₹86,000 crore
+  bg: ink
+  layers:
+  - type: photo
+    query: stacks of Indian rupee notes and coins
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 86000
+    suffix: ' Cr'
+    label: Budget
+    plain: false
+    y: 800
+- say: But 76% of states delay wages beyond the 15-day legal limit!
+  highlight:
+  - 76%
+  - delay
+  bg: red
+  layers:
+  - type: photo
+    query: frustrated Indian farmer looking empty-handed
+    frame: full
+    treatment: duotone
+  - type: stamp
+    text: DELAYED
+    at: delay
+    y: 1080
+    rotate: -8
+- say: Many wait weeks, even months, for rightful earnings.
+  highlight:
+  - weeks
+  - months
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian rural worker looking weary or tired
+    frame: print
+    treatment: bw
+  - type: icon
+    name: hourglass
+    label: LONG WAIT
+    size: 300
+    y: 900
+- say: Should timely payments be prioritized over scheme expansion?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: India's massive job scheme helps millions, but delayed payments are a huge concern. Should timely payments be
+  the absolute priority? Yes or No, share your thoughts! 👇
+hashtags:
+- '#MGNREGA'
+- '#India'
+- '#RuralEmployment'
+- '#FactVideo'
+- '#GovernmentScheme'
+- '#JobGuarantee'
+- '#IndianFacts'
+- '#Debate'
+sources:
+- https://www.thehindubusinessline.com/economy/agri-business/over-25-cr-people-were-active-workers-under-mgnrega-in-2023-24-govt/article67926176.ece
+- https://www.indiatoday.in/india/story/mgnrega-budget-allocation-rs-86000-crore-2512638-2024-02-01
+- https://www.downtoearth.org.in/news/governance/76-of-states-are-delaying-mgnrega-wage-payments-report-95568
+- https://www.thehindubusinessline.com/economy/agri-business/50-of-mgnrega-wage-payments-delayed-in-2022-23-report/article67220268.ece
+topic: MGNREGA Wage Delays
