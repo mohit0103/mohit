@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import re
+import unicodedata
 import shutil
 import subprocess
 import sys
@@ -30,7 +31,7 @@ CHROME = os.environ.get('CHROME_PATH', '/opt/pw-browsers/chromium-1194/chrome-li
 
 
 def norm(w):
-	return re.sub(r"[^\w']", '', str(w).replace('’', "'")).lower()
+	return ''.join(c for c in str(w).replace('’', "'").lower() if c == "'" or unicodedata.category(c)[0] in 'LMN')
 
 
 def chunk_words(words, hl, max_words=3, max_chars=16):
@@ -55,6 +56,8 @@ def chunk_words(words, hl, max_words=3, max_chars=16):
 
 def build(script):
 	scenes = script['scenes']
+	if script.get('tts_cache'):
+		os.environ['TTS_CACHE_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), script['tts_cache'])
 	print('Generating voice-over...')
 	pron = {str(k): str(v) for k, v in (script.get('pronounce') or {}).items()}
 	samples, scene_words = tts.speak([s['say'].strip() for s in scenes], script.get('engine', 'edge'),

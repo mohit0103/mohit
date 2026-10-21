@@ -16,6 +16,7 @@ import difflib
 import json
 import os
 import re
+import unicodedata
 import ssl
 import subprocess
 import tempfile
@@ -50,7 +51,7 @@ def _decode(path_or_bytes, fmt=None) -> np.ndarray:
 
 
 def norm(w):
-	return re.sub(r"[^\w]", '', w.lower().replace('’', "'"))
+	return ''.join(c for c in w.lower().replace('’', "'") if unicodedata.category(c)[0] in 'LMN')
 
 
 def spoken_form(word: str, pronounce: dict) -> str:
@@ -179,6 +180,15 @@ def _whisper_tokens(samples):
 	return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
 
 
+def _cached(flat):
+	"""Pre-generated narration (see tts_remote.py / the tts-hindi workflow): speech.wav + words.json."""
+	d = os.environ['TTS_CACHE_DIR']
+	words = json.load(open(os.path.join(d, 'words.json')))
+	if len(words) != len(flat):
+		raise RuntimeError(f'cached narration has {len(words)} words but the script has {len(flat)}; regenerate it')
+	return _decode(os.path.join(d, 'speech.wav')), [(w, s, e) for w, s, e in words]
+
+
 # ---------- alignment ----------
 
 
@@ -221,13 +231,17 @@ def speak(scene_texts, engine='auto', voice=None, rate='+0%', pronounce=None):
 
 	order = {'auto': ['elevenlabs', 'gemini', 'edge', 'piper']}.get(engine, [engine, 'edge', 'piper'])
 	for eng in order:
+		if eng == 'cached' and not os.environ.get('TTS_CACHE_DIR'):
+			continue
 		if eng == 'elevenlabs' and not os.environ.get('ELEVENLABS_API_KEY'):
 			continue
 		if eng == 'gemini' and not os.environ.get('GOOGLE_API_KEY'):
 			continue
 		try:
 			print(f'  voice engine: {eng}')
-			if eng == 'elevenlabs':
+			if eng == 'cached':
+				samples, tokens = _cached(flat)
+			elif eng == 'elevenlabs':
 				samples, tokens = _elevenlabs(spoken, voice)
 			elif eng == 'gemini':
 				samples, tokens = _gemini(spoken, voice)

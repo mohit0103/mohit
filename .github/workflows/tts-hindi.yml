@@ -1,0 +1,43 @@
+# Generates Hindi narration with Gemini TTS (the GOOGLE_API_KEY secret) and commits the audio back to the branch.
+# Trigger: push a request file to fact-videos/tts-requests/ (see fact-videos/tts_remote.py).
+name: TTS (Hindi, Gemini)
+
+on:
+  push:
+    branches: [claude/browser-use-phone-setup-y4kp1t]
+    paths: ['fact-videos/tts-requests/*.json']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install numpy pyyaml faster-whisper
+      - name: Generate narration
+        working-directory: fact-videos
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          for f in tts-requests/*.json; do
+            n=$(basename "$f" .json)
+            if [ ! -f "tts-cache/$n/DONE" ]; then python tts_remote.py "$f"; fi
+          done
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fact-videos/tts-cache
+          git diff --cached --quiet || git commit -m "TTS results [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
