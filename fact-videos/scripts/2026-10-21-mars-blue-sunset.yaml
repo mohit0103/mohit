@@ -1,0 +1,47 @@
+# Pop Bold reel (pop_render.py); visuals in 2026-10-21-mars-blue-sunset.js
+channel: factloop
+reel_js: 2026-10-21-mars-blue-sunset.js
+voice: en-US-AvaMultilingualNeural
+rate: "+6%"
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: Sunsets on Mars are blue.
+    highlight: [Sunsets, blue]
+    bg: "#ff8a1f"
+    sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
+  - id: compare
+    say: On Earth, sunsets glow red and orange. On Mars, the glow around the Sun is blue.
+    highlight: [Earth, Mars]
+    bg: "#8a3cff"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: dust
+    say: NASA says fine dust in the air lets blue light travel more easily.
+    highlight: [dust, blue]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: close
+    say: The blue light stays close to the Sun, while the rest of the sky looks yellow to orange.
+    highlight: [close, orange]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: size
+    say: From Mars, the Sun looks only about two-thirds as big as it does from Earth.
+    highlight: [two-thirds]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: twilight
+    say: Twilight can last up to two hours after sunset.
+    highlight: [Twilight, two]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: cta
+    say: Would you watch a Martian sunset? Yes, or no?
+    highlight: [watch]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+post_caption: "Sunsets on Mars are BLUE 🔵🌅 NASA says fine dust lets blue light travel more easily, so the glow around the Sun looks blue while the rest of the sky is yellow to orange. Would you watch a Martian sunset? Yes or no 👇"
+hashtags: ["#mars", "#nasa", "#space", "#astronomy", "#science", "#facts", "#reels"]
+sources:
+  - "NASA Science, 'What Do Sunrises and Sunsets Look Like on Mars?' (science.nasa.gov): Martian sunsets typically stand out for their distinctive blue color; fine dust lets blue light penetrate the atmosphere more efficiently than longer wavelengths; blue light scattered off the dust stays closer to the direction of the Sun than other colours, and the rest of the sky is yellow to orange (Mark Lemmon, Curiosity science team); the Sun appears only about two-thirds the size seen from Earth; twilight glow stays visible for up to two hours after sunset"
