@@ -86,7 +86,10 @@ def write_page(script, scenes, chunks, total, reel_js, workdir):
 	data = {'scenes': [{**s, 'words': [[w, round(a, 3), round(b, 3)] for w, a, b in s['words']]} for s in scenes],
 	        'chunks': chunks, 'total': total, 'channel': script.get('channel', 'factloop')}
 	html = open(os.path.join(POP, 'base.html')).read()
-	html = html.replace('__DATA__', json.dumps(data)).replace('__REEL__', open(reel_js).read())
+	reel_src = open(reel_js).read()
+	if reel_src.lstrip().startswith('// @kit'):  # shared character kit (pop/kit.js)
+		reel_src = open(os.path.join(POP, 'kit.js')).read() + '\n' + reel_src
+	html = html.replace('__DATA__', json.dumps(data)).replace('__REEL__', reel_src)
 	for f in ('engine.js',):
 		shutil.copy(os.path.join(POP, f), workdir)
 	shutil.copytree(os.path.join(POP, 'vendor'), os.path.join(workdir, 'vendor'), dirs_exist_ok=True)
