@@ -1,0 +1,113 @@
+channel: factloop
+kicker: TRAIN TRAVEL · FACTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  RAC: R-A-C
+scenes:
+- say: Your confirmed train ticket still means sharing your seat with a stranger.
+  highlight:
+  - sharing
+  - stranger
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian train side lower berth shared by two people during daytime
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: SHARED!
+    at: sharing
+    y: 1080
+    rotate: -8
+- say: That's Reservation Against Cancellation, or RAC. Your ticket is half-confirmed.
+  highlight:
+  - RAC
+  - half-confirmed
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian Railways PNR status screen showing RAC status on mobile phone
+    frame: print
+    treatment: duotone
+  - type: stamp
+    text: HALF CONFIRMED
+    at: half-confirmed
+    y: 1100
+    rotate: 5
+- say: Indian Railways allots you a specific side lower berth, shared with another RAC passenger.
+  highlight:
+  - side lower berth
+  - shared
+  bg: ink
+  layers:
+  - type: photo
+    query: Two people sharing side lower berth in Indian train compartment, close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: kicker
+    text: SHARED BERTH
+    y: 560
+- say: 'The twist: You *can* board, avoiding fines! Much better than waitlist.'
+  highlight:
+  - board
+  - fines
+  bg: red
+  layers:
+  - type: photo
+    query: Indian Railways TTE checking ticket in train compartment, traveler showing e-ticket
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: check
+    label: NO FINES
+    size: 300
+    y: 1000
+- say: If a berth becomes vacant, your RAC ticket converts to a full confirmed seat.
+  highlight:
+  - vacant
+  - full confirmed
+  bg: paper
+  layers:
+  - type: photo
+    query: empty clean Indian train sleeper berth during day
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: UPGRADE!
+    at: converts
+    y: 1080
+    rotate: -8
+- say: Should RAC passengers get a guaranteed full berth, or is sharing fair? Yes or no?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: Full Berth
+    right:
+      icon: x
+      label: Shared Fair
+      accent: true
+post_caption: Ever wondered about RAC tickets on Indian Railways? It's a lifesaver for many, but comes with a shared seat.
+  What's your take? Should RAC passengers always get a full berth, or is sharing fair? Let us know in the comments – Yes or
+  No!
+hashtags:
+- '#IndianRailways'
+- '#RACticket'
+- '#TrainTravel'
+- '#TravelTips'
+- '#India'
+- '#FactVideo'
+- '#Railways'
+sources:
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGAQVYBUI2KsHNqp0TJ8y8r5rh3g43MAcab2FiMWOeqPihgb_SEEHDNp7uULWPPsJwgHaWoi38r4aA9jp0oRly53YnjYcF76BQv0mDEZ-7gPQDfGOlMY5tvwU68dxP6fj8EHG0LJWR21yAm4otUWvA=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEpwuM88UFtIXqAyIBg5aVjax-Oy-uB7hl3rKZXcoZH12LaA9wNWUTbNUwImwcfPm5Wa2A_gn8dMWIar_KU8t4vrjAhrSC9-R4H2hxC1PM8XE0AyBNhHP2WXRTN-QFPpkUaxzj_l8vkPG2v-A3YOl65eD3JGaewgrDpSHHTwCqM_jvnnnwhaOMYxSVtiQ3oN0LnDwgszvYpk5k=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFwpEq804bGGnHqCyflvxlj08fc9G3nHi_4-9_h0s-7Vrxdiri9itLhcjKCbrFCoRSFDXIdcYQARMdV0K989WIW-K1t17so3-1oVfuQc5k8jLGc4FAudTELt8HJnKnNweJTTKTznDlGrJmyVuRArNxctPCsbHM1kH88WAQpxf9-FVCseghg1NpaSXOGUO6IDhbUdywJN6E1Uee6jmTKcj8gr0N-I_lDz6a9s9C4vlAb_IAGDSqx5qgach5hqyU-uetxtLO0Tl1ibKhmXIfMEM1I2R0pxld_GZcOLdY_
+topic: Indian Railways RAC Tickets
