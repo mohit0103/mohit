@@ -30,12 +30,13 @@ const KIT = (function () {
 		<path class="mW" d="M-84 210 Q-56 180 -28 210 T 28 210 T 84 210" fill="none" stroke="${INK}" stroke-width="13" stroke-linecap="round" opacity="0"/></svg>`;
 
 	const clock = `<svg viewBox="-130 -130 260 260" width="100%" height="100%"><circle r="110" fill="${INK}" transform="translate(10 10)"/><circle r="110" fill="#fff" stroke="${INK}" stroke-width="10"/>${Array.from({length: 12}, (_, i) => `<line x1="0" y1="-92" x2="0" y2="-78" stroke="${INK}" stroke-width="7" stroke-linecap="round" transform="rotate(${i * 30})"/>`).join('')}<line class="hd" x1="0" y1="0" x2="0" y2="-74" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><line class="hm" x1="0" y1="0" x2="0" y2="-50" stroke="#ff4fd8" stroke-width="12" stroke-linecap="round"/><circle r="11" fill="${INK}"/></svg>`;
-	const beaker = `<svg viewBox="-120 -190 240 380" width="100%" height="100%"><clipPath id="bk"><path d="M-80 -150 H80 L 70 150 Q 70 170 50 170 H-50 Q-70 170 -70 150 Z"/></clipPath>
+	let beakerN = 0;
+	const beaker = () => { const id = 'bk' + (++beakerN); return `<svg viewBox="-120 -190 240 380" width="100%" height="100%"><clipPath id="${id}"><path d="M-80 -150 H80 L 70 150 Q 70 170 50 170 H-50 Q-70 170 -70 150 Z"/></clipPath>
 		<path d="M-80 -150 H80 L 70 150 Q 70 170 50 170 H-50 Q-70 170 -70 150 Z" fill="${INK}" transform="translate(10 10)"/>
 		<path d="M-80 -150 H80 L 70 150 Q 70 170 50 170 H-50 Q-70 170 -70 150 Z" fill="#fff"/>
-		<g clip-path="url(#bk)"><rect class="liq" x="-90" y="-150" width="180" height="330" fill="#ffb020"/><ellipse class="foam" cx="0" cy="-150" rx="80" ry="10" fill="#fff3c0"/></g>
+		<g clip-path="url(#${id})"><rect class="liq" x="-90" y="-150" width="180" height="330" fill="#ffb020"/><ellipse class="foam" cx="0" cy="-150" rx="80" ry="10" fill="#fff3c0"/></g>
 		<path d="M-80 -150 H80 L 70 150 Q 70 170 50 170 H-50 Q-70 170 -70 150 Z" fill="none" stroke="${INK}" stroke-width="10" stroke-linejoin="round"/>
-		<g stroke="${INK}" stroke-width="7" stroke-linecap="round"><path d="M-70 -90 H-40 M-70 -30 H-40 M-70 30 H-40 M-70 90 H-40"/></g></svg>`;
+		<g stroke="${INK}" stroke-width="7" stroke-linecap="round"><path d="M-70 -90 H-40 M-70 -30 H-40 M-70 30 H-40 M-70 90 H-40"/></g></svg>`; };
 
 	function card(ctx, html, x, y, o = {}) {
 		return ctx.el(`<div class="card" style="left:${x}px;top:${y}px;background:${o.bg || '#c6ff3d'};font-size:${o.size || 92}px;color:${o.color || INK};transform:translate(-50%,-50%) rotate(${o.rot ?? -3}deg)">${html}</div>`, ctx.stage);
