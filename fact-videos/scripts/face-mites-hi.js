@@ -108,7 +108,7 @@ window.REEL = (function () {
 			tl.fromTo(f.e.querySelector('.sweat'), {opacity: 0, y: -20}, {opacity: 1, y: 30, duration: 0.5}, t + 0.3);
 			M.shake(f.e, t, {amp: 5, n: 5});
 			ctx.cue('snap', t, 0.9);
-			cardSeq(ctx, [['<span class="hl">किरायेदार</span>!', t - 0.05, {size: 96}]]);
+			cardSeq(ctx, [['<span class="hl">Kirayedaar</span>!', t - 0.05, {size: 96}]]);
 			drift(ctx, 1.05);
 		},
 
@@ -129,7 +129,7 @@ window.REEL = (function () {
 				M.pop(b, tk, {from: 0.1, sfx: false});
 				ctx.cue('tick', tk, 0.7);
 			});
-			cardSeq(ctx, [['<span class="hl">8</span> पैर', t - 0.05, {size: 110}]]);
+			cardSeq(ctx, [['<span class="hl">8</span> paer', t - 0.05, {size: 110}]]);
 			drift(ctx, 1.05);
 		},
 
@@ -153,7 +153,7 @@ window.REEL = (function () {
 				}
 			}
 			ctx.cue('chime', t + 0.9, 0.7);
-			cardSeq(ctx, [['<span class="hl">9</span> / 10 लोग', at('लोगों') - 0.05, {size: 96}]]);
+			cardSeq(ctx, [['<span class="hl">9</span> / 10 log', at('लोगों') - 0.05, {size: 96}]]);
 			drift(ctx, 1.04);
 		},
 
@@ -165,9 +165,9 @@ window.REEL = (function () {
 			M.float(f.e, start + 0.6, dur, {amp: 5, period: 1.3});
 			blink(ctx, f, start + 0.9);
 			const spots = [
-				['नाक', at('नाक'), f.fp(-70, 118), [0, 18], 'right', 960, 700],
-				['माथा', at('माथे'), f.fp(0, -168), [0, -18], 'right', 960, 470],
-				['पलकें', at('पलकों'), f.fp(-100, -98), [-20, -20], 'left', 120, 560],
+				['Naak', at('नाक'), f.fp(-70, 118), [0, 18], 'right', 960, 700],
+				['Maatha', at('माथे'), f.fp(0, -168), [0, -18], 'right', 960, 470],
+				['Palkein', at('पलकों'), f.fp(-100, -98), [-20, -20], 'left', 120, 560],
 			];
 			spots.forEach(([name, t, [px, py], [lx, ly], side, tx, ty], i) => {
 				const m = miteAt(ctx, px, py - 34, 200, '', 6);
@@ -210,7 +210,7 @@ window.REEL = (function () {
 			const f0 = at('फ्री');
 			const tag = el(`<div class="ill" style="left:640px;top:280px;width:340px;height:240px;z-index:7;transform-origin:50% 0%"><svg viewBox="0 0 340 240" width="100%" height="100%"><path d="M170 0 V40" stroke="${INK}" stroke-width="8"/><path d="M40 60 H300 V210 H40 L8 135 Z" fill="${INK}" transform="translate(9 9)"/><path d="M40 60 H300 V210 H40 L8 135 Z" fill="#c6ff3d" stroke="${INK}" stroke-width="9" stroke-linejoin="round"/><circle cx="52" cy="135" r="10" fill="#fff" stroke="${INK}" stroke-width="6"/><text x="180" y="170" font-size="104" text-anchor="middle" font-family="Bricolage" font-weight="800">₹0</text></svg></div>`, stage);
 			tl.fromTo(tag, {rotation: -40, y: -300, autoAlpha: 0}, {rotation: 0, y: 0, autoAlpha: 1, duration: 0.8, ease: 'elastic.out(1,0.35)'}, f0 - 0.15);
-			cardSeq(ctx, [['चेहरे का <span class="hl">तेल</span>', tt - 0.05, {size: 84}]], 1110);
+			cardSeq(ctx, [['Chehre ka <span class="hl">tel</span>', tt - 0.05, {size: 84}]], 1110);
 			drift(ctx, 1.04);
 		},
 
@@ -273,14 +273,14 @@ window.REEL = (function () {
 			const a = at('अफवाह');
 			M.pop(x, a - 0.1, {from: 0.2});
 			tl.to(m.querySelector('.shades'), {opacity: 1, duration: 0.05}, a);
-			cardSeq(ctx, [['<span class="hl">हानिरहित</span>', h - 0.05, {size: 96}], ['<span class="hl">अफवाह</span>!', a - 0.05, {size: 120, bg: '#ff3b3b', color: '#fff'}]], 1130);
+			cardSeq(ctx, [['<span class="hl">Harmless</span>', h - 0.05, {size: 96}], ['<span class="hl">Afwaah</span>!', a - 0.05, {size: 120, bg: '#ff3b3b', color: '#fff'}]], 1130);
 			drift(ctx, 1.04);
 		},
 
 		// 8. your call
 		cta(ctx) {
 			const {M, el, stage, start, dur, tl, at} = ctx;
-			const q = cardPx(ctx, 'रहने दो या <span class="hl">भगाओ</span>?', 540, 320, {bg: '#fff', rot: -3, size: 74});
+			const q = cardPx(ctx, 'Rehne do ya <span class="hl">bhagao</span>?', 540, 320, {bg: '#fff', rot: -3, size: 74});
 			M.slam(q, start + 0.1);
 			const f = placeFace(ctx, 290, 420, 500);
 			M.stretch(f.e, start + 0.2);
@@ -290,8 +290,8 @@ window.REEL = (function () {
 			popUp(ctx, m, start + 0.4, 0.1);
 			walk(ctx, m, start + 0.5, dur, 0.18);
 			const r = at('रहने'), g = at('भगा');
-			const A = cardPx(ctx, 'रहने दो', 270, 1110, {bg: '#c6ff3d', size: 84, rot: -6});
-			const B = cardPx(ctx, 'भगाओ', 810, 1110, {bg: '#ff4fd8', size: 84, rot: 6});
+			const A = cardPx(ctx, 'Rehne do', 270, 1110, {bg: '#c6ff3d', size: 84, rot: -6});
+			const B = cardPx(ctx, 'Bhagao', 810, 1110, {bg: '#ff4fd8', size: 84, rot: 6});
 			M.slideIn(A, r - 0.1, {from: 'left'});
 			M.slideIn(B, g - 0.1, {from: 'right'});
 			ctx.cue('pop', r, 0.9); ctx.cue('pop', g, 0.9);

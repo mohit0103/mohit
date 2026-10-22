@@ -10,44 +10,52 @@ drops: [1]
 scenes:
   - id: hook
     say: भाई, तेरे चेहरे पर अभी किरायेदार रह रहे हैं!
+    roman: Bhai, tere chehre par abhi kirayedaar reh rahe hain!
     highlight: [किरायेदार]
     bg: "#8a3cff"
   - id: legs
     say: छोटे-छोटे माइट्स, जिनके आठ पैर होते हैं।
+    roman: Chhote-chhote mites, jinke aath pair hote hain.
     highlight: [माइट्स, आठ]
     bg: "#c6ff3d"
     sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
   - id: percent
     say: और नब्बे परसेंट से ज़्यादा लोगों के चेहरे पर ये होते हैं।
+    roman: Aur nabbe percent se zyada logon ke chehre par ye hote hain.
     highlight: [नब्बे]
     bg: "#ffd23c"
     sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
   - id: where
     say: ये नाक, माथे और पलकों के बालों की जड़ में रहते हैं।
+    roman: Ye naak, maathe aur palkon ke baalon ki jad mein rehte hain.
     highlight: [नाक, माथे, पलकों]
     bg: "#3ce7ff"
     sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
   - id: food
     say: खाते क्या हैं? तुम्हारे चेहरे का तेल! मतलब फ्री का खाना।
+    roman: Khaate kya hain? Tumhare chehre ka tel! Matlab free ka khaana.
     highlight: [तेल, फ्री]
     bg: "#ff8a1f"
     sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
   - id: night
     say: और रात को जब तुम सो जाते हो, ये बाहर आकर डेट पर जाते हैं।
+    roman: Aur raat ko jab tum so jaate ho, ye bahar aakar date par jaate hain.
     highlight: [रात, डेट]
     bg: "#111111"
     sticker_colors: ["#ff4fd8", "#c6ff3d", "#3ce7ff"]
   - id: harmless
     say: घबराओ मत, ज़्यादातर लोगों के लिए ये हानिरहित हैं। और ये मरकर फटते नहीं, ये अफवाह है।
+    roman: Ghabrao mat, zyadatar logon ke liye ye harmless hain. Aur ye markar phatte nahin, ye afwaah hai.
     highlight: [हानिरहित, अफवाह]
     bg: "#ff4fd8"
     sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
   - id: cta
     say: तो बताओ, इन्हें रहने दें या भगा दें?
+    roman: To batao, inhe rehne den ya bhaga den?
     highlight: [रहने, भगा]
     bg: "#8a3cff"
     sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
-post_caption: "तेरे चेहरे पर अभी किरायेदार रह रहे हैं 😳 छोटे-छोटे माइट्स, आठ पैर, नब्बे परसेंट से ज़्यादा लोगों में, और रात को डेट पर जाते हैं 😂 ज़्यादातर लोगों के लिए बिल्कुल हानिरहित। तुम क्या करोगे: रहने दो या भगाओ? कमेंट में बताओ 👇"
+post_caption: "Tere chehre par abhi kirayedaar reh rahe hain 😳 Chhote-chhote mites, 8 pair, 90% se zyada logon mein, aur raat ko date par jaate hain 😂 Zyadatar logon ke liye bilkul harmless. Tum kya karoge: rehne do ya bhagao? Comment mein batao 👇"
 hashtags: ["#facts", "#science", "#hindi", "#biology", "#amazingfacts", "#didyouknow", "#reels"]
 sources:
   - "Smith et al. (2022), Molecular Biology and Evolution 39(6):msac125, 'Human Follicular Mites: Ectoparasites Becoming Symbionts': Demodex folliculorum lives in hair follicles, prevalence in humans likely above 90%, completely harmless in most humans, seeks mates and reproduces while humans sleep, has an anus (earlier claims that it has none are wrong), extensive genome reduction"

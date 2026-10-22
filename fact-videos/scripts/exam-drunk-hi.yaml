@@ -10,44 +10,52 @@ drops: [1]
 scenes:
   - id: hook
     say: रात भर जागकर पढ़ने वालों, तुम्हारा दिमाग़ थोड़ा टल्ली हो चुका है!
+    roman: Raat bhar jaagkar padhne waalon, tumhara dimaag thoda talli ho chuka hai!
     highlight: [टल्ली]
     bg: "#8a3cff"
   - id: study
     say: उनतालीस लोगों को अठाईस घंटे जगाए रखा गया।
+    roman: Untaalis logon ko athaais ghante jagaaye rakha gaya.
     highlight: [उनतालीस, अठाईस]
     bg: "#3ce7ff"
     sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
   - id: alcohol
     say: फिर उन्हीं को नापी-तौली शराब दी गई, और वही टेस्ट दोबारा हुए।
+    roman: Phir unhi ko naapi-tauli sharaab di gayi, aur wahi test dobara hue.
     highlight: [शराब]
     bg: "#ffd23c"
     sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
   - id: result
     say: सत्रह से उन्नीस घंटे जागने के बाद, कुछ टेस्ट में दिमाग़ वैसा ही निकला, जैसा थोड़ी शराब के बाद!
+    roman: Satrah se unnees ghante jaagne ke baad, kuch test mein dimaag waisa hi nikla, jaisa thodi sharaab ke baad!
     highlight: [सत्रह, थोड़ी]
     bg: "#c6ff3d"
     sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
   - id: slow
     say: कुछ टेस्ट में तो रिएक्शन पचास परसेंट तक धीमा हो गया!
+    roman: Kuch test mein toh reaction pachaas percent tak dheema ho gaya!
     highlight: [पचास, धीमा]
     bg: "#ff4fd8"
     sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
   - id: longer
     say: और ज़्यादा देर जागे, तो हाल सबसे ज़्यादा शराब वाले लेवल जैसा हो गया।
+    roman: Aur zyada der jaage, toh haal sabse zyada sharaab waale level jaisa ho gaya.
     highlight: [सबसे]
     bg: "#111111"
     sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
   - id: moral
     say: यानी रात भर रटना, एग्ज़ाम हॉल में थोड़ा टल्ली होकर जाना है!
+    roman: Yaani raat bhar ratna, exam hall mein thoda talli hokar jaana hai!
     highlight: [रटना, टल्ली]
     bg: "#ff8a1f"
     sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
   - id: cta
     say: तो बताओ, एग्ज़ाम से पहले रात भर जागोगे, या सोओगे?
+    roman: To batao, exam se pehle raat bhar jaagoge, ya soyoge?
     highlight: [जागोगे, सोओगे]
     bg: "#8a3cff"
     sticker_colors: ["#c6ff3d", "#3ce7ff", "#ffd23c"]
-post_caption: "रात भर जागकर पढ़ने वालों, तुम्हारा दिमाग़ थोड़ा टल्ली है 😵‍💫📚 एक स्टडी में 17-19 घंटे बिना सोए, कुछ टेस्ट में दिमाग़ थोड़ी शराब के बाद जैसा निकला, और रिएक्शन 50% तक धीमा। (सिर्फ़ कुछ टेस्ट में, लेकिन फिर भी!) एग्ज़ाम से पहले क्या करोगे: जागोगे या सोओगे? कमेंट में बताओ 👇"
+post_caption: "Raat bhar jaagkar padhne waalon, tumhara dimaag thoda talli hai 😵‍💫📚 Ek study mein 17-19 ghante bina soye, kuch test mein dimaag thodi sharaab ke baad jaisa nikla, aur reaction 50% tak dheema. (Sirf kuch test mein, lekin phir bhi!) Exam se pehle kya karoge: jaagoge ya soyoge? Comment mein batao 👇"
 hashtags: ["#studytips", "#exam", "#jee", "#neet", "#science", "#facts", "#hindi", "#reels"]
 sources:
   - "Williamson & Feyer (2000), Occupational and Environmental Medicine 57(10):649-655, 'Moderate sleep deprivation produces impairments in cognitive and motor performance equivalent to legally prescribed levels of alcohol intoxication': 39 subjects (30 transport employees, 9 army) tested over 28 hours of sleep deprivation and after measured alcohol doses up to ~0.1% BAC; after 17-19 hours without sleep, performance on some tests was equivalent or worse than at 0.05% BAC, response speeds up to 50% slower for some tests; after longer periods performance reached levels equivalent to the maximum alcohol dose (0.1% BAC)"

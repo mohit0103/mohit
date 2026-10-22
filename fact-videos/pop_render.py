@@ -72,7 +72,16 @@ def build(script):
 		            'transition': sc.get('transition'), 'stickers': sc.get('stickers', True),
 		            'n_stickers': sc.get('n_stickers', 5), 'sticker_colors': sc.get('sticker_colors')})
 		hl = {norm(h) for h in sc.get('highlight', [])}
-		chunks += chunk_words(words, hl)
+		cap = words
+		if sc.get('roman'):  # captions in Roman letters (Hinglish) while the narration stays Hindi
+			rom = sc['roman'].split()
+			if len(rom) == len(words):
+				hl_idx = [k for k, (w, _, _) in enumerate(words) if norm(w) in hl]
+				cap = [(r, a, b) for r, (_, a, b) in zip(rom, words)]
+				hl = {norm(rom[k]) for k in hl_idx}
+			else:
+				print(f"  WARNING scene {sc.get('id')}: roman has {len(rom)} words but say has {len(words)}; using say for captions")
+		chunks += chunk_words(cap, hl)
 	total = lead + speech + 1.3
 	for i, s in enumerate(out):
 		s['end'] = out[i + 1]['start'] if i + 1 < len(out) else total

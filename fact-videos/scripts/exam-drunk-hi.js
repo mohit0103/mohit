@@ -14,7 +14,7 @@ window.REEL = (function () {
 		<circle cx="-30" cy="-12" r="96" fill="${INK}" transform="translate(8 8)"/><circle cx="-30" cy="-12" r="96" fill="#ff8a1f" stroke="${INK}" stroke-width="9"/>
 		<path d="M-30 -12 m0 0 a14 14 0 1 1 14 14 a30 30 0 1 1 -30 -30 a50 50 0 1 1 50 50 a70 70 0 1 1 -70 -70" fill="none" stroke="${INK}" stroke-width="9" stroke-linecap="round"/></svg>`;
 	const paper = `<svg viewBox="0 0 700 460" width="100%" height="100%"><rect x="20" y="20" width="660" height="430" rx="14" fill="${INK}" transform="translate(12 12)"/><rect x="20" y="20" width="660" height="430" rx="14" fill="#fff" stroke="${INK}" stroke-width="9"/>
-		<text x="350" y="100" font-size="60" text-anchor="middle" font-family="Baloo, Bricolage" font-weight="800">परीक्षा</text>
+		<text x="350" y="100" font-size="60" text-anchor="middle" font-family="Baloo, Bricolage" font-weight="800">EXAM</text>
 		<g stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity="0.3"><path d="M70 150 H630 M70 205 H600 M70 260 H630 M70 315 H560 M70 370 H620"/></g></svg>`;
 
 	return {
@@ -34,7 +34,7 @@ window.REEL = (function () {
 			const t = at('टल्ली');
 			lidTo(ctx, f, t - 0.1, 0, 0.1);
 			dizzy(ctx, f, t, ctx.end - t);
-			cardSeq(ctx, [['<span class="hl">टल्ली</span>!', t - 0.05, {size: 120}]]);
+			cardSeq(ctx, [['<span class="hl">Talli</span>!', t - 0.05, {size: 120}]]);
 			drift(ctx, 1.05);
 		},
 
@@ -58,7 +58,7 @@ window.REEL = (function () {
 			tl.fromTo(ck.querySelector('.hd'), {rotation: 0, svgOrigin: '0 0'}, {rotation: 360 * 6, svgOrigin: '0 0', duration: 2.2, ease: 'power1.inOut'}, b - 0.1);
 			tl.fromTo(ck.querySelector('.hm'), {rotation: 0, svgOrigin: '0 0'}, {rotation: 360 * 14, svgOrigin: '0 0', duration: 2.2, ease: 'power1.inOut'}, b - 0.1);
 			ctx.cue('whoosh', b - 0.1, 0.6);
-			const hrs = el(plain('<span class="n">0</span> घंटे', 760, 580, 76, INK, 3), stage);
+			const hrs = el(plain('<span class="n">0</span> ghante', 760, 580, 76, INK, 3), stage);
 			M.pop(hrs, b + 0.1, {from: 0.5, sfx: false});
 			M.countUp(hrs.querySelector('.n'), b + 0.1, 0, 28, 1.6, v => Math.round(v));
 			heads.forEach((h, i) => tl.to(h.querySelector('.lids'), {opacity: 1, duration: 0.15}, b + 0.5 + i * 0.03));
@@ -82,7 +82,7 @@ window.REEL = (function () {
 				${[0, 1, 2].map(i => `<rect x="44" y="${84 + i * 100}" width="52" height="52" rx="10" fill="none" stroke="${INK}" stroke-width="8"/><path class="ck" d="M52 ${110 + i * 100} L 68 ${126 + i * 100} L 100 ${86 + i * 100}" fill="none" stroke="#2e9b3e" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M120 ${110 + i * 100} H 250" stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity="0.3"/>`).join('')}</svg></div>`, stage);
 			M.pop(cb, at('टेस्ट') - 0.2, {from: 0.4});
 			cb.querySelectorAll('.ck').forEach((p, i) => { M.draw(p, at('दोबारा') - 0.4 + i * 0.35, 0.3, {ease: 'power2.out'}); ctx.cue('tick', at('दोबारा') - 0.4 + i * 0.35, 0.8); });
-			cardSeq(ctx, [['नापी-तौली <span class="hl">शराब</span>', s - 0.05, {size: 80}]], 1110);
+			cardSeq(ctx, [['Naapi-tauli <span class="hl">sharaab</span>', s - 0.05, {size: 80}]], 1110);
 			drift(ctx, 1.04);
 		},
 
@@ -93,7 +93,7 @@ window.REEL = (function () {
 			const fL = placeFace(ctx, 60, 500, 360, {bags: true});
 			M.pop(fL.e, s - 0.3, {from: 0.4});
 			lidTo(ctx, fL, s, 0.45, 0.3);
-			const lbl = el(plain('17–19 घंटे', 250, 440, 62, INK, -4), stage);
+			const lbl = el(plain('17–19 ghante', 250, 440, 62, INK, -4), stage);
 			M.slam(lbl, s);
 			const ck = el(`<div class="ill" style="left:150px;top:250px;width:130px;height:130px;z-index:5">${clock}</div>`, stage);
 			M.pop(ck, s, {from: 0.3, sfx: false});
@@ -104,14 +104,14 @@ window.REEL = (function () {
 			const bk = el(`<div class="ill" style="left:830px;top:240px;width:110px;height:174px;z-index:5">${beaker()}</div>`, stage);
 			M.pop(bk, h - 0.2, {from: 0.3, sfx: false});
 			tl.fromTo(bk.querySelector('.liq'), {scaleY: 0, svgOrigin: '0 170'}, {scaleY: 0.4, svgOrigin: '0 170', duration: 0.8}, h - 0.1);
-			const lbl2 = el(plain('थोड़ी शराब', 800, 440, 56, INK, 4), stage);
+			const lbl2 = el(plain('Thodi sharaab', 800, 440, 56, INK, 4), stage);
 			M.slam(lbl2, h);
 			const eq = el(plain('=', 540, 720, 230, '#fff', -4), stage);
 			M.slam(eq, h + 0.15);
 			ctx.cue('punch', h + 0.15, 0.9);
 			dizzy(ctx, fL, h + 0.2, ctx.end - h - 0.2);
 			dizzy(ctx, fR, h + 0.3, ctx.end - h - 0.3);
-			cardSeq(ctx, [['कुछ टेस्ट में, <span class="hl">वैसा ही</span>', h - 0.05, {size: 76}]], 1110);
+			cardSeq(ctx, [['Kuch test mein, <span class="hl">waisa hi</span>', h - 0.05, {size: 76}]], 1110);
 			drift(ctx, 1.03);
 		},
 
@@ -130,7 +130,7 @@ window.REEL = (function () {
 			const d = at('धीमा');
 			tl.fromTo(sn, {x: 0}, {x: 780, duration: Math.max(3, ctx.end - start - 0.6), ease: 'none'}, start + 0.8);
 			M.wobble(sn, start + 0.8, dur, {amp: 2, period: 0.7});
-			cardSeq(ctx, [['रिएक्शन <span class="hl">धीमा</span>', d - 0.05, {size: 92}]], 1110);
+			cardSeq(ctx, [['Reaction <span class="hl">dheema</span>', d - 0.05, {size: 92}]], 1110);
 			drift(ctx, 1.04);
 		},
 
@@ -146,7 +146,7 @@ window.REEL = (function () {
 			ctx.cue('fill', s - 0.3, 0.9);
 			dizzy(ctx, f, s - 0.2, ctx.end - s + 0.2);
 			tl.fromTo(f.e, {y: 0}, {y: 40, duration: 0.6, yoyo: true, repeat: Math.ceil(dur / 0.6), ease: 'sine.inOut'}, s);
-			cardSeq(ctx, [['सबसे ज़्यादा <span class="hl">शराब</span> लेवल', s - 0.05, {size: 62}]], 1120);
+			cardSeq(ctx, [['Sabse zyada <span class="hl">sharaab</span> level', s - 0.05, {size: 62}]], 1120);
 			drift(ctx, 1.04, '50% 40%');
 		},
 
@@ -161,7 +161,7 @@ window.REEL = (function () {
 			const r = at('रटना');
 			tl.fromTo(f.e, {rotation: -3}, {rotation: 3, duration: 0.4, yoyo: true, repeat: Math.ceil(dur / 0.4), ease: 'sine.inOut', immediateRender: false}, start + 0.3);
 			const t = at('टल्ली');
-			const stamp = cardPx(ctx, 'टल्ली', 560, 930, {bg: '#ff3b3b', color: '#fff', size: 150, rot: -14});
+			const stamp = cardPx(ctx, 'TALLI', 560, 930, {bg: '#ff3b3b', color: '#fff', size: 150, rot: -14});
 			stamp.style.zIndex = 8; stamp.style.border = '8px dashed #fff';
 			M.slam(stamp, t);
 			M.shake(stage, t + 0.05, {amp: 8, n: 7});
@@ -173,7 +173,7 @@ window.REEL = (function () {
 		// 8. your call
 		cta(ctx) {
 			const {M, el, stage, start, dur, tl, at} = ctx;
-			const q = cardPx(ctx, 'रात भर <span class="hl">जागोगे?</span>', 540, 320, {bg: '#fff', rot: -3, size: 84});
+			const q = cardPx(ctx, 'Raat bhar <span class="hl">jaagoge?</span>', 540, 320, {bg: '#fff', rot: -3, size: 84});
 			M.slam(q, start + 0.1);
 			const f = placeFace(ctx, 290, 420, 500, {bags: true});
 			M.stretch(f.e, start + 0.2);
@@ -181,8 +181,8 @@ window.REEL = (function () {
 			mouth(ctx, f, start + 0.6, 'O');
 			lidTo(ctx, f, start + 0.6, 0.5, 0.3);
 			const a = at('जागोगे'), b = at('सोओगे');
-			const A = cardPx(ctx, 'जागूँगा', 270, 1110, {bg: '#c6ff3d', size: 84, rot: -6});
-			const B = cardPx(ctx, 'सोऊँगा', 810, 1110, {bg: '#ff4fd8', size: 84, rot: 6});
+			const A = cardPx(ctx, 'Jaagunga', 270, 1110, {bg: '#c6ff3d', size: 84, rot: -6});
+			const B = cardPx(ctx, 'Soonga', 810, 1110, {bg: '#ff4fd8', size: 84, rot: 6});
 			M.slideIn(A, a - 0.1, {from: 'left'});
 			M.slideIn(B, b - 0.1, {from: 'right'});
 			ctx.cue('pop', a, 0.9); ctx.cue('pop', b, 0.9);
