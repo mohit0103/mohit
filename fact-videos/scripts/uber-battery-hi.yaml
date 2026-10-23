@@ -1,0 +1,52 @@
+# Hindi Pop Bold reel; visuals in uber-battery-hi.js. Narration: Gemini TTS (Fenrir) via the tts-hindi workflow.
+channel: factloop
+reel_js: uber-battery-hi.js
+lang: hi
+engine: cached
+tts_cache: tts-cache/uber-battery-hi
+voice: Fenrir
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: क्या आपको पता है? उबर के पूर्व रिसर्च हेड ने कहा था, बैटरी कम हो तो लोग ज़्यादा किराया मान लेते हैं!
+    roman: Kya aapko pata hai? Uber ke poorv research head ne kaha tha, battery kam ho toh log zyada kiraya maan lete hain!
+    highlight: [बैटरी, किराया]
+    bg: "#8a3cff"
+  - id: denial
+    say: उबर कहता है, बैटरी से किराया नहीं बदलता; वो डिमांड और ड्राइवरों से तय होता है।
+    roman: Uber kehta hai, battery se kiraya nahin badalta; wo demand aur drivers se tay hota hai.
+    highlight: [नहीं, डिमांड]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: test
+    say: एक अख़बार ने दो फ़ोन आज़माए; बारह परसेंट बैटरी पर किराया लगभग छह परसेंट ज़्यादा आया, पर बाकी लोग दोहरा नहीं पाए।
+    roman: Ek akhbaar ne do phone aazmaaye; baarah percent battery par kiraya lagbhag chhe percent zyada aaya, par baaki log dohra nahin paaye.
+    highlight: [छह, दोहरा]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: ccpa
+    say: भारत में दो हज़ार पच्चीस में सीसीपीए ने ओला-उबर को आईफ़ोन-एंड्रॉयड के किराये पर नोटिस भेजा, उबर ने मना किया।
+    roman: Bharat mein do hazaar pachchis mein CCPA ne Ola-Uber ko iPhone-Android ke kiraye par notice bheja, Uber ne mana kiya.
+    highlight: [नोटिस, मना]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: tip
+    say: यानी सबूत नहीं है। फिर भी बैटरी कम हो, तो चार्ज करो या दूसरी ऐप से रेट मिला लो।
+    roman: Yaani saboot nahin hai. Phir bhi battery kam ho, toh charge karo ya doosri app se rate mila lo.
+    highlight: [सबूत, चार्ज]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: cta
+    say: तो बताओ, कैब बुक करने से पहले फ़ोन चार्ज करोगे या नहीं?
+    roman: To batao, cab book karne se pehle phone charge karoge ya nahin?
+    highlight: [चार्ज, नहीं]
+    bg: "#ff8a1f"
+    sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
+post_caption: "Kya aapko pata hai? Uber ke poorv research head ne 2016 mein kaha tha ki battery kam ho toh log zyada surge kiraya maan lete hain 📱🚕 Saath mein unhone ye bhi kaha ki Uber iska istemaal kiraya badhane mein nahin karta, aur company bhi yahi kehti hai. Ek akhbaar ke 2 phone wale test mein 12% battery par kiraya lagbhag 6% zyada aaya, par baaki log dohra nahin paaye. India mein 2025 mein CCPA ne Ola-Uber ko iPhone-Android ke kiraye par notice bheja tha (battery nahin, phone model ka mamla), Uber ne mana kiya. Yaani saboot nahin hai, bas insaani rawaiya dilchasp hai 😅 Tum cab book karne se pehle phone charge karoge ya nahin? Comment mein batao 👇"
+hashtags: ["#uber", "#cab", "#psychology", "#facts", "#didyouknow", "#hindi", "#reels"]
+sources:
+  - "NPR Hidden Brain (May 2016), Keith Chen, then Uber head of economic research: remaining phone battery is one of the strongest predictors of how readily riders accept surge pricing; he said Uber absolutely does not use it to push you a higher surge price (see also thenewdaily.com.au 2016/05/23 and knkx.org coverage)"
+  - "Uber statements: battery level is not a factor; fares reflect rider demand and driver supply (Brussels Times, taxi-point.co.uk, 2023)"
+  - "Derniere Heure (Brussels, April 2023): same ride on two phones, the 84%-battery phone was quoted EUR 16.60 and the 12%-battery phone EUR 17.56 (about 6% more); Uber denied it; VERIFY and Boatos.org found no evidence that Uber changes prices by battery level"
+  - "India CCPA notices to Ola and Uber (Jan 2025) over alleged different fares on iPhone vs Android; Uber denied setting prices by phone manufacturer (Reuters / Gulf News). Not about battery level; no final outcome found"
