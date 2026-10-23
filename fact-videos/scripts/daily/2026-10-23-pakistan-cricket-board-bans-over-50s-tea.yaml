@@ -1,0 +1,117 @@
+channel: factloop
+kicker: CRICKET · OCT 2026
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Pakistan's veteran cricketers are *banned* from India, by Pakistan!
+  highlight:
+  - banned
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket stadium crowd India
+    frame: full
+    treatment: dim
+  - type: headline
+    text: CRICKET BLOCKED
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - BLOCKED
+  - type: stamp
+    text: BANNED
+    at: banned
+    y: 1080
+    rotate: -8
+- say: Their over-50s team was set for the Masters World Cup in India, January 2027.
+  highlight:
+  - World Cup
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket trophy international
+    frame: strip
+    treatment: color
+  - type: kicker
+    text: INDIA · JAN 2027
+    y: 560
+- say: 'But here''s the twist: they are *defending champions* from last year''s tournament!'
+  highlight:
+  - defending champions
+  bg: red
+  layers:
+  - type: photo
+    query: cricket team celebrating trophy
+    frame: print
+    treatment: color
+  - type: stamp
+    text: CHAMPIONS
+    at: champions
+    y: 1080
+    rotate: 5
+- say: India offered visas and high-level security. Yet, Pakistan's own board said no.
+  highlight:
+  - said no
+  bg: ink
+  layers:
+  - type: photo
+    query: visa stamp passport India
+    frame: strip
+    treatment: color
+  - type: icon
+    name: x
+    label: DENIED
+    size: 300
+    y: 1000
+- say: The PCB chief, also Interior Minister, personally informed the team of the refusal.
+  highlight:
+  - refusal
+  bg: paper
+  layers:
+  - type: photo
+    query: official government building architecture
+    frame: full
+    treatment: bw
+  - type: icon
+    name: file-text
+    label: PCB Decision
+    size: 300
+    y: 900
+- say: Should politics *ever* stop athletes from competing? Yes or no?
+  highlight:
+  - politics
+  - competing
+  bg: ink
+  layers:
+  - type: headline
+    text: SHOULD POLITICS STOP SPORTS?
+    font: display
+    size: 140
+    y: 800
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: Pakistan's champion cricket team banned from playing in India by their own board! What do you think? Should
+  sports and politics be kept separate?
+hashtags:
+- '#Cricket'
+- '#IndiaPakistan'
+- '#SportsNews'
+- '#CricketFacts'
+- '#ViralFacts'
+- '#FactVideo'
+sources:
+- Pakistan Cricket Board declines permission to over-50s team for playing in India - The Economic Times
+- PCB declines permission to over-50s team for playing in India - Daily Excelsior
+- Pakistan veterans Team withdraws from World Cup after PCB denies permission to Travel to India - India.Com
+- Pakistan Cricket Board declines permission to over-50s team for playing in India - The News International
+- Pakistan Pull Out Of Tournament In India After Decision By Mohsin Naqvi-Led PCB - Times Now
+topic: Pakistan Cricket Board bans over-50s team from playing in India
