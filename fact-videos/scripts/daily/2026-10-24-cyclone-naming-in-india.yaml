@@ -1,0 +1,128 @@
+channel: factloop
+kicker: WEATHER · CYCLONE NAMING
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: India names cyclones you hear. But their system hides a disturbing twist.
+  highlight:
+  - India
+  - names
+  bg: ink
+  layers:
+  - type: photo
+    query: cyclone from space
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: headline
+    text: CYCLONE NAMES
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - NAMES
+  - type: stamp
+    text: TWIST
+    at: twist
+    y: 1000
+    rotate: 5
+- say: These aren't random. Clear names prevent deadly confusion during warnings.
+  highlight:
+  - random
+  - confusion
+  bg: paper
+  layers:
+  - type: photo
+    query: people listening to weather forecast radio india
+    frame: strip
+    treatment: color
+  - type: icon
+    name: users
+    label: public safety
+    size: 300
+    y: 1080
+- say: 13 countries, including India, submit lists to the UN's weather panel.
+  highlight:
+  - 13 countries
+  - India
+  bg: ink
+  layers:
+  - type: photo
+    query: world map showing bay of bengal and arabian sea regions
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: kicker
+    text: WMO/ESCAP Panel · 2004
+    y: 560
+  - type: icon
+    name: world
+    label: 13 nations
+    size: 300
+    y: 1080
+- say: India's list includes 'Gati', 'Tej', 'Vyom', and 'Jaladhi' for future storms.
+  highlight:
+  - Gati
+  - Tej
+  bg: paper
+  layers:
+  - type: photo
+    query: indian coastline during monsoon or cyclone
+    frame: strip
+    treatment: color
+  - type: chips
+    items:
+    - Gati
+    - Tej
+    - Vyom
+    - Jaladhi
+    y: 1080
+- say: 'But here''s the dark twist: names like ''Amphan'' are *retired* forever.'
+  highlight:
+  - Amphan
+  - retired
+  bg: red
+  layers:
+  - type: photo
+    query: cyclone amphan damage
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: RETIRED
+    at: retired
+    y: 800
+    rotate: -8
+  - type: ghost
+    text: AMPHAN
+    y: 1180
+- say: Should such devastating cyclone names be retired permanently or reused?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: RETIRED
+    right:
+      icon: x
+      label: REUSED
+      accent: true
+post_caption: Ever wondered how cyclones get their names? India plays a big part, but there's a dark twist! When a cyclone
+  causes massive destruction, should its name be retired forever or eventually reused? Tell us – Retired or Reused? 👇
+hashtags:
+- '#CycloneFacts'
+- '#India'
+- '#Weather'
+- '#FactVideo'
+- '#ScienceFacts'
+- '#DidYouKnow'
+- '#ViralVideo'
+sources:
+- Who decides the names of the cyclones in the Indian Ocean region, and how is it done?
+- IMD releases new list of 169 names of cyclones, 13 Indian names include Gati, Tej, Aag and Neer
+- WMO Hurricane Committee retires tropical cyclone names and ends the use of Greek alphabet
+- 'Aila, Amphan, Asani: What''s in a cyclone''s name? | India News - The Indian Express'
+topic: Cyclone Naming in India
