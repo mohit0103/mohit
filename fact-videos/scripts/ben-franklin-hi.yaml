@@ -1,0 +1,57 @@
+# Hindi Pop Bold reel (category B); visuals in ben-franklin-hi.js. Narration: Gemini TTS (Fenrir) via the tts-hindi workflow.
+channel: factloop
+reel_js: ben-franklin-hi.js
+lang: hi
+engine: cached
+tts_cache: tts-cache/ben-franklin-hi
+voice: Fenrir
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: क्या आपको पता है? जो आपसे जलता है, उससे एक किताब उधार माँगने पर वो दोस्त बन सकता है!
+    roman: Kya aapko pata hai? Jo aapse jalta hai, usse ek kitaab udhaar maangne par wo dost ban sakta hai!
+    highlight: [जलता, किताब]
+    bg: "#8a3cff"
+  - id: speech
+    say: फ़्रैंकलिन ने अपनी आत्मकथा में लिखा, एक नए सदस्य ने उनके ख़िलाफ़ लंबा भाषण दिया था।
+    roman: Franklin ne apni aatmakatha mein likha, ek naye sadasya ne unke khilaaf lamba bhaashan diya tha.
+    highlight: [आत्मकथा, भाषण]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: book
+    say: फिर उन्होंने उससे एक दुर्लभ किताब माँगी, और हफ़्ते भर बाद शुक्रिया के साथ लौटा दी।
+    roman: Phir unhone usse ek durlabh kitaab maangi, aur hafte bhar baad shukriya ke saath lauta di.
+    highlight: [दुर्लभ, शुक्रिया]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: friends
+    say: फ़्रैंकलिन के मुताबिक, वो खुद बात करने आया और दोनों उम्र भर के दोस्त बन गए।
+    roman: Franklin ke mutabik, wo khud baat karne aaya aur dono umar bhar ke dost ban gaye.
+    highlight: [खुद, दोस्त]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: study
+    say: एक उन्नीस सौ उनहत्तर की स्टडी में, जिन्होंने रिसर्चर की मदद की, उन्होंने उसे ज़्यादा पसंद किया।
+    roman: Ek unnees sau unhattar ki study mein, jinhone researcher ki madad ki, unhone use zyada pasand kiya.
+    highlight: [स्टडी, पसंद]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: caveat
+    say: पर ये हर बार काम नहीं करता, और दिखावे की मदद माँगना उल्टा पड़ सकता है।
+    roman: Par ye har baar kaam nahin karta, aur dikhaave ki madad maangna ulta pad sakta hai.
+    highlight: [नहीं, दिखावे]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: तो बताओ, किसी से चार्जर या नोट्स माँगोगे, या अपना काम खुद करोगे?
+    roman: To batao, kisi se charger ya notes maangoge, ya apna kaam khud karoge?
+    highlight: [माँगोगे, खुद]
+    bg: "#ff8a1f"
+    sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
+post_caption: "Kya aapko pata hai? Jo aapse jalta hai, usse ek kitaab udhaar maangne par wo dost ban sakta hai 📖🤝 Benjamin Franklin ne apni aatmakatha mein likha ki ek naye sadasya ne unke khilaaf lamba bhaashan diya tha. Franklin ne usse ek durlabh kitaab maangi aur hafte bhar baad shukriya ke saath lauta di. Unke mutabik, wo khud baat karne aaya aur dono umar bhar ke dost ban gaye. 1969 ki ek study mein bhi jinhone researcher ki madad ki, unhone use zyada pasand kiya. Par ye har baar kaam nahin karta, aur dikhaave ki madad maangna ulta pad sakta hai 😅 Tum kisi se charger ya notes maangoge, ya apna kaam khud karoge? Comment mein batao 👇"
+hashtags: ["#psychology", "#benfranklineffect", "#friendship", "#lifehacks", "#facts", "#hindi", "#reels"]
+sources:
+  - "Benjamin Franklin, Autobiography (Project Gutenberg text, https://www.gutenberg.org/cache/epub/20203/pg20203.txt), the account of the Pennsylvania Assembly years: a new member made a long speech against him; Franklin borrowed a very scarce book from the man, returned it a week later with a note of thanks; the man then spoke to him civilly and they became great friends until his death. The man and the book are not named; it is Franklin own account"
+  - "Jecker & Landy (1969), Human Relations 22(4):371-378, Liking a person as a function of doing him a favour: participants who did the researcher a favour at his personal request liked him more than those asked by a third party (details via secondary sources; no numbers used)"
+  - "Replication status: only small follow-ups are known (e.g. Niiya 2015 as cited on Wikipedia); the effect is not a law, and the reel says so"

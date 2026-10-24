@@ -11,15 +11,16 @@ const KIT = (function () {
 		<g class="stars" opacity="0">${[0, 120, 240].map(a => `<g transform="rotate(${a} 0 -250)"><polygon points="0,-405 12,-380 40,-378 18,-360 26,-332 0,-348 -26,-332 -18,-360 -40,-378 -12,-380" fill="#ffd23c" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/></g>`).join('')}</g>
 		<ellipse cx="-258" cy="40" rx="40" ry="62" fill="${SKIN}" stroke="${INK}" stroke-width="11"/><ellipse cx="258" cy="40" rx="40" ry="62" fill="${SKIN}" stroke="${INK}" stroke-width="11"/>
 		<ellipse rx="252" ry="318" fill="${INK}" transform="translate(14 14)"/><ellipse rx="252" ry="318" fill="${SKIN}" stroke="${INK}" stroke-width="12"/>
-		<path d="M-236 -120 C -250 -300, 250 -300, 236 -120 C 200 -210, -200 -210, -236 -120 Z" fill="#2b1a12" stroke="${INK}" stroke-width="10" stroke-linejoin="round"/>
+		<path d="M-236 -120 C -250 -300, 250 -300, 236 -120 C 200 -210, -200 -210, -236 -120 Z" fill="${o.hair || '#2b1a12'}" stroke="${INK}" stroke-width="10" stroke-linejoin="round"/>
 		<g class="lashes" stroke="${INK}" stroke-width="9" stroke-linecap="round">${[-150, -125, -100, -75, -50].map((x, i) => `<path d="M${x} ${-76 + Math.abs(i - 2) * 6} l ${(i - 2) * -7} -26"/>`).join('')}${[50, 75, 100, 125, 150].map((x, i) => `<path d="M${x} ${-76 + Math.abs(i - 2) * 6} l ${(i - 2) * 7} -26"/>`).join('')}</g>
 		${[-100, 100].map(cx => `<ellipse cx="${cx}" cy="-40" rx="56" ry="44" fill="#fff"/>`).join('')}
 		<g class="pupils"><circle cx="-100" cy="-38" r="22" fill="${INK}"/><circle cx="100" cy="-38" r="22" fill="${INK}"/><circle cx="-93" cy="-46" r="7" fill="#fff"/><circle cx="107" cy="-46" r="7" fill="#fff"/></g>
 		${[-100, 100].map(cx => `<g class="spir" opacity="0" data-cx="${cx}"><ellipse cx="${cx}" cy="-40" rx="52" ry="40" fill="#fff"/><path d="${spiral(cx, -40)}" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/></g>`).join('')}
 		${[-100, 100].map(cx => `<ellipse class="lid" data-cx="${cx}" data-top="-84" cx="${cx}" cy="-40" rx="56" ry="44" fill="${SKIN}" opacity="${o.closed ? 1 : 0}"/>`).join('')}
 		${[-100, 100].map(cx => `<ellipse cx="${cx}" cy="-40" rx="56" ry="44" fill="none" stroke="${INK}" stroke-width="9"/><path class="shut" d="M${cx - 52} -34 Q${cx} 4 ${cx + 52} -34" fill="none" stroke="${INK}" stroke-width="11" stroke-linecap="round" opacity="${o.closed ? 1 : 0}"/>`).join('')}
+		<g class="glasses" opacity="${o.glasses ? 1 : 0}" fill="none" stroke="${INK}" stroke-width="9"><circle cx="-100" cy="-40" r="62"/><circle cx="100" cy="-40" r="62"/><path d="M-38 -44 H38"/></g>
 		<g class="bags" opacity="${o.bags ? 1 : 0}" fill="none" stroke="#6b4a8a" stroke-width="12" stroke-linecap="round"><path d="M-148 14 Q-100 44 -52 14"/><path d="M52 14 Q100 44 148 14"/></g>
-		<g class="brows" stroke="${INK}" stroke-width="16" stroke-linecap="round" fill="none"><path d="M-160 -122 Q-100 -150 -42 -122"/><path d="M42 -122 Q100 -150 160 -122"/></g>
+		<g class="brows" stroke="${INK}" stroke-width="16" stroke-linecap="round" fill="none"><path class="bl" d="M-160 -122 Q-100 -150 -42 -122"/><path class="br" d="M42 -122 Q100 -150 160 -122"/></g>
 		<path d="M-18 -10 C -50 60, -70 90, -48 112 C -20 130, 20 130, 48 112 C 70 90, 50 60, 18 -10" fill="${SKIN}" stroke="${INK}" stroke-width="10" stroke-linejoin="round"/>
 		<ellipse cx="-24" cy="106" rx="11" ry="8" fill="${INK}"/><ellipse cx="24" cy="106" rx="11" ry="8" fill="${INK}"/>
 		<ellipse class="tongue" cx="26" cy="246" rx="30" ry="34" fill="#ff6b8b" stroke="${INK}" stroke-width="8" opacity="0"/>
@@ -69,6 +70,7 @@ const KIT = (function () {
 	const look = (ctx, f, t, x, y, d = 0.18) => ctx.tl.to(f.e.querySelector('.pupils'), {x, y, duration: d, ease: 'power2.out'}, t);
 	const mouth = (ctx, f, t, which) => ['mS', 'mO', 'mZ', 'mF', 'mW'].forEach(c => ctx.tl.set(f.e.querySelector('.' + c), {opacity: c === 'm' + which ? 1 : 0}, t));
 	const brows = (ctx, f, t, y) => ctx.tl.to(f.e.querySelector('.brows'), {y, duration: 0.15, ease: 'back.out(2)'}, t);
+	const browTilt = (ctx, f, t, deg) => { ctx.tl.to(f.e.querySelector('.bl'), {rotation: deg, svgOrigin: '-100 -130', duration: 0.15}, t); ctx.tl.to(f.e.querySelector('.br'), {rotation: -deg, svgOrigin: '100 -130', duration: 0.15}, t); };
 	const bags = (ctx, f, t) => ctx.tl.fromTo(f.e.querySelector('.bags'), {opacity: 0}, {opacity: 1, duration: 0.3}, t);
 	// spiral eyes + tongue + orbiting stars: the "dizzy" look
 	function dizzy(ctx, f, t, dur) {
@@ -89,5 +91,5 @@ const KIT = (function () {
 	const drift = (ctx, to = 1.06, oy = '50% 55%') => ctx.tl.fromTo(ctx.stage, {scale: 1, transformOrigin: oy}, {scale: to, duration: ctx.dur, ease: 'none', immediateRender: false}, ctx.start);
 	const headIcon = (skin = SKIN, droop = false) => `<svg viewBox="-60 -70 120 140" width="100%" height="100%"><circle r="48" fill="${INK}" transform="translate(6 6)"/><circle r="48" fill="${skin}" stroke="${INK}" stroke-width="7"/><g class="ey"><circle cx="-18" cy="-6" r="8" fill="${INK}"/><circle cx="18" cy="-6" r="8" fill="${INK}"/></g>${droop ? `<path class="lids" d="M-30 -10 H-6 M6 -10 H30" stroke="${INK}" stroke-width="9" stroke-linecap="round" opacity="0"/>` : ''}<path d="M-14 22 Q0 32 14 22" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`;
 
-	return {SKIN, INK, face, clock, beaker, card, cardPx, cardSeq, plain, placeFace, lidTo, blink, look, mouth, brows, bags, dizzy, popUp, drift, headIcon};
+	return {browTilt, SKIN, INK, face, clock, beaker, card, cardPx, cardSeq, plain, placeFace, lidTo, blink, look, mouth, brows, bags, dizzy, popUp, drift, headIcon};
 })();
