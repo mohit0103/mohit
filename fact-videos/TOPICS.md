@@ -8,7 +8,8 @@ Cycle: **A** everyday apps & India facts ("Kya aapko pta hai ...") -> **B** impr
 ## Log (newest last; the routine appends a line after each reel)
 - 2026-10-21  C  face mites (face-mites-hi)
 - 2026-10-22  C  all-nighter brain ~ a little drunk (exam-drunk-hi)
-- 2026-10-23  A  Uber / phone battery and fares (uber-battery-hi). NEXT: B (e.g. Ben Franklin effect)
+- 2026-10-23  A  Uber / phone battery and fares (uber-battery-hi). NEXT was B
+- 2026-10-24  B  Ben Franklin effect (ben-franklin-hi). NEXT: C (wombat poop / heat limit / Lake Natron myth-bust)
 
 ## A. Everyday apps & India facts
 - **Uber and low phone battery** (DONE 23 Oct; added India CCPA notice beat: Jan 2025 notices to Ola and Uber over alleged iPhone-vs-Android fares, Uber denied, about phone model not battery, no final outcome found; Snopes rating NOT verified so never cite it; say 'others could not reproduce it', never 'repeat tests failed'). Verified: in 2016 Keith Chen, then Uber's head of economic research, said on NPR's Hidden Brain that remaining battery is one of the strongest predictors of how readily people accept surge pricing, and that Uber "absolutely [doesn't] use that to push you a higher surge price". Uber has since said it does not use battery level and that pricing comes from demand and driver supply (one statement called the claim "100% false"). A small 2023 test by Belgian paper Derniere Heure saw a 6% higher fare on a 12%-battery phone, but repeats failed and Snopes rates it "unproven". Frame as: the psychology is real, there is NO proof Uber uses it against you. Never say "Uber charges you more". End on a neutral question (charge the phone before booking or not?).
@@ -18,7 +19,7 @@ Cycle: **A** everyday apps & India facts ("Kya aapko pta hai ...") -> **B** impr
 - **UPI facts**: needs research (e.g. India's share of real-time payments).
 
 ## B. Impress-people psychology tricks (state as "researchers found", never "always works")
-- **Ben Franklin effect**: asking someone for a small favour can make them like you more (Jecker & Landy, 1969).
+- **Ben Franklin effect** (DONE 24 Oct). Vetted 6/10: the Franklin story is from his Autobiography (rival and book are NOT named; his own account); Jecker & Landy 1969 participants did a favour at the researcher's personal request and liked him more than those asked via a secretary; participant numbers unverified; the favour was returning prize money, not 'small'; replication evidence is thin (Niiya 2015 cited on Wikipedia, unchecked); always add the caveat that it does not always work and that fake favours backfire.
 - **Pratfall effect**: a competent person who makes a small blunder becomes more likable (Aronson, Willerman & Floyd, 1966).
 - **Foot-in-the-door**: agreeing to a small request raises the odds of agreeing to a bigger one (Freedman & Fraser, 1966).
 - **Chameleon effect** (mimicry, Chartrand & Bargh, 1999): check replication status before using.
