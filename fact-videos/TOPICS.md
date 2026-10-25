@@ -10,6 +10,7 @@ Cycle: **A** everyday apps & India facts ("Kya aapko pta hai ...") -> **B** impr
 - 2026-10-22  C  all-nighter brain ~ a little drunk (exam-drunk-hi)
 - 2026-10-23  A  Uber / phone battery and fares (uber-battery-hi). NEXT was B
 - 2026-10-24  B  Ben Franklin effect (ben-franklin-hi). NEXT: C (wombat poop / heat limit / Lake Natron myth-bust)
+- 2026-10-25  C  Wombat cube poop (wombat-cubes-hi). NEXT: A (Google Maps 99 phones / ATM / UPI)
 
 ## A. Everyday apps & India facts
 - **Uber and low phone battery** (DONE 23 Oct; added India CCPA notice beat: Jan 2025 notices to Ola and Uber over alleged iPhone-vs-Android fares, Uber denied, about phone model not battery, no final outcome found; Snopes rating NOT verified so never cite it; say 'others could not reproduce it', never 'repeat tests failed'). Verified: in 2016 Keith Chen, then Uber's head of economic research, said on NPR's Hidden Brain that remaining battery is one of the strongest predictors of how readily people accept surge pricing, and that Uber "absolutely [doesn't] use that to push you a higher surge price". Uber has since said it does not use battery level and that pricing comes from demand and driver supply (one statement called the claim "100% false"). A small 2023 test by Belgian paper Derniere Heure saw a 6% higher fare on a 12%-battery phone, but repeats failed and Snopes rates it "unproven". Frame as: the psychology is real, there is NO proof Uber uses it against you. Never say "Uber charges you more". End on a neutral question (charge the phone before booking or not?).
@@ -25,7 +26,7 @@ Cycle: **A** everyday apps & India facts ("Kya aapko pta hai ...") -> **B** impr
 - **Chameleon effect** (mimicry, Chartrand & Bargh, 1999): check replication status before using.
 
 ## C. Wow science / body / space (vetted so far)
-- **Wombat cube poop**: cite Yang et al. 2021, Soft Matter (the cube forms in the intestine); do not say 2018.
+- **Wombat cube poop (DONE 2026-10-25)**: cite Yang et al. 2021, Soft Matter (the cube forms in the intestine); do not say 2018.
 - **31 C wet-bulb heat limit**: Penn State HEAT project; small lab study of young adults, say so.
 - **Lake Natron "turns animals to stone"**: myth-bust only (animals are preserved and look calcified after death; the famous photos were posed).
 - **Smell of rain / geosmin**: pleasant but low shock, needs a twist.
