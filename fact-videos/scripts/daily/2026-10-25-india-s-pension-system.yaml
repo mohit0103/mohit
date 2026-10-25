@@ -1,0 +1,120 @@
+channel: factloop
+kicker: INDIA · RETIREMENT
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: In India, 9 out of 10 workers retire with ZERO formal pension!
+  highlight:
+  - 9 out of 10
+  - ZERO formal pension
+  bg: ink
+  layers:
+  - type: photo
+    query: elderly Indian man thoughtful
+    frame: full
+    treatment: dim
+  - type: headline
+    text: ZERO PENSION
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: SHOCK!
+    at: ZERO
+    y: 1080
+    rotate: -8
+- say: Only government employees and formal sector workers are actually covered.
+  highlight:
+  - government
+  - formal sector
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian parliament building
+    frame: print
+    treatment: bw
+  - type: icon
+    name: building-bank
+    label: Organized Sector
+    size: 300
+    y: 800
+- say: For those covered, minimum monthly pension can be just one thousand rupees.
+  highlight:
+  - one thousand rupees
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian rupee notes and coins stack
+    frame: full
+    treatment: duotone
+  - type: counter
+    value: 1000
+    suffix: ' ₹'
+    label: Minimum Pension
+    plain: false
+    y: 800
+- say: The British started pensions, not for welfare, but to stop local rulers rebelling.
+  highlight:
+  - not for welfare
+  - rebelling
+  bg: red
+  layers:
+  - type: photo
+    query: British Raj India colonial architecture illustration
+    frame: strip
+    treatment: color
+  - type: stamp
+    text: NOT WELFARE
+    at: welfare
+    y: 1080
+    rotate: 5
+- say: Today, India spends lakhs of crores on government pensions, yet millions are still left behind.
+  highlight:
+  - lakhs of crores
+  - left behind
+  bg: paper
+  layers:
+  - type: photo
+    query: elderly Indian women chatting village
+    frame: full
+    treatment: color
+  - type: icon
+    name: currency-rupee
+    label: Massive Cost
+    size: 300
+    y: 800
+- say: Should pension coverage be expanded to all Indian workers? Yes or No?
+  highlight:
+  - expanded
+  - all
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: 'Did you know this about India''s pension system? The numbers are shocking! Tell us: should pension coverage
+  be expanded to all workers? Yes or no in the comments!'
+hashtags:
+- '#IndiaFacts'
+- '#Pension'
+- '#Retirement'
+- '#SocialSecurity'
+- '#IndianEconomy'
+- '#ViralFacts'
+sources:
+- 'PMF IAS: India''s Pension System: Challenges & Solutions'
+- 'The Wire: Indian Pension System Ranked Among Lowest in the World: Report'
+- 'Business Standard: India spends more than 3% of GDP on govt pensions, states'' burden growing'
+- 'Business Standard: India spends more than 3% of GDP on govt pensions - Number Wise'
+- 'BMPA: About Pension in India'
+- 'InsuranceDekho: History Of Pension Schemes In India'
+- 'Naya Legal: Dynamics of Pension Schemes in India'
+- 'The Hindu: India''s pension scheme lags in terms of coverage, contribution'
+- 'GovtBudget.com: NPS vs OPS: Complete Comparison of Pension Schemes in India'
+topic: India's Pension System
