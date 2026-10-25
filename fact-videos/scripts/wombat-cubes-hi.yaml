@@ -1,0 +1,57 @@
+# Hindi Pop Bold reel (category C); visuals in wombat-cubes-hi.js. Narration: Gemini TTS (Fenrir) via the tts-hindi workflow.
+channel: factloop
+reel_js: wombat-cubes-hi.js
+lang: hi
+engine: cached
+tts_cache: tts-cache/wombat-cubes-hi
+voice: Fenrir
+bpm: 104
+drops: [1]
+scenes:
+  - id: hook
+    say: क्या आपको पता है? दुनिया का अकेला ज्ञात जानवर, जो लगभग चौकोर पॉटी करता है!
+    roman: Kya aapko pata hai? Duniya ka akela gyaat janwar, jo lagbhag chaukor potty karta hai!
+    highlight: [चौकोर, पॉटी]
+    bg: "#8a3cff"
+  - id: name
+    say: वो है वॉम्बैट, और इस खोज पर वैज्ञानिकों को इग नोबेल इनाम तक मिल चुका है।
+    roman: Wo hai wombat, aur is khoj par vaigyaanikon ko Ig Nobel inaam tak mil chuka hai.
+    highlight: [वॉम्बैट, नोबेल]
+    bg: "#ffd23c"
+    sticker_colors: ["#8a3cff", "#ff4fd8", "#3ce7ff"]
+  - id: where
+    say: ये आकार बाहर नहीं, आँतों के आख़िरी सत्रह परसेंट हिस्से में बनता है।
+    roman: Ye aakaar bahar nahin, aanton ke aakhiri satrah percent hisse mein banta hai.
+    highlight: [बाहर, सत्रह]
+    bg: "#3ce7ff"
+    sticker_colors: ["#ff4fd8", "#c6ff3d", "#ffd23c"]
+  - id: stiff
+    say: वहाँ आँत की दीवार कहीं चार गुना सख़्त है, तो कहीं लचीली, और यही कोने बनाती है।
+    roman: Wahan aant ki deewar kahin chaar guna sakht hai, toh kahin lachili, aur yahi kone banati hai.
+    highlight: [चार, कोने]
+    bg: "#ff4fd8"
+    sticker_colors: ["#c6ff3d", "#ffd23c", "#3ce7ff"]
+  - id: why
+    say: वैज्ञानिक मानते हैं, ये चौकोर टुकड़े पत्थरों और लकड़ियों पर लुढ़कते नहीं, इसलिए इलाक़ा मार्क करना आसान हो जाता है।
+    roman: Vaigyaanik maante hain, ye chaukor tukde pattharon aur lakdiyon par ludhakte nahin, isliye ilaaka mark karna aasaan ho jaata hai.
+    highlight: [मानते, मार्क]
+    bg: "#c6ff3d"
+    sticker_colors: ["#ff4fd8", "#8a3cff", "#3ce7ff"]
+  - id: myth
+    say: और एक विशेषज्ञ के मुताबिक, चौकोर पॉटी की मीनारें बनाना बस अफ़वाह है।
+    roman: Aur ek visheshagya ke mutabik, chaukor potty ki meenaarein banana bas afwaah hai.
+    highlight: [मीनारें, अफ़वाह]
+    bg: "#111111"
+    sticker_colors: ["#c6ff3d", "#ff4fd8", "#3ce7ff"]
+  - id: cta
+    say: तो बताओ, ये सुनकर हँसी आई या हैरानी हुई?
+    roman: To batao, ye sunkar hansi aayi ya hairani hui?
+    highlight: [हँसी, हैरानी]
+    bg: "#ff8a1f"
+    sticker_colors: ["#8a3cff", "#c6ff3d", "#3ce7ff"]
+post_caption: "Kya aapko pata hai? Duniya ka akela gyaat janwar, jo lagbhag chaukor potty karta hai 🐨🧊 Wo hai wombat, aur is khoj par Georgia Tech ke vaigyaanikon ko 2019 ka Ig Nobel inaam mila. Ye aakaar bahar nahin, aanton ke aakhiri 17% hisse mein banta hai, jahan deewar kahin 4 guna sakht aur kahin lachili hoti hai. Vaigyaanik maante hain ki ye tukde pattharon aur lakdiyon par ludhakte nahin, isliye ilaaka mark karna aasaan hota hai. Aur ek visheshagya ke mutabik, chaukor potty ki meenaarein banana bas afwaah hai 😂 Tumhe ye sunkar hansi aayi ya hairani hui? Comment mein batao 👇"
+hashtags: ["#wombat", "#facts", "#science", "#animals", "#ignobel", "#didyouknow", "#hindi", "#reels"]
+sources:
+  - "Yang et al. (2021), Soft Matter 17(3):475-488, Intestines of non-uniform stiffness mold the corners of wombat feces, DOI 10.1039/d0sm01230k: bare-nosed wombat; cubes are formed within the last 17 percent of the intestine; regions with a four-fold increase in stiffness (and two-fold in thickness); stiffness ratio and flow conditions yield more square shapes"
+  - "Ig Nobel Prize in Physics 2019 (Patricia Yang, Alexander Lee, Miles Chan, Alynn Martin, Ashley Edwards, Scott Carver, David Hu); wombats described by National Geographic as the only known animal with cube-shaped droppings"
+  - "Territory-marking / not-rolling function is a plausible hypothesis, not proven; wombat expert Mike Swinbourne (University of Adelaide) calls the stacked towers or walls story a misconception (secondary report). Numbers like 80-100 cubes per night were NOT used because they have no primary source"
