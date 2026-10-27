@@ -1,0 +1,122 @@
+channel: factloop
+kicker: CURRENCY · INDIA
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This ₹1 coin costs more to make than its value.
+  highlight:
+  - costs
+  - more
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+  - type: headline
+    text: COSTLY COIN
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: MORE
+    at: more
+    y: 1080
+    rotate: -8
+- say: It costs ₹1.11 to mint each one-rupee coin.
+  highlight:
+  - ₹1.11
+  bg: paper
+  layers:
+  - type: photo
+    query: pile of indian one rupee coins
+    frame: print
+    treatment: color
+    y: 900
+  - type: counter
+    value: 1.11
+    suffix: ' ₹'
+    label: MINTING COST
+    plain: false
+    y: 600
+- say: Yet, ₹2, ₹5, and ₹10 coins are profitable.
+  highlight:
+  - profitable
+  bg: ink
+  layers:
+  - type: photo
+    query: indian two five ten rupee coins
+    frame: strip
+    treatment: color
+    y: 850
+  - type: chips
+    items:
+    - ₹2
+    - ₹5
+    - ₹10
+    y: 550
+- say: So why does India still mint a losing ₹1 coin?
+  highlight:
+  - losing
+  bg: red
+  layers:
+  - type: photo
+    query: rural market india cash transaction
+    frame: full
+    treatment: dim
+  - type: icon
+    name: question-mark
+    label: WHY?
+    size: 300
+    y: 1000
+- say: It helps daily wage earners and small businesses in our rural economy.
+  highlight:
+  - daily wage
+  - rural economy
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian villagers exchanging cash
+    frame: print
+    treatment: color
+    y: 900
+  - type: icon
+    name: users
+    label: PEOPLE · ECONOMY
+    size: 300
+    y: 600
+- say: Should India stop minting ₹1 coins to save money? Yes or no?
+  highlight:
+  - stop
+  - save money
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: Did you know your ₹1 coin costs more to make than its value? 🤔 Should India stop minting them to save funds,
+  or is their role in our economy too vital? Tell us your thoughts below! 👇
+hashtags:
+- '#IndianRupee'
+- '#CoinFacts'
+- '#IndianEconomy'
+- '#DidYouKnow'
+- '#MoneyFacts'
+- '#RBI'
+sources:
+- Upstox (August 4, 2025)
+- Angel One (July 31, 2025)
+- Times Now (December 30, 2024, February 13, 2025)
+- India TV News (December 6, 2024)
+- 'The Hidden Cost Behind India''s Money: How Notes and Coins Are Really Made (November 17, 2025)'
+- Todayq News on Binance Square (December 2, 2024)
+- Inshorts (December 6, 2018)
+- How much does the government spend to mint coins and print notes in India? (November 29, 2024)
+- India.com (December 2, 2024)
+topic: Indian Rupee Coins
