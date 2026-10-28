@@ -1,0 +1,109 @@
+channel: factloop
+kicker: WORLD RECORD · AUSTRALIA
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: A train, 7 kilometres long, hauled 700 wagons!
+  highlight:
+  - 7 kilometres
+  - 700 wagons
+  bg: ink
+  layers:
+  - type: photo
+    query: BHP Iron Ore train 2001 aerial full
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: 7 KM TRAIN
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - KM
+  - type: stamp
+    text: 700 WAGONS
+    at: 700 wagons
+    y: 1100
+    rotate: -8
+- say: Australia set this world record in 2001, for carrying iron ore.
+  highlight:
+  - Australia
+  - world record
+  bg: paper
+  layers:
+  - type: photo
+    query: BHP Iron Ore train landscape 2001
+    frame: print
+    treatment: color
+  - type: kicker
+    text: AUSTRALIA · 2001
+    y: 560
+- say: Eight powerful locomotives pulled 682 loaded wagons.
+  highlight:
+  - Eight powerful locomotives
+  - 682 loaded wagons
+  bg: ink
+  layers:
+  - type: photo
+    query: General Electric AC6000CW locomotive
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 682
+    suffix: ' WAGONS'
+    label: LOADED
+    plain: false
+    y: 1100
+- say: It moved 82,000 tonnes of iron ore! That's a huge industrial feat.
+  highlight:
+  - 82,000 tonnes
+  - industrial feat
+  bg: red
+  layers:
+  - type: photo
+    query: iron ore mine stockpile
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 82000
+    suffix: ' TONNES'
+    label: IRON ORE
+    plain: false
+    y: 1100
+- say: India has 'Super Vasuki', a 3.5 km long freight train. Should we aim higher?
+  highlight:
+  - Super Vasuki
+  - aim higher
+  bg: paper
+  layers:
+  - type: photo
+    query: Super Vasuki train India long
+    frame: strip
+    treatment: color
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: What do you think? India's 'Super Vasuki' is 3.5 km long, but should we aim for the world record of nearly 7
+  km? Comment Yes or No!
+hashtags:
+- '#LongestTrain'
+- '#WorldRecord'
+- '#IndianRailways'
+- '#Freight'
+- '#FactVideo'
+- '#Engineering'
+sources:
+- 'Guinness World Records: Longest freight train'
+- 'Wikipedia: Longest trains'
+- 'YouTube: World Record breaking train (2001) - BHP Iron Ore'
+- 'NDTV: All about Super Vasuki - India''s longest & heaviest freight train'
+topic: The World's Longest Train
