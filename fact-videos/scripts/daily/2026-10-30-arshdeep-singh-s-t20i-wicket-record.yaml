@@ -1,0 +1,117 @@
+channel: factloop
+kicker: CRICKET · 2026
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Arshdeep Singh: Arsh-deep Sing
+  Bhuvneshwar Kumar: Bhoov-nesh-war Koo-mar
+  Josh Little: Josh Lit-tle
+  Wanindu Hasaranga: Wa-nin-doo Ha-sa-ran-ga
+scenes:
+- say: An Indian bowler is one wicket from a world record. Guess who?
+  highlight:
+  - one wicket
+  - world record
+  bg: ink
+  layers:
+  - type: photo
+    query: Arshdeep Singh bowling action full frame
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: headline
+    text: ONE WICKET AWAY
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - ONE WICKET
+  - type: stamp
+    text: GUESS WHO?
+    at: Guess who
+    y: 1080
+    rotate: -8
+- say: It's Arshdeep Singh! He already broke Bhuvneshwar Kumar's Indian record of 37 wickets.
+  highlight:
+  - Arshdeep Singh
+  - Indian record
+  bg: paper
+  layers:
+  - type: photo
+    query: Arshdeep Singh celebrating a wicket 2026
+    frame: print
+    treatment: color
+  - type: counter
+    value: 38
+    suffix: ' wickets'
+    label: Arshdeep's Record
+    y: 900
+    plain: false
+  - type: ghost
+    text: Bhuvi 37
+    y: 1150
+- say: The global record for T20I wickets in a year is 39, held by Ireland’s Josh Little.
+  highlight:
+  - global record
+  - '39'
+  bg: ink
+  layers:
+  - type: photo
+    query: Josh Little bowling action cricket 2022
+    frame: print
+    treatment: color
+  - type: counter
+    value: 39
+    suffix: ' wickets'
+    label: Josh Little's Record
+    y: 950
+    plain: false
+- say: Arshdeep is now tied with Hasaranga at 38. Just one wicket from Little’s global record.
+  highlight:
+  - tied
+  - one wicket
+  bg: red
+  layers:
+  - type: photo
+    query: Arshdeep Singh intense look close up
+    frame: full
+    treatment: duotone
+    dim: 0.25
+  - type: chips
+    items:
+    - 'Arshdeep: 38'
+    - 'Hasaranga: 38'
+    - 'Little: 39'
+    y: 900
+- say: Will Arshdeep Singh break this world record in the ongoing series? Yes or no?
+  highlight: []
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 800
+post_caption: 'Arshdeep Singh is on the cusp of making history in T20I cricket! Having already set a new Indian record, he''s
+  just one wicket away from a major world record. Do you think he''ll achieve this feat in the ongoing series? Let us know
+  in the comments: Yes or No!'
+hashtags:
+- '#ArshdeepSingh'
+- '#CricketFacts'
+- '#T20ICricket'
+- '#IndianCricketTeam'
+- '#WorldRecord'
+- '#SportsFacts'
+- '#Cricket'
+sources:
+- The Statesman (Oct 24 2026)
+- Cricket Addictor (Oct 24 2026)
+- ANI (Oct 24 2026)
+- News24 (Oct 27 2026)
+- India.com (Oct 29 2026)
+topic: Arshdeep Singh's T20I Wicket Record
