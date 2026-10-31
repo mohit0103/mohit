@@ -1,0 +1,125 @@
+channel: factloop
+kicker: GOLD · ECONOMICS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your gold's price? Decided thousands of kilometers away, not in India.
+  highlight:
+  - gold's price
+  - thousands of kilometers away
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian woman wearing gold necklace close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: GOLD'S REAL BOSS
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - BOSS
+  - type: stamp
+    text: AWAY
+    at: away
+    y: 1100
+    rotate: 8
+- say: India consumes almost 800 tonnes of gold yearly. It's a huge national obsession.
+  highlight:
+  - 800 tonnes
+  - obsession
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian wedding gold jewelry shop interior
+    frame: strip
+    treatment: color
+  - type: counter
+    value: 800
+    suffix: ' tonnes'
+    label: India's Yearly Demand
+    y: 800
+- say: 'But here''s the twist: India produces barely 2 tonnes. We import almost everything.'
+  highlight:
+  - barely 2 tonnes
+  - import almost everything
+  bg: red
+  layers:
+  - type: photo
+    query: gold bars being loaded into cargo container
+    frame: print
+    treatment: bw
+  - type: bars
+    items:
+    - label: Production
+      value: 1
+    - label: Imports
+      value: 99
+    unit: '%'
+    y: 800
+- say: Global factors, like US interest rates and dollar strength, set international gold rates.
+  highlight:
+  - Global factors
+  - US interest rates
+  bg: ink
+  layers:
+  - type: photo
+    query: New York Stock Exchange building exterior, Wall Street
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: icon
+    name: chart-line
+    label: Global Market
+    size: 300
+    y: 800
+- say: So, your necklace's value moves with markets far beyond India's borders.
+  highlight:
+  - value moves
+  - far beyond India
+  bg: paper
+  layers:
+  - type: photo
+    query: hand holding gold coin
+    frame: print
+    treatment: color
+  - type: icon
+    name: trending-up
+    label: Value Fluctuation
+    size: 300
+    y: 800
+- say: Should India reduce its reliance on gold imports? Yes or no?
+  highlight:
+  - gold imports
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: India's love for gold is legendary, but its true price is set by a complex global dance. Did you know international
+  markets impact your gold so directly? Share your thoughts below! 👇
+hashtags:
+- '#gold'
+- '#indiangold'
+- '#economy'
+- '#globalmarket'
+- '#facts'
+- '#didyouknow'
+- '#finance'
+- '#goldprice'
+sources:
+- TradingView
+- Jar App
+- IBEF
+- IIFL Finance
+topic: India's Gold Obsession
