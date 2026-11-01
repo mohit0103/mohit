@@ -1,0 +1,116 @@
+channel: factloop
+kicker: INDIA · INFRASTRUCTURE COSTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Kanyakumari: Kun-yaa-koo-ma-ree
+  Panvel: Pun-vail
+scenes:
+- say: Kerala spent over ₹5,500 Crore. Just for this highway.
+  highlight:
+  - ₹5,500 Crore
+  bg: ink
+  layers:
+  - type: photo
+    query: NH66 construction Kerala
+    frame: full
+    treatment: dim
+    dim: 0.25
+  - type: stamp
+    text: ₹5,500 CRORE
+    at: ₹5,500 Crore
+    y: 1080
+    rotate: -8
+- say: That's for land on NH66, linking Panvel to Kanyakumari.
+  highlight:
+  - NH66
+  - Panvel
+  bg: paper
+  layers:
+  - type: photo
+    query: map of National Highway 66 India
+    frame: full
+    treatment: bw
+    dim: 0.15
+  - type: kicker
+    text: NATIONAL HIGHWAY 66
+    y: 560
+- say: Overall, the 1,090 km upgrade costs over ₹64,500 Crore.
+  highlight:
+  - ₹64,500 Crore
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian highway construction activity
+    frame: strip
+    treatment: color
+    y: 800
+  - type: counter
+    value: 64500
+    suffix: ' Crore'
+    label: project cost
+    plain: false
+    y: 580
+- say: A 39 km stretch in Kerala alone cost ₹1,700 Crore.
+  highlight:
+  - ₹1,700 Crore
+  bg: red
+  layers:
+  - type: photo
+    query: longest single pillar six lane bridge India
+    frame: full
+    treatment: duotone
+    y: 900
+  - type: headline
+    text: ₹1,700 CRORE
+    font: display
+    size: 140
+    y: 680
+    accent:
+    - ₹1,700 CRORE
+- say: Such massive costs sparked debates on project quality and contracts.
+  highlight:
+  - quality
+  - contracts
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian parliament session
+    frame: print
+    treatment: bw
+    y: 800
+  - type: icon
+    name: gavel
+    label: debate
+    size: 300
+    y: 580
+- say: Should states fund national highway land acquisition?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: 'The National Highway 66 project involves staggering costs, with states like Kerala contributing thousands of
+  crores for land acquisition. Is this a fair model for national infrastructure development? Tell us your thoughts! #NH66
+  #Infrastructure #IndiaDevelopment'
+hashtags:
+- '#NH66'
+- '#Infrastructure'
+- '#IndiaDevelopment'
+- '#FactVideo'
+- '#IndianHighways'
+sources:
+- National Highway 66 length states
+- National Highway 66 cost of construction
+- Kerala's spending for NH land acquisition
+- NH-66 Development Project Details
+- PM Modi Inaugurates Rs 17.04 Bn NH-66 Stretch in Kerala
+- Completion of NH 66 Six-Laning Project Expected by End of 2025
+- Panel flags huge gap in NHAI's sanctioned cost, awarded rate for NH-66
+topic: National Highway 66 Funding
