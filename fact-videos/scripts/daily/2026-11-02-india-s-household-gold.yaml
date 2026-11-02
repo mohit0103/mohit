@@ -1,0 +1,132 @@
+channel: factloop
+kicker: INDIA · HIDDEN WEALTH
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: 'India''s private gold: more than top 5 nations'' central banks... combined!'
+  highlight:
+  - private gold
+  - combined
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian traditional gold jewelry
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: HIDDEN GOLD
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: COMBINED
+    at: combined
+    y: 1080
+    rotate: -8
+- say: This private stash is almost 25,000 tonnes!
+  highlight:
+  - 25,000 tonnes
+  bg: paper
+  layers:
+  - type: photo
+    query: stack of gold bars
+    frame: print
+    treatment: color
+  - type: counter
+    value: 25000
+    suffix: ' tonnes'
+    label: PRIVATE STASH
+    plain: false
+    y: 950
+- say: That's more gold than USA, Germany, Italy, France, and Russia's official reserves... combined!
+  highlight:
+  - official reserves
+  - combined
+  bg: ink
+  layers:
+  - type: photo
+    query: bank vault gold bars
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: chips
+    items:
+    - USA
+    - Germany
+    - Italy
+    - France
+    - Russia
+    y: 800
+  - type: icon
+    name: trending-up
+    label: HIGHER
+    size: 200
+    y: 1050
+- say: For Indians, gold isn't just an asset; it's for weddings, festivals, and family savings.
+  highlight:
+  - weddings
+  - savings
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian wedding bride wearing gold jewelry
+    frame: strip
+    treatment: color
+  - type: icon
+    name: currency-rupee
+    label: CULTURAL TIES
+    size: 200
+    y: 1000
+- say: 'But this gold obsession drives massive imports: almost ₹6 lakh crore last year!'
+  highlight:
+  - massive imports
+  - ₹6 lakh crore
+  bg: red
+  layers:
+  - type: photo
+    query: cargo ship loading containers at Indian port
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: IMPORTS
+    at: imports
+    y: 950
+    rotate: 8
+  - type: icon
+    name: trending-down
+    label: BALANCE WOES
+    size: 250
+    y: 600
+- say: Should the government encourage converting household gold into official reserves? Yes or no?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: 'Did you know Indian households hold such a massive amount of gold? Is it a cultural treasure or an economic
+  challenge? Should the government step in? Let us know: Yes or no?'
+hashtags:
+- '#IndiaFacts'
+- '#Gold'
+- '#IndianCulture'
+- '#Economy'
+- '#HiddenWealth'
+- '#FactVideo'
+sources:
+- IDNFinancials
+- Reddit
+- Medium
+- Assocham
+- BFSI News
+- BigGo Finance
+topic: India's Household Gold
