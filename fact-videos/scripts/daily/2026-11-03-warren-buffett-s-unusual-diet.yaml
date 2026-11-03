@@ -1,0 +1,127 @@
+channel: factloop
+kicker: DIET · BILLIONAIRE
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Buffett: Buff-itt
+scenes:
+- say: A 93-year-old billionaire. Hasn't touched water in 50 years.
+  highlight:
+  - 93-year-old
+  - water
+  bg: ink
+  layers:
+  - type: photo
+    query: Warren Buffett portrait smiling older
+    frame: full
+    treatment: color
+  - type: headline
+    text: NO WATER?
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - WATER
+  - type: stamp
+    text: 50 YEARS
+    at: 50 years
+    y: 1080
+    rotate: -8
+- say: He's Warren Buffett, investing legend, worth over 10 lakh crore.
+  highlight:
+  - Warren Buffett
+  - 10 lakh crore
+  bg: paper
+  layers:
+  - type: photo
+    query: Warren Buffett speaking at Berkshire Hathaway meeting
+    frame: strip
+    treatment: color
+    y: 700
+  - type: counter
+    value: 10
+    suffix: ' LAKH CR'
+    label: NET WORTH
+    plain: false
+    y: 1100
+- say: His secret? Five cans of Coca-Cola, plus Cherry Coke and Pepsi.
+  highlight:
+  - Five cans
+  - Coca-Cola
+  bg: ink
+  layers:
+  - type: photo
+    query: Warren Buffett drinking Coca-Cola can
+    frame: print
+    treatment: color
+    y: 700
+  - type: counter
+    value: 5
+    suffix: ' CANS'
+    label: DAILY COKE
+    plain: false
+    y: 1100
+- say: Breakfast? McDonald's. Snacks? Hot dogs, ice cream, chocolates. Pure sugar.
+  highlight:
+  - McDonald's
+  - ice cream
+  bg: red
+  layers:
+  - type: photo
+    query: McDonald's breakfast meal and coffee
+    frame: full
+    treatment: duotone
+  - type: chips
+    items:
+    - MCDONALD'S
+    - ICE CREAM
+    - HOT DOGS
+    y: 1000
+- say: His logic? Eat like a six-year-old. They live longest, he argues.
+  highlight:
+  - six-year-old
+  - live longest
+  bg: paper
+  layers:
+  - type: photo
+    query: Old man smiling and eating a burger
+    frame: strip
+    treatment: color
+    y: 700
+  - type: quote
+    text: Eat like a six-year-old. They live longest.
+    by: Warren Buffett
+    highlight:
+    - six-year-old
+    y: 1100
+- say: So, should we trust Buffett's unusual diet, or stick to science? Comment now!
+  highlight:
+  - Buffett's unusual diet
+  - stick to science
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: brain
+      label: BUFFETT
+    right:
+      icon: flask
+      label: SCIENCE
+    y: 900
+post_caption: Warren Buffett's diet is certainly unique! Do you think his approach is genius, or just lucky? Share your thoughts
+  below! Yes or no?
+hashtags:
+- '#WarrenBuffett'
+- '#BillionaireHabits'
+- '#UnusualFacts'
+- '#DietSecrets'
+- '#IndianAudience'
+sources:
+- Pulse Nigeria
+- Rediff
+- The Economic Times
+- Business Insider
+- IndiaWest
+- The Indian Express
+topic: Warren Buffett's Unusual Diet
