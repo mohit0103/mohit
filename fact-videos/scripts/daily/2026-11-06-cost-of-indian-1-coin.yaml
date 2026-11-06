@@ -1,0 +1,109 @@
+channel: factloop
+kicker: INDIA · ECONOMICS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This ₹1 coin actually costs more than ₹1 to make.
+  highlight:
+  - costs
+  - more
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: headline
+    text: COSTS MORE
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: SHOCKING
+    at: more
+    y: 1080
+    rotate: 5
+- say: India's government loses money on every single ₹1 coin it mints.
+  highlight:
+  - loses
+  - money
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian government mint building exterior
+    frame: full
+    treatment: bw
+    dim: 0.25
+  - type: icon
+    name: currency-rupee
+    label: LOSS
+    size: 300
+    y: 900
+- say: 'Shocking: Each ₹1 coin costs about ₹1.11 to mint.'
+  highlight:
+  - ₹1.11
+  - mint
+  bg: ink
+  layers:
+  - type: photo
+    query: Stack of Indian one rupee coins
+    frame: print
+    treatment: color
+    dim: 0.15
+  - type: counter
+    value: 1.11
+    suffix: ' ₹'
+    label: to make
+    y: 800
+    plain: false
+- say: Global metal prices for steel and copper have spiked. That's why.
+  highlight:
+  - metal
+  - spiked
+  bg: red
+  layers:
+  - type: photo
+    query: Raw steel and copper ingots
+    frame: full
+    treatment: duotone
+    dim: 0.25
+  - type: icon
+    name: trending-up
+    label: COSTS UP
+    size: 300
+    y: 900
+- say: Higher coins profit. Should India keep minting these losing ₹1 coins?
+  highlight:
+  - keep minting
+  - losing
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: The humble ₹1 coin costs more to make than its value! 🤯 Should India continue minting coins that are produced
+  at a loss? Yes or No!
+hashtags:
+- '#IndianRupee'
+- '#FactVideo'
+- '#IndianCoins'
+- '#RBI'
+- '#Economics'
+- '#ViralFacts'
+sources:
+- According to FY24 data, minting a ₹1 coin costs ₹1.11.
+- An RTI query filed in 2018 stated it takes ₹1.11 to mint a single ₹1 coin.
+- The cost of base metals like copper, nickel, and steel has surged globally, impacting India's coin minting expenditure.
+- Higher denomination coins like ₹2, ₹5, and ₹10 generally cost less than their face value to produce.
+- RBI continues ₹1 coin production to support rural economies, daily wage earners, and retail-level transactions, considering
+  their long lifespan makes them cost-efficient in the long run.
+topic: Cost of Indian ₹1 Coin
