@@ -1,0 +1,116 @@
+channel: factloop
+kicker: TELECOM · INDIA · 2024
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  TRAI: Try
+  Anubhav: Uh-noo-bhav
+scenes:
+- say: Your network claims 5G, but this app proves it's much slower.
+  highlight:
+  - slower
+  bg: ink
+  layers:
+  - type: photo
+    query: person frustrated slow mobile internet speed
+    frame: full
+    treatment: dim
+  - type: stamp
+    text: SLOWER
+    at: slower
+    y: 1080
+    rotate: -8
+- say: TRAI just launched 'Network Anubhav', India's new dashboard.
+  highlight:
+  - TRAI
+  - Anubhav
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian telecom office building exterior
+    frame: full
+    treatment: dim
+  - type: icon
+    name: chart-line
+    label: DASHBOARD
+    size: 300
+    y: 800
+- say: It collects REAL user data from apps like MySpeed and MyCall.
+  highlight:
+  - REAL user data
+  bg: ink
+  layers:
+  - type: photo
+    query: smartphone screen showing network speed test app UI
+    frame: full
+    treatment: dim
+  - type: icon
+    name: device-mobile
+    label: MY SPEED
+    size: 300
+    y: 800
+- say: Now you can compare operator speeds in your specific area.
+  highlight:
+  - compare
+  bg: paper
+  layers:
+  - type: photo
+    query: people comparing phone maps on street India
+    frame: full
+    treatment: dim
+  - type: bars
+    items:
+    - label: Op. A
+      value: 40
+    - label: Op. B
+      value: 25
+    unit: ' Mbps'
+    y: 900
+- say: But does simply showing bad service make companies actually fix it?
+  highlight:
+  - fix it
+  bg: red
+  layers:
+  - type: photo
+    query: broken mobile tower rural India
+    frame: full
+    treatment: dim
+  - type: icon
+    name: alert-triangle
+    label: PROBLEM?
+    size: 300
+    y: 800
+- say: Should companies face bigger penalties for consistently poor network quality?
+  highlight:
+  - penalties
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: 'TRAI''s new Network Anubhav platform exposes real mobile network performance. Do you think companies will improve
+  their service because of this, or is it just data without action? Share your thoughts below! #YesOrNo'
+hashtags:
+- '#facts'
+- '#telecom'
+- '#india'
+- '#networkquality'
+- '#TRAI'
+- '#NetworkAnubhav'
+- '#mobileinternet'
+sources:
+- 'Anubhav: TRAI launches platform to check internet speeds of different service providers'
+- TRAI launches Network Anubhav platform to map network performance, offer online DND services - DD India
+- 'Network Anubhav Platform: TRAI''s Telecom Dashboard 2026 - INSIGHTS IAS'
+- TRAI launches Network Anubhav Platform to help users check mobile network quality; know how it works - The New Indian Express
+- TRAI Portal | Telecom Regulatory Authority of India | Government of India
+- TRAI's new Network Anubhav platform to map real-world network speeds, call quality | Mint
+- India launches centralised geospatial platform to monitor mobile, broadband network performance - Telecompaper
+- 'Govt launches Network Anubhav: What it is and how it helps check internet speed, track complaints and report spam - Digit'
+topic: TRAI's Network Anubhav Platform
