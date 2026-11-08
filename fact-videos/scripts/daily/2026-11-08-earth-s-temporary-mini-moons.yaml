@@ -1,0 +1,115 @@
+channel: factloop
+kicker: SPACE · NEW DISCOVERY
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Earth has a NEW moon, but it's only staying till Christmas!
+  highlight:
+  - NEW moon
+  - Christmas
+  bg: ink
+  layers:
+  - type: photo
+    query: earth and moon from space
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: NEW MOON?
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - moon
+  - type: stamp
+    text: CHRISTMAS
+    at: Christmas
+    y: 1080
+    rotate: -8
+- say: It's 2026 QQ8, a space rock, just one metre across.
+  highlight:
+  - 2026 QQ8
+  - one metre
+  bg: paper
+  layers:
+  - type: photo
+    query: asteroid in space art
+    frame: print
+    treatment: bw
+  - type: kicker
+    text: ASTEROID · 2026
+    y: 560
+  - type: counter
+    value: 1
+    suffix: ' metre'
+    label: SIZE
+    plain: false
+    y: 1080
+- say: This 'mini-moon' is tiny, but Earth has captured many such rocks.
+  highlight:
+  - mini-moon
+  - many
+  bg: red
+  layers:
+  - type: photo
+    query: earth with multiple small objects orbiting space art
+    frame: full
+    treatment: duotone
+    dim: 0.25
+  - type: icon
+    name: earth
+    label: MINI-MOONS
+    size: 300
+    y: 800
+- say: They orbit Earth for months or a few years, then just drift away.
+  highlight:
+  - months
+  - drift away
+  bg: ink
+  layers:
+  - type: photo
+    query: asteroid leaving earth orbit art
+    frame: strip
+    treatment: color
+  - type: chips
+    items:
+    - MONTHS
+    - YEARS
+    y: 1080
+- say: Should we try to study these mini-moons up close? Yes or no?
+  highlight: []
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: Earth has a new temporary mini-moon, but it's only here till Christmas! 😱 Our planet often captures these small
+  space rocks. Should we try to study them up close before they leave? Tell us Yes or No! 👇
+hashtags:
+- '#spacemysteries'
+- '#minimoon'
+- '#earthfacts'
+- '#asteroid'
+- '#sciencefacts'
+- '#didyouknow'
+sources:
+- 'Earth has a new mini-moon: a 1-metre space rock named 2026 QQ8 was pulled into orbit around our planet in April, was spotted
+  in August, and will stay until about December before drifting off on its own path in 2027.'
+- Earth has acquired a temporary companion in space, but it will not stay for long. A small space rock named 2026 QQ8 was
+  pulled into Earth's gravitational grip in April 2026, remained unnoticed for months and was first spotted in August.
+- The object is estimated to be about 1 metre across, although some estimates put its diameter at 2 metres.
+- Earth has caught itself a new mini-moon, and it is sticking around for Christmas. The space rock, designated 2026 QQ8, was
+  first observed in August 2026 after entering orbit around Earth in April 2026.
+- The mini-moon will remain in the thrall of Earth's gravity through December before breaking away in 2027.
+- This is far from the first time Earth has snagged itself a mini-moon, more accurately called a temporary satellite.
+- Astronomers have previously identified objects such as 2020 CD3 and 2024 PT5, which spent limited periods in Earth's gravitational
+  neighbourhood before moving away.
+topic: Earth's Temporary Mini-Moons
