@@ -1,0 +1,136 @@
+channel: factloop
+kicker: INDIA · CURRENCY FACTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: A ₹1 coin costs more than ₹1. Why are we still making them?
+  highlight:
+  - ₹1 coin
+  - more than ₹1
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: MORE
+    at: more
+    y: 1080
+    rotate: -8
+- say: 'An RTI in 2018 revealed: each ₹1 coin costs about ₹1.11 to mint.'
+  highlight:
+  - ₹1.11
+  bg: paper
+  layers:
+  - type: photo
+    query: multiple Indian one rupee coins stack
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 1.11
+    suffix: ₹
+    label: Mint Cost
+    y: 800
+- say: 'But here''s the twist: most other coins cost LESS than their value!'
+  highlight:
+  - twist
+  - LESS
+  bg: red
+  layers:
+  - type: photo
+    query: mixed Indian coins five ten two rupee
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: LESS
+    at: LESS
+    y: 800
+    rotate: 5
+- say: For instance, a ₹5 coin costs ₹3.69. A ₹10 coin costs ₹5.54.
+  highlight:
+  - ₹3.69
+  - ₹5.54
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian five rupee coin, Indian ten rupee coin
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: bars
+    items:
+    - label: ₹5 Coin
+      value: 3.69
+    - label: ₹10 Coin
+      value: 5.54
+    unit: ₹
+    y: 800
+- say: Government keeps minting them because coins last years, unlike fragile notes.
+  highlight:
+  - last years
+  - fragile notes
+  bg: paper
+  layers:
+  - type: photo
+    query: worn Indian currency notes and durable Indian coins
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: icon
+    name: hourglass
+    label: Longer Life
+    size: 300
+    y: 800
+- say: This durability saves lakhs in replacement costs, proving efficient long-term.
+  highlight:
+  - lakhs
+  - saves
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian Government Mint machine currency production
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: Cost Savings
+    size: 300
+    y: 800
+- say: Should India keep minting coins that cost more than their value?
+  highlight:
+  - keep minting
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: Did you know your ₹1 coin costs more to make than its value? But there's a good reason why! What do you think,
+  should India keep minting these coins? Yes or no?
+hashtags:
+- '#IndianFacts'
+- '#MoneyFacts'
+- '#IndianEconomy'
+- '#Currency'
+- '#RBI'
+sources:
+- One rupee coin costs more than its value to produce | Business News - Hindustan Times
+- Govt spends Rs 1.11 to mint a Re 1 coin - India Today
+- How much does the government spend to mint coins and print notes in India?
+- RTI Response Reveals High Minting Costs of Indian Coins | Todayq News on Binance Square
+- How much does the Govt spend to mint One-Rupee coin? Check here - India TV News
+- India Spends More Than ₹1 to Make a ₹1 Coin! Here's Why - YouTube
+- What Is the Cost of Minting 1 Rupee Coin? - Angel One
+topic: Cost of Indian Coins
