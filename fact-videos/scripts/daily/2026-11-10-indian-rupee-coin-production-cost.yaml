@@ -1,0 +1,121 @@
+channel: factloop
+kicker: INDIA · CURRENCY FACT
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: This one-rupee coin costs *more* than one rupee to make.
+  highlight:
+  - more
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian one rupee coin close up
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: ₹1 COIN SECRET
+    font: display
+    size: 140
+    y: 700
+    accent:
+    - SECRET
+  - type: stamp
+    text: LOSS
+    at: more
+    y: 1080
+    rotate: -8
+- say: Yes, minting each ₹1 coin costs about ₹1.11!
+  highlight:
+  - ₹1.11
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian coin minting factory production line
+    frame: print
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 1.11
+    suffix: ₹
+    label: MINTING COST
+    y: 900
+- say: That's 11 paise lost for every coin the government makes.
+  highlight:
+  - lost
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian rupee coins falling
+    frame: strip
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: trending-down
+    label: 11 PAISE LOSS
+    size: 300
+    y: 800
+- say: But coins last over 20 years, far longer than paper notes.
+  highlight:
+  - 20 years
+  bg: paper
+  layers:
+  - type: photo
+    query: worn out Indian banknote vs shiny Indian rupee coin
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: icon
+    name: calendar
+    label: 20+ YEAR LIFESPAN
+    size: 300
+    y: 800
+- say: They are vital for small transactions, especially in rural India.
+  highlight:
+  - vital
+  - rural India
+  bg: red
+  layers:
+  - type: photo
+    query: Indian rural market vendor giving change
+    frame: strip
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: RURAL TRADE
+    size: 300
+    y: 800
+- say: Should we continue minting ₹1 coins despite the loss? Yes or no?
+  highlight:
+  - continue
+  - loss
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: Did you know your ₹1 coin costs more to make than its value? It's a fascinating economic reality! Should India
+  continue minting them? Yes or no, tell us below!
+hashtags:
+- '#IndianRupee'
+- '#CurrencyFacts'
+- '#EconomicFacts'
+- '#India'
+- '#RBI'
+- '#CoinMaking'
+sources:
+- According to FY24 data, minting a ₹1 coin costs ₹1.11, higher than its actual value.
+- The average cost to manufacture a one-rupee coin is Rs 1.11, more than its own worth, as per an RTI response from the RBI
+  in 2018.
+- Coins, unlike notes, can last 20+ years, making them more cost-efficient in the long run despite initial higher production
+  costs.
+- RBI continues ₹1 coin production to support rural economies, daily wage earners and retail-level transactions.
+topic: Indian Rupee Coin Production Cost
