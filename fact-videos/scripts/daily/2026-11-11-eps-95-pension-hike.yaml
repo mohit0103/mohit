@@ -1,0 +1,119 @@
+channel: factloop
+kicker: NOVEMBER 2023 · PENSION HIKE
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: ₹1,000 pension. That's ALL many get. But it could TRIPLE!
+  highlight:
+  - TRIPLE
+  bg: ink
+  layers:
+  - type: photo
+    query: elderly Indian couple smiling portrait
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: TRIPLE
+    at: TRIPLE
+    y: 1080
+    rotate: -8
+- say: For over a decade, millions got just ₹1,000/month from EPS-95.
+  highlight:
+  - ₹1,000
+  bg: paper
+  layers:
+  - type: photo
+    query: old Indian pension document
+    frame: strip
+    treatment: bw
+    dim: 0.15
+  - type: counter
+    value: 1000
+    suffix: ' ₹'
+    label: MINIMUM PENSION
+    y: 1000
+- say: ₹1,000 barely covers anything now. Rising costs demand a raise!
+  highlight:
+  - Rising costs
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian essential goods market stall
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: LIVING COST ↑
+    font: display
+    size: 120
+    y: 800
+    accent:
+    - ↑
+- say: Government might hike minimum pension to ₹3,000. Big decision coming!
+  highlight:
+  - ₹3,000
+  bg: paper
+  layers:
+  - type: photo
+    query: EPFO office building India
+    frame: print
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 3000
+    suffix: ' ₹'
+    label: PROPOSED MINIMUM
+    y: 1000
+- say: But ₹3,000 isn't official. The pension fund faces a huge deficit.
+  highlight:
+  - deficit
+  bg: red
+  layers:
+  - type: photo
+    query: financial ledger red ink
+    frame: full
+    treatment: duotone
+    dim: 0.3
+  - type: icon
+    name: alert-triangle
+    label: FUND DEFICIT
+    size: 300
+    y: 900
+- say: Should the government prioritize pensioners' needs, or the fund's stability?
+  highlight:
+  - prioritize
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: heart
+      label: PENSIONERS
+    right:
+      icon: building-bank
+      label: FUND STABILITY
+      accent: true
+    y: 900
+post_caption: 'The minimum EPS-95 pension might triple soon! What''s your take? Should the government increase it despite
+  financial challenges? Yes or no, share your thoughts! #pension #EPFO'
+hashtags:
+- '#pension'
+- '#EPFO'
+- '#IndiaNews'
+- '#Retirement'
+- '#FinancialFacts'
+- '#IndianEconomy'
+sources:
+- 'EPFO Minimum Pension Hike 2026: Latest EPS-95 Update, Eligibility and Calculation'
+- 'EPF Minimum Pension: Eligibility & Calculation Guide - Pensionbazaar'
+- EPFO may discuss hike in minimum pension to Rs 3000 - Tripura Times
+- 'EPFO''s November 19 meeting to be held in New Delhi: Can EPFO increase minimum EPS pension from Rs 1,000? - The Economic
+  Times'
+- 'EPS pension hike: EPFO shifts venue of November 19 CBT meeting to Delhi - Mint'
+- EPFO may consider hike in minimum monthly pension at November 19 meeting
+- 'Good news for private sector employees and pensioners: EPFO may hike minimum monthly pension by 3 times, check what could
+  be decided on Nov 19 - News24'
+- EPFO Pension Hike To ₹3,000 On Cards, November 19 Meeting May Bring Big Relief For Retirees
+topic: EPS-95 Pension Hike
