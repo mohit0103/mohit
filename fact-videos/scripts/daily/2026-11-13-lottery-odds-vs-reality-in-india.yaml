@@ -1,0 +1,132 @@
+channel: factloop
+kicker: NOV 2026 · LOTTERY ODDS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Lightning strike? More likely than winning a lottery crore.
+  highlight:
+  - Lightning
+  - crore
+  bg: ink
+  layers:
+  - type: photo
+    query: lightning bolt striking ground
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: LOTTERY VS LIGHTNING
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - LIGHTNING
+    marker: LIGHTNING
+  - type: stamp
+    text: LIKELY
+    at: likely
+    y: 1080
+    rotate: -8
+- say: Millions in India spend ₹10 or ₹20 daily, dreaming of winning crores.
+  highlight:
+  - Millions
+  - crores
+  bg: paper
+  layers:
+  - type: photo
+    query: hands holding Indian rupees currency
+    frame: full
+    treatment: color
+    dim: 0.15
+  - type: counter
+    value: 20
+    suffix: ' ₹'
+    label: DAILY SPEND
+    plain: false
+    y: 800
+- say: Real jackpot odds? Usually 1 in 300 million!
+  highlight:
+  - '300'
+  - million
+  bg: ink
+  layers:
+  - type: photo
+    query: lottery drawing machine with number balls
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: 300M
+    at: million
+    y: 1080
+    rotate: 8
+- say: States sell tickets worth thousands of crores. Yet, net profit for public services is tiny.
+  highlight:
+  - thousands
+  - crores
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian state government building or public services building facade
+    frame: full
+    treatment: color
+    dim: 0.15
+  - type: counter
+    value: 1000
+    suffix: ' Cr'
+    label: STATE REVENUE
+    plain: false
+    y: 800
+- say: Your brain plays tricks, making you over-estimate these tiny chances of a big win.
+  highlight:
+  - brain
+  - tricks
+  bg: red
+  layers:
+  - type: photo
+    query: abstract human brain glowing neural network
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: TRICKS
+    at: tricks
+    y: 1080
+    rotate: -8
+- say: Should states allow lotteries, given incredibly low odds vs. public funding?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: Many play the lottery hoping for a life-changing win. But are the odds worth it, even if states use the revenue
+  for public good? Should lotteries be allowed? Yes or No?
+hashtags:
+- '#LotteryFacts'
+- '#IndiaLottery'
+- '#GamblingAwareness'
+- '#Curiosity'
+- '#DidYouKnow'
+sources:
+- Lottery industry earns Nagaland Rs 8 crore a year | Guwahati News - The Times of India
+- 'Lottery Revenue Constitutes Only Half a Percent of Kerala''s State Budget: FM Clarifies'
+- Kerala Lotteries Contribute ₹5,658 Crore Surplus To State Coffers In Five Years
+- Lottery hopes fading? Kerala govt battles to cushion 40% GST blow
+- Liquor & lottery fetch 25% of Kerala revenue - The Times of India
+- Did heavy rains add to Kerala lottery's revenue challenges? Key CAG findings explained
+- Nagaland State Lotteries Overview | PDF - Scribd
+- NAGALAND STATE LOTTERIES
+- Lottery-in-India-Report.pdf
+- state lotteries earns revenue of Rs. 8 crore per year | MorungExpress
+- 'Nagaland State Lotteries: Huge profits, miniscule revenue | MorungExpress'
+- The story of the lucky number... as 13 states allow jackpot run - The Times of India
+- Himachal revives state lottery after 27 years and targets ₹50 crore a year
+topic: Lottery odds vs. reality in India
