@@ -1,0 +1,119 @@
+channel: factloop
+kicker: CHINA · HOUSING CRISIS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: China built 50 million homes... for no one.
+  highlight:
+  - no one
+  bg: ink
+  layers:
+  - type: photo
+    query: empty modern Chinese city skyline night
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: headline
+    text: GHOST CITIES
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - GHOST
+  - type: stamp
+    text: EMPTY
+    at: no one
+    y: 1100
+    rotate: -8
+- say: This economic giant has over 50 million empty homes across its 'ghost cities'.
+  highlight:
+  - 50 million empty homes
+  bg: paper
+  layers:
+  - type: photo
+    query: rows of empty high-rise apartment buildings China aerial view
+    frame: print
+    treatment: color
+  - type: counter
+    value: 50
+    suffix: ' million'
+    label: empty homes
+    y: 1080
+- say: Many were bought purely as investments, not for people to actually live in.
+  highlight:
+  - investments
+  bg: red
+  layers:
+  - type: photo
+    query: modern luxury apartment building exterior China
+    frame: print
+    treatment: color
+  - type: stamp
+    text: INVESTMENT
+    at: investments
+    y: 1080
+    rotate: -5
+- say: Thousands still pay EMIs for apartments that were never even finished.
+  highlight:
+  - never even finished
+  bg: ink
+  layers:
+  - type: photo
+    query: unfinished construction site high-rise buildings China dusk
+    frame: strip
+    treatment: bw
+  - type: icon
+    name: currency-rupee
+    label: EMI payments
+    size: 300
+    y: 1080
+    at: pay
+- say: This while millions still need affordable housing. A massive market mismatch.
+  highlight:
+  - mismatch
+  bg: paper
+  layers:
+  - type: photo
+    query: dense crowded residential area China
+    frame: full
+    treatment: color
+    dim: 0.15
+  - type: icon
+    name: alert-triangle
+    label: Mismatch
+    size: 300
+    y: 800
+- say: Should governments tightly control housing to prevent such crises? Yes or No?
+  highlight:
+  - Yes or No?
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: Can you imagine paying for a home that was never built? China's property paradox is mind-boggling. Should governments
+  step in to prevent such housing crises? Tell us, Yes or No! 👇
+hashtags:
+- '#ChinaFacts'
+- '#GhostCities'
+- '#RealEstate'
+- '#HousingCrisis'
+- '#UrbanDevelopment'
+- '#Economy'
+- '#IndiaReels'
+- '#FactVideo'
+sources:
+- 'Chart: More than 50 million empty apartments in China - Statista'
+- China's Ghost Cities Offer a Look Into Its Huge Housing-Market Problem - Business Insider
+- What Happened to China's 'Ghost Cities?' - Newsweek
+- '''Even 1.4 billion people can''t fill all empty homes'': Former Chinese official on property crisis'
+- Explore China's infamous 'ghost cities' with 65 million empty homes | loveproperty.com
+- China's Housing Glut Collides With Its Shrinking Population - Kanebridge News
+- China Built 50 Ghost Cities. Here's Why No One Lives There. - YouTube
+topic: China's Ghost Cities
