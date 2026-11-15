@@ -1,8 +1,13 @@
-"""Sound design for the motion video.
+"""Sound design + music for the motion video.
 
-Every sound is synthesized (no samples). Cue times come from .cache/cues.json, which render.js
-exports from the animation timeline, so sounds stay locked to the picture when timings change.
-Writes .cache/audio.wav (48 kHz stereo): SFX plus the music bed from config.json.
+The music is a trimmed section of the song in config.json. It starts on the last kick before the
+pre-chorus, so the chorus drop lands on beat 32, when the clip grid appears. The SFX are synthesized
+and kept deliberately restrained. Each one is placed from .cache/cues.json, which render.js exports
+from the animation timeline, so it lands on the motion it belongs to. Whooshes build from the moment a
+move starts and peak on its landing. Everything goes through a shared reverb, gentle EQ and a limiter,
+then sits under the music.
+
+Writes .cache/audio.wav (48 kHz stereo).
 """
 
 import json
@@ -11,202 +16,261 @@ import wave
 from pathlib import Path
 
 import numpy as np
+from scipy import signal
 
 HERE = Path(__file__).resolve().parent
 CACHE = HERE / ".cache"
 SR = 48000
-rng = np.random.default_rng(11)
+rng = np.random.default_rng(5)
 
 
-def t_(d):
-	return np.arange(int(d * SR)) / SR
+# ---------------------------------------------------------------- dsp helpers
+def tt(d):
+	return np.arange(int(round(d * SR))) / SR
 
 
-def lowpass(x, cutoff):
-	"""One-pole low-pass; cutoff in Hz, may be an array (sweep)."""
-	a = 1 - np.exp(-2 * np.pi * np.broadcast_to(cutoff, x.shape) / SR)
+def noise(n, pink=True):
+	x = rng.standard_normal(n)
+	if pink:  # Paul Kellet's economy pink filter
+		b = [0.049922035, -0.095993537, 0.050612699, -0.004408786]
+		a = [1, -2.494956002, 2.017265875, -0.522189400]
+		x = signal.lfilter(b, a, x) * 4
+	return x
+
+
+def sos(x, kind, f, order=2):
+	return signal.sosfilt(signal.butter(order, f, btype=kind, fs=SR, output="sos"), x)
+
+
+def sweep_bp(x, fc, q=1.2, block=128):
+	"""Band-pass whose centre frequency follows the array fc (time-varying RBJ biquad)."""
 	y = np.empty_like(x)
-	acc = 0.0
-	for i in range(len(x)):
-		acc += a[i] * (x[i] - acc)
-		y[i] = acc
+	zi = np.zeros(2)
+	for s in range(0, len(x), block):
+		f = float(np.clip(fc[min(s + block // 2, len(fc) - 1)], 40, SR * 0.45))
+		w = 2 * np.pi * f / SR
+		al = np.sin(w) / (2 * q)
+		b = np.array([al, 0, -al])
+		a = np.array([1 + al, -2 * np.cos(w), 1 - al])
+		y[s:s + block], zi = signal.lfilter(b / a[0], a / a[0], x[s:s + block], zi=zi)
 	return y
 
 
-def bandnoise(d, lo, hi):
-	n = rng.standard_normal(int(d * SR))
-	return lowpass(n, hi) - lowpass(n, lo)
+def sweep_hp(x, fc, block=128):
+	y = np.empty_like(x)
+	zi = np.zeros(2)
+	for s in range(0, len(x), block):
+		f = float(np.clip(fc[min(s + block // 2, len(fc) - 1)], 20, SR * 0.45))
+		b, a = signal.butter(2, f, btype="high", fs=SR)
+		y[s:s + block], zi = signal.lfilter(b, a, x[s:s + block], zi=zi)
+	return y
 
 
-def env(n, a, r, curve=2.0):
+def fade(x, a=0.002, r=0.01):
+	n = len(x)
 	e = np.ones(n)
-	ai, ri = int(a * SR), int(r * SR)
-	if ai:
-		e[:ai] = np.linspace(0, 1, ai) ** 1.5
-	if ri:
-		e[n - ri:] *= np.linspace(1, 0, ri) ** curve
-	return e
+	ai, ri = max(1, int(a * SR)), max(1, int(r * SR))
+	e[:ai] = np.linspace(0, 1, ai)
+	e[n - ri:] *= np.linspace(1, 0, ri)
+	return x * e
 
 
-def sine_sweep(f0, f1, d, shape=1.0):
-	t = t_(d)
-	f = f0 + (f1 - f0) * (t / d) ** shape
-	return np.sin(2 * np.pi * np.cumsum(f) / SR)
+def pan(x, p):
+	p = np.clip(np.broadcast_to(p, x.shape), -1, 1)
+	th = (p + 1) * np.pi / 4
+	return np.stack([x * np.cos(th), x * np.sin(th)], 1)
 
 
-# ---------------------------------------------------------------- sound palette
-def whoosh(v=1.0):
-	d = 0.42 + 0.18 * v
+def norm(x, peak):
+	m = np.max(np.abs(x)) + 1e-12
+	return x * (peak / m)
+
+
+def tone(f, d, decay, attack=0.002):
+	t = tt(d)
+	return np.sin(2 * np.pi * f * t) * np.exp(-t * decay) * np.minimum(1, t / attack)
+
+
+# ---------------------------------------------------------------- the palette (each returns stereo, start offset, reverb send)
+def whoosh(c):
+	"""Air whoosh that builds from the start of a move and peaks on its landing."""
+	v = c["v"]
+	build = max(0.12, min(0.9, c["t"] - c["t0"])) if c.get("t0") is not None else 0.3
+	tail = 0.18 + 0.25 * v
+	d = build + tail
 	n = int(d * SR)
-	sweep = np.concatenate([np.geomspace(300, 5200, n // 2), np.geomspace(5200, 400, n - n // 2)])
-	x = rng.standard_normal(n)
-	x = lowpass(x, sweep) - lowpass(x, sweep * 0.18)
-	x *= env(n, d * 0.55, d * 0.45)
-	pan = np.linspace(-0.7, 0.7, n)
-	return stereo(x * 1.5 * v, pan), -d * 0.55
+	t = np.arange(n) / SR
+	pk = build
+	rise = np.clip(t / pk, 0, 1)
+	env = np.where(t < pk, rise ** 2.6, np.exp(-(t - pk) / (0.06 + 0.07 * v)))
+	fc = np.where(t < pk, 350 * (9 ** rise), 3150 * np.exp(-(t - pk) * 5))
+	air = sweep_bp(noise(n), fc, q=0.9)
+	body = sos(noise(n), "band", [90, 420]) * np.where(t < pk, rise ** 4, np.exp(-(t - pk) / 0.05))
+	x = norm(air, 1) + norm(body, 1) * 0.35 * v
+	x = sos(x, "high", 70)
+	direction = 1 if (int(c["t"] * 10) % 2) else -1
+	p = np.clip((t - pk) / 0.25, -1, 1) * 0.55 * direction
+	return pan(norm(x * env, 0.30 + 0.32 * v), p), -pk, 0.18
 
 
-def pop(v=1.0):
-	t = t_(0.14)
-	f = 520 * v * (1 + 1.2 * np.exp(-t * 55))
-	x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 30)
-	return stereo(x * 0.55), 0
+def open_(c):
+	n = int(0.9 * SR)
+	t = np.arange(n) / SR
+	x = sweep_bp(noise(n), 4200 * np.exp(-t * 3.2) + 250, q=0.8) * np.exp(-t / 0.22)
+	return pan(norm(fade(x, 0.004, 0.2), 0.32), 0), 0, 0.25
 
 
-def tick(v=1.0):
-	t = t_(0.03)
-	x = np.sin(2 * np.pi * 2600 * t) * np.exp(-t * 260) + 0.4 * rng.standard_normal(len(t)) * np.exp(-t * 500)
-	return stereo(x * 0.35 * v), 0
+def blip(c):
+	"""Soft rounded blip for the dot hops and pin landings; pitched up a step each time (E major pentatonic)."""
+	scale = [659.3, 740.0, 830.6, 987.8, 1108.7, 1318.5]
+	f = scale[int(c["v"]) % len(scale)]
+	t = tt(0.16)
+	fr = f * (1 + 0.35 * np.exp(-t * 90))
+	x = np.sin(2 * np.pi * np.cumsum(fr) / SR) * np.exp(-t * 26) * np.minimum(1, t / 0.003)
+	x += 0.25 * np.sin(4 * np.pi * np.cumsum(fr) / SR) * np.exp(-t * 60)
+	return pan(norm(x, 0.16), (c["v"] - 2) * 0.12), -0.004, 0.3
 
 
-def typekey(v=1.0):
-	t = t_(0.05)
-	body = lowpass(rng.standard_normal(len(t)), 3500) * np.exp(-t * 180)
-	clk = np.sin(2 * np.pi * (1700 + 500 * v) * t) * np.exp(-t * 400)
-	return stereo((body * 0.9 + clk * 0.4) * 0.32, (v - 0.75) * 0.6), 0
+def tap(c):
+	"""Glassy UI tap."""
+	t = tt(0.09)
+	x = tone(2350, 0.09, 85) + 0.5 * tone(3520, 0.09, 140) + 0.4 * tone(1180, 0.09, 60)
+	x += sos(noise(len(t), False), "high", 5000) * np.exp(-t * 900) * 0.6
+	return pan(norm(x, 0.11 * (0.6 + 0.5 * c["v"])), 0.1), 0, 0.28
 
 
-def click(v=1.0):
-	t = t_(0.06)
-	x = np.sin(2 * np.pi * 1900 * t) * np.exp(-t * 160) + 0.6 * np.sin(2 * np.pi * 1200 * t) * np.exp(-t * 90)
-	return stereo(x * 0.35 * v), 0
-
-
-def thud(v=1.0):
-	t = t_(0.35)
-	x = np.sin(2 * np.pi * np.cumsum(110 * np.exp(-t * 9) + 45) / SR) * np.exp(-t * 11)
-	return stereo(x * 0.8 * v), 0
-
-
-def bubble(v=1.0):
-	t = t_(0.22)
-	x = sine_sweep(260, 980, 0.22, 0.6) * np.exp(-t * 14) * np.minimum(1, t * 120)
-	return stereo(x * 0.5 * v), 0
-
-
-def swish(v=1.0):
-	d = 0.28
-	x = bandnoise(d, 2500, 9000) * env(int(d * SR), 0.05, 0.22)
-	return stereo(x * 1.4 * v, np.linspace(0.4, -0.4, int(d * SR))), -0.05
-
-
-def snap(v=1.0):
-	t = t_(0.12)
-	x = lowpass(rng.standard_normal(len(t)), 6000) * np.exp(-t * 70) + np.sin(2 * np.pi * 180 * t) * np.exp(-t * 35) * 0.8
-	return stereo(x * 0.6 * v), 0
-
-
-def marker(v=1.0):
-	d = 0.34
-	n = int(d * SR)
-	x = rng.standard_normal(n)
-	sweep = np.geomspace(800, 4500, n)
-	x = (lowpass(x, sweep) - lowpass(x, sweep * 0.4)) * env(n, 0.03, 0.12)
-	return stereo(x * 1.6 * v, np.linspace(-0.5, 0.5, n)), 0
-
-
-def zip_(v=1.0):
+def morph(c):
+	"""Liquid swell as the date dot puffs up and fills with the photo."""
 	d = 0.55
+	t = tt(d)
+	f = 220 + 520 * (1 - np.exp(-t * 7))
+	x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.minimum(1, t / 0.02) * np.exp(-t * 6)
+	air = sweep_bp(noise(len(t)), 800 + 3200 * t / d, q=1.5) * np.sin(np.pi * t / d) * 0.6
+	return pan(norm(x * 0.7 + norm(air, 1) * 0.3, 0.2), 0), 0, 0.35
+
+
+def save(c):
+	"""Two-note confirm for Save -> Saved."""
+	a = tone(1318.5, 0.25, 22)
+	b = tone(1975.5, 0.3, 18)
+	x = np.zeros(int(0.4 * SR))
+	x[: len(a)] += a
+	o = int(0.075 * SR)
+	x[o:o + len(b)] += b * 0.8
+	return pan(norm(x, 0.12), 0.15), 0, 0.35
+
+
+def marker(c):
+	"""Highlighter stroke: short filtered scrape that sweeps left to right."""
+	d = 0.3
+	t = tt(d)
+	x = sweep_bp(noise(len(t), False), 2200 + 3500 * t / d, q=2.5) * (0.6 + 0.4 * np.sin(2 * np.pi * 38 * t))
+	x *= np.sin(np.pi * np.clip(t / d, 0, 1)) ** 0.7
+	return pan(norm(x, 0.08), np.linspace(-0.5, 0.5, len(t))), 0, 0.15
+
+
+def riser(c):
+	"""Filtered noise + tonal swell into the drop, cut clean on the downbeat."""
+	d = c["t"] - c["t0"]
 	n = int(d * SR)
-	x = sine_sweep(380, 1500, d, 0.7) * 0.25 + bandnoise(d, 1200, 6000) * 0.8
-	x *= env(n, 0.3, 0.2)
-	return stereo(x * v, np.linspace(0.6, -0.1, n)), 0
+	t = np.arange(n) / SR
+	r = t / d
+	x = sweep_hp(noise(n), 300 * (30 ** r))
+	sw = sum(np.sin(2 * np.pi * np.cumsum(f0 * (2 ** (r * 1.0))) / SR) for f0 in (329.6, 493.9, 659.3)) / 3
+	x = norm(x, 1) * 0.7 + sw * 0.3
+	x *= r ** 2.4
+	x = fade(x, 0.01, 0.006)
+	return pan(norm(x, 0.2), np.sin(t * 9) * 0.25 * r), -d, 0.25
 
 
-def impact(v=1.0):
-	t = t_(0.9)
-	boom = np.sin(2 * np.pi * np.cumsum(95 * np.exp(-t * 7) + 38) / SR) * np.exp(-t * 5)
-	crack = lowpass(rng.standard_normal(len(t)), 5000) * np.exp(-t * 35)
-	return stereo((boom * 0.9 + crack * 0.45) * v), 0
+def drop(c):
+	"""Sub boom + soft transient on the chorus drop."""
+	t = tt(1.4)
+	sub = np.sin(2 * np.pi * np.cumsum(46 + 40 * np.exp(-t * 14)) / SR) * np.exp(-t * 2.6) * np.minimum(1, t / 0.004)
+	hit = sos(noise(len(t)), "band", [180, 2500]) * np.exp(-t * 28)
+	x = sub + norm(hit, 1) * 0.35
+	return pan(norm(x, 0.5), 0), 0, 0.15
 
 
-def riser(v=1.0):
-	d = 1.0
-	t = t_(d)
-	x = lowpass(rng.standard_normal(len(t)), np.geomspace(300, 9000, len(t))) * 0.8 + sine_sweep(180, 900, d, 2) * 0.12
-	return stereo(x * (t / d) ** 2.2 * v), 0
+def slam(c):
+	"""Title letters land: tight thump + snap."""
+	t = tt(0.6)
+	th = np.sin(2 * np.pi * np.cumsum(55 + 70 * np.exp(-t * 30)) / SR) * np.exp(-t * 9)
+	sn = sos(noise(len(t)), "band", [900, 5000]) * np.exp(-t * 45)
+	return pan(norm(th + norm(sn, 1) * 0.45, 0.32), 0), 0, 0.3
 
 
-def slide(v=1.0):
-	d = 0.7
-	n = int(d * SR)
-	x = bandnoise(d, 600, 3000) * env(n, 0.25, 0.4)
-	return stereo(x * 0.9 * v, np.linspace(-0.3, 0.5, n)), 0
+def hit(c):
+	"""Cinematic hit when the title fills the letterboxed frame."""
+	t = tt(1.6)
+	sub = np.sin(2 * np.pi * np.cumsum(42 + 50 * np.exp(-t * 18)) / SR) * np.exp(-t * 3.2)
+	body = sos(noise(len(t)), "band", [120, 1200]) * np.exp(-t * 10)
+	air = sos(noise(len(t)), "high", 4000) * np.exp(-t * 6) * 0.3
+	return pan(norm(sub + norm(body, 1) * 0.5 + norm(air, 1) * 0.2, 0.42), 0), 0, 0.3
 
 
-def shimmer(v=1.0):
+def shimmer(c):
 	out = np.zeros(int(1.4 * SR))
-	for i, f in enumerate([1568, 2093, 2637, 3136]):
-		t = t_(1.0)
-		s = int(i * 0.07 * SR)
-		out[s:s + len(t)] += np.sin(2 * np.pi * f * t) * np.exp(-t * 5) * 0.16
-	return stereo(out * v), 0
+	for i, f in enumerate([1318.5, 1661.2, 1975.5, 2489.0]):
+		x = tone(f, 1.0, 4.5)
+		s = int(i * 0.06 * SR)
+		out[s:s + len(x)] += x * (0.9 - i * 0.12)
+	return pan(norm(out, 0.06), 0.2), 0, 0.5
 
 
-def swoosh(v=1.0):
-	d = 0.9
-	n = int(d * SR)
-	sweep = np.geomspace(2500, 220, n)
-	x = rng.standard_normal(n)
-	x = (lowpass(x, sweep) - lowpass(x, sweep * 0.2)) * env(n, 0.2, 0.5)
-	return stereo(x * 1.7 * v, np.linspace(0.5, -0.5, n)), -0.15
+def typekey(c):
+	t = tt(0.04)
+	x = sos(noise(len(t), False), "band", [1800, 7000]) * np.exp(-t * 320)
+	x += tone(260 + 60 * c["v"], 0.04, 140) * 0.5
+	return pan(norm(x, 0.045 + 0.02 * c["v"]), (c["v"] - 0.5) * 0.4), 0, 0.12
 
 
-def ding(v=1.0):
-	t = t_(1.8)
-	x = sum(a * np.sin(2 * np.pi * f * t) * np.exp(-t * k) for f, a, k in [(1320, 0.5, 2.5), (2640, 0.25, 4), (3960, 0.12, 6), (1980, 0.18, 3)])
-	return stereo(x * 0.45 * v), 0
+def shine(c):
+	"""Soft chime as the destination name glows."""
+	t = tt(2.2)
+	x = sum(a * np.sin(2 * np.pi * f * t) * np.exp(-t * k) for f, a, k in [(1318.5, 0.6, 2.2), (1975.5, 0.35, 3), (2637.0, 0.2, 4.5), (3951, 0.08, 7)])
+	x *= np.minimum(1, t / 0.004)
+	sp = sweep_bp(noise(len(t)), 6000 + 2000 * np.sin(t * 3), q=3) * np.exp(-t * 3) * 0.15
+	return pan(norm(x + sp, 0.14), 0), 0, 0.55
 
 
-def open_(v=1.0):
-	d = 0.5
-	n = int(d * SR)
-	x = rng.standard_normal(n)
-	sweep = np.geomspace(6000, 300, n)
-	x = (lowpass(x, sweep) - lowpass(x, sweep * 0.2)) * env(n, 0.01, 0.4)
-	return stereo(x * 1.1 + 0 * x), 0
+def wind(c):
+	d = 2.4
+	t = tt(d)
+	x = sweep_bp(noise(len(t)), 900 + 500 * np.sin(t * 2.3), q=0.7)
+	x *= np.sin(np.pi * t / d) ** 1.5
+	return pan(norm(x, 0.07), np.sin(t * 1.7) * 0.4), 0, 0.1
 
 
-def end(v=1.0):
-	t = t_(1.2)
-	x = np.sin(2 * np.pi * np.cumsum(70 * np.exp(-t * 4) + 35) / SR) * np.exp(-t * 4)
-	return stereo(x * 0.7 * v), 0
+def end(c):
+	t = tt(2.5)
+	sub = np.sin(2 * np.pi * np.cumsum(38 + 45 * np.exp(-t * 12)) / SR) * np.exp(-t * 1.8)
+	air = sos(noise(len(t)), "band", [300, 3000]) * np.exp(-t * 9)
+	return pan(norm(sub + norm(air, 1) * 0.3, 0.45), 0), 0, 0.6
 
 
-def stereo(x, pan=0.0):
-	pan = np.broadcast_to(pan, x.shape)
-	l = x * np.sqrt((1 - pan) / 2) * 1.414
-	r = x * np.sqrt((1 + pan) / 2) * 1.414
-	return np.stack([l, r], 1)
+SOUNDS = {"whoosh": whoosh, "open": open_, "blip": blip, "tap": tap, "morph": morph, "save": save, "marker": marker,
+	"riser": riser, "drop": drop, "slam": slam, "hit": hit, "shimmer": shimmer, "type": typekey, "shine": shine,
+	"wind": wind, "end": end}
 
 
-SOUNDS = {"whoosh": whoosh, "pop": pop, "tick": tick, "type": typekey, "click": click, "thud": thud, "bubble": bubble,
-	"swish": swish, "snap": snap, "marker": marker, "zip": zip_, "impact": impact, "riser": riser, "slide": slide,
-	"shimmer": shimmer, "swoosh": swoosh, "ding": ding, "open": open_, "end": end}
+# ---------------------------------------------------------------- mix
+def reverb_ir(d=1.8):
+	t = tt(d)
+	ir = np.stack([noise(len(t), False), noise(len(t), False)], 1) * np.exp(-t / 0.42)[:, None]
+	ir = np.stack([sos(ir[:, i], "band", [300, 7000]) for i in range(2)], 1)
+	ir[: int(0.012 * SR)] = 0  # pre-delay
+	return ir / np.sqrt(np.sum(ir ** 2) / 2)
+
+
+def convolve(x, ir):
+	n = len(x) + len(ir)
+	N = 1 << (n - 1).bit_length()
+	return np.stack([np.fft.irfft(np.fft.rfft(x[:, i], N) * np.fft.rfft(ir[:, i], N), N)[: len(x)] for i in range(2)], 1)
 
 
 def place(bus, snd, t):
-	s = int(t * SR)
+	s = int(round(t * SR))
 	if s < 0:
 		snd, s = snd[-s:], 0
 	e = min(len(bus), s + len(snd))
@@ -214,51 +278,77 @@ def place(bus, snd, t):
 		bus[s:e] += snd[: e - s]
 
 
+def limiter(x, ceil=0.95, release=0.08):
+	g = np.minimum(1, ceil / (np.max(np.abs(x), 1) + 1e-9))
+	# smooth gain: instant attack, exponential release
+	a = np.exp(-1 / (release * SR))
+	gs = signal.lfilter([1 - a], [1, -a], g)
+	gs = np.minimum(g, gs)
+	return x * gs[:, None]
+
+
 def load_music(path, start, dur):
-	raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(start), "-i", str(path), "-t", str(dur), "-f", "f32le",
+	raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{start:.4f}", "-i", str(path), "-t", f"{dur:.4f}", "-f", "f32le",
 		"-ac", "2", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
 	return np.frombuffer(raw, dtype=np.float32).reshape(-1, 2).astype(np.float64)
+
+
+# how far each sound's peak sits relative to the music around it (dB). Keeps every effect tucked
+# under the song, whether it's the quiet pre-chorus or the full chorus.
+REL = {"whoosh": 2, "open": 0, "blip": -1, "tap": -5, "morph": 0, "save": -2, "marker": -5, "riser": 1, "drop": 4,
+	"slam": 2, "hit": 4, "shimmer": -3, "type": -11, "shine": 1, "wind": -7, "end": 0}
+FLOOR = -20  # reference level (dBFS rms) used when the music is silent
+
+
+def db(v):
+	return 20 * np.log10(v + 1e-9)
 
 
 def main():
 	info = json.loads((CACHE / "cues.json").read_text())
 	cfg = json.loads((HERE / "config.json").read_text())
 	dur = info["dur"]
+	beat = info.get("beat") or 60 / cfg.get("beat", {}).get("bpm", 123.06)
 	n = int(dur * SR)
-	sfx = np.zeros((n, 2))
-	for c in info["cues"]:
-		snd, lead = SOUNDS[c["k"]](c["v"])
-		place(sfx, snd, c["t"] + lead)
-	# a rushing-air bed under the speed tunnel
-	d = 2.6
-	wind = bandnoise(d, 250, 2200) * env(int(d * SR), 0.25, 0.9) * 0.55
-	place(sfx, stereo(wind, np.sin(np.linspace(0, 6, len(wind))) * 0.3), 25.0)
 
-	mix = sfx * 0.9
+	music = np.zeros((n, 2))
 	if cfg.get("music"):
-		m = load_music(HERE.parent / cfg["music"], cfg.get("musicStart", 0), dur)
-		m = m[:n]
+		end_t = 68 * beat  # hard cut on the downbeat with the picture
+		m = load_music(HERE.parent / cfg["music"], cfg.get("musicStart", 0), end_t + 0.05)[: n]
 		e = np.ones(len(m))
-		fi, fo = int(0.25 * SR), int(0.7 * SR)
+		fi = int(0.006 * SR)
 		e[:fi] = np.linspace(0, 1, fi)
-		cut = int(32.62 * SR)
+		cut = int(end_t * SR)
+		fo = int(0.03 * SR)
+		e[cut - fo:cut] *= np.linspace(1, 0, fo)
 		e[cut:] = 0
-		e[cut - fo:cut] *= np.linspace(1, 0.25, fo)
-		m *= e[:, None] * cfg.get("musicVolume", 0.55)
-		# normalise the bed to a steady level before mixing
-		rms = np.sqrt(np.mean(m[: cut] ** 2)) + 1e-9
-		m *= 0.09 / rms
-		mix[: len(m)] += m
-	peak = np.max(np.abs(mix))
-	if peak > 0.97:
-		mix *= 0.97 / peak
+		m *= e[:, None]
+		# level the bed to the chorus loudness so the quiet pre-chorus stays quiet relative to the drop
+		ref = np.sqrt(np.mean(m[int(32 * beat * SR):cut] ** 2)) + 1e-9
+		m *= 0.22 / ref * cfg.get("musicVolume", 1.0)
+		music[: len(m)] = m
+
+	dry = np.zeros((n, 2))
+	wet = np.zeros((n, 2))
+	for c in info["cues"]:
+		snd, lead, send = SOUNDS[c["k"]](c)
+		a = int(c["t"] * SR)
+		w = music[max(0, a - int(0.4 * SR)):a + int(0.4 * SR)]
+		local = max(db(np.sqrt(np.mean(w ** 2))) if len(w) else FLOOR, FLOOR)
+		snd = snd * 10 ** ((local + REL[c["k"]] - db(np.max(np.abs(snd)))) / 20)
+		place(dry, snd, c["t"] + lead)
+		place(wet, snd * send, c["t"] + lead)
+	sfx = dry + convolve(wet, reverb_ir()) * 0.5
+	sfx = np.stack([sos(sfx[:, i], "high", 30) for i in range(2)], 1)
+
+	mix = limiter(music + sfx)
 	pcm = (np.clip(mix, -1, 1) * 32767).astype("<i2")
 	with wave.open(str(CACHE / "audio.wav"), "wb") as w:
 		w.setnchannels(2)
 		w.setsampwidth(2)
 		w.setframerate(SR)
 		w.writeframes(pcm.tobytes())
-	print(f"audio: {len(info['cues'])} cues, {dur}s")
+	print(f"audio: {len(info['cues'])} cues, {dur:.2f}s")
 
 
 if __name__ == "__main__":

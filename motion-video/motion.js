@@ -2,7 +2,7 @@
  * render.js calls window.renderFrame(T) and screenshots the page. Open index.html directly for a scrubber. */
 (() => {
 const C = window.CONFIG, M = window.MEDIA;
-const FPS = 30, DUR = 33.5;
+const FPS = 30, DUR_TAU = 33.5;
 const $ = (id) => document.getElementById(id);
 
 /* ------------------------------------------------------------------ helpers */
@@ -48,6 +48,23 @@ const OFF = 120; // frame margin (see #frame)
 const camTf = (c) => `translate(1080px,660px) rotate(${c.r || 0}deg) scale(${c.s}) translate(${-c.x}px,${-c.y}px)`;
 let seed = 7;
 const rnd = () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+/* ------------------------------------------------------------------ beat sync
+ * The animation is authored on its own clock (tau). A piecewise-linear warp maps it onto the song's
+ * beat grid, so every cut, whip and hop lands on a beat. ANCH = [tau, beat]. Beat 32 is the drop. */
+const BEAT = 60 / ((C.beat && C.beat.bpm) || 123.06);
+const ANCH = [[0, 0], [2.62, 6], [3.3, 7], [5.38, 11], [6.55, 14], [7.0, 15], [7.95, 17], [9.0, 19], [9.85, 21],
+	[12.95, 28], [13.55, 29], [14.15, 31], [14.55, 32], [18.75, 40], [19.38, 41], [19.95, 42], [20.82, 44], [22.55, 47],
+	[23.05, 48], [24.1, 50], [24.9, 52], [26.2, 54], [26.95, 56], [27.45, 57], [28.85, 60], [29.38, 61], [31.95, 66], [32.62, 68]];
+function warp(x, from, to) {
+	const L = ANCH.length;
+	const f = (i) => (from ? ANCH[i][0] : ANCH[i][1] * BEAT), g = (i) => (from ? ANCH[i][1] * BEAT : ANCH[i][0]);
+	if (x <= f(0)) return g(0) + (x - f(0));
+	for (let i = 1; i < L; i++) if (x < f(i)) return lerp(g(i - 1), g(i), (x - f(i - 1)) / (f(i) - f(i - 1)));
+	return g(L - 1) + (x - f(L - 1));
+}
+const tauToT = (tau) => warp(tau, true), Ttotau = (T) => warp(T, false);
+const b = (n) => Ttotau(n * BEAT); // animation time of beat n
+const DUR = tauToT(DUR_TAU);
 const nz = (t, s) => Math.sin(t * 1.31 + s) * 0.5 + Math.sin(t * 2.17 + s * 2.3) * 0.3 + Math.sin(t * 3.71 + s * 0.7) * 0.2;
 function el(tag, cls, parent, css) {
 	const e = document.createElement(tag);
@@ -121,7 +138,7 @@ function setFX(bx, by, lens) {
 
 /* ------------------------------------------------------------------ cues (exported for sound design) */
 const CUES = [];
-const cue = (t, k, v = 1) => CUES.push({ t: +t.toFixed(3), k, v });
+const cue = (t, k, v = 1, t0 = null) => CUES.push({ tau: t, t0tau: t0, k, v });
 
 /* ================================================================== SCENE 1 — calendar */
 const S1 = (() => {
@@ -173,7 +190,7 @@ const S1 = (() => {
 	// red dot path: start 5 days before the target, hop three days, then whip to the target
 	const iStart = Math.max(0, tIdx - 5);
 	const stops = [iStart, Math.max(0, tIdx - 4), Math.max(0, tIdx - 3), Math.max(0, tIdx - 2), tIdx];
-	const hops = [[1.15, 1.38], [1.5, 1.73], [1.85, 2.05], [2.12, 2.62]];
+	const hops = [[b(3) - 0.24, b(3)], [b(4) - 0.24, b(4)], [b(5) - 0.2, b(5)], [b(5) + 0.04, 2.62]];
 	const P = stops.map(center);
 	function dotPos(t) {
 		let x = P[0].x, y = P[0].y;
@@ -206,7 +223,7 @@ const S1 = (() => {
 	const cam = [
 		[0, { x: P[0].x, y: P[0].y, s: 3.7 }],
 		[0.72, { x: 520, y: 172, s: 1.26 }, E.outE],
-		[2.05, { x: 640, y: 182, s: 1.32 }, E.lin],
+		[b(5), { x: 640, y: 182, s: 1.32 }, E.lin],
 		[2.62, { x: tp.x, y: tp.y, s: 2.08 }, E.ioQ],
 		[3.3, { x: tp.x + 6, y: tp.y + 2, s: 2.14 }, E.lin],
 		[4.7, { x: tp.x + 18, y: tp.y + 8, s: 2.22 }, E.ioS],
@@ -217,8 +234,8 @@ const S1 = (() => {
 	const lens = [[1.98, 0], [2.62, 1, E.ioC], [4.75, 1], [5.4, 0.5], [6.55, 0.5], [7.0, 0.4]];
 
 	// cues
-	cue(0, 'open'); hops.slice(0, 3).forEach(([a], i) => cue(a, 'pop', 1 + i * 0.12)); cue(2.05, 'whoosh', 0.9); cue(2.58, 'thud', 0.8);
-	cue(3.28, 'bubble'); cue(3.6, 'swish', 0.6); cue(0.45, 'tick', 0.5); cue(0.85, 'tick', 0.4);
+	cue(0, 'open'); hops.slice(0, 3).forEach(([, a], i) => cue(a, 'blip', i)); cue(2.62, 'whoosh', 0.8, hops[3][0]); cue(2.64, 'tap', 0.6);
+	cue(3.3, 'morph');
 
 	function update(T) {
 		const vis = T < 7.1; show(root, vis); if (!vis) return null;
@@ -253,7 +270,7 @@ const S1 = (() => {
 			path.setAttribute('d', dd + 'Z');
 		}
 		// numbers: white when under the dot, faded once passed
-		const leave = [1.15, 1.5, 1.85, 2.12];
+		const leave = hops.map((h) => h[0]);
 		cells.forEach((cl, i) => {
 			const k = clamp(1 - (Math.hypot(cl.p.x - d.x, cl.p.y - d.y) - 12) / 44) * (blobOn ? 1 : 0);
 			const b = cl.base;
@@ -334,10 +351,9 @@ const S2 = (() => {
 	const panelX = [[4.72, 1930], [5.38, 1040, E.outQ], [6.55, 1010, E.lin], [7.0, -150, E.ioQ], [8.5, -175, E.lin], [9.0, -1100, E.inC]];
 	const hlRow = [[5.3, 3], [6.72, 3], [7.0, 2, E.ioC], [7.85, 2], [8.15, 1, E.outB]];
 
-	cue(4.72, 'whoosh', 0.7); rows.forEach((_, i) => cue(5.0 + i * 0.07, 'tick', 0.35)); cue(6.55, 'whoosh', 1);
-	cue(6.98, 'click', 0.6); cue(7.88, 'click', 0.8); cue(7.95, 'pop', 1.3); cue(8.5, 'whoosh', 0.7);
-	words.forEach((_, i) => cue(7.75 + i * 0.17, 'tick', 0.5)); cue(8.12, 'pop', 0.9);
-	cue(9.82, 'snap', 1); cue(12.3, 'whoosh', 0.55); cue(12.85, 'marker', 0.9); cue(13.3, 'whoosh', 0.8); cue(14.12, 'whoosh', 1.1);
+	cue(5.38, 'whoosh', 0.6, 4.72); cue(7.0, 'whoosh', 1, 6.55); cue(7.95, 'save'); cue(9.0, 'whoosh', 0.5, 8.5);
+	cue(9.84, 'tap', 0.8); cue(12.95, 'whoosh', 0.45, 12.3); cue(12.85, 'marker'); cue(13.55, 'whoosh', 0.6, 13.3);
+	cue(14.55, 'riser', 1, b(28)); cue(14.55, 'drop');
 
 	function state(T) { return { x: K(T, cx), y: K(T, cy), s: K(T, cs) }; }
 	function update(T) {
@@ -450,7 +466,12 @@ const S4 = (() => {
 	// hero clip next to the title cell
 	const TC = { c: 4, r: -2 };
 	addTile(TC.c - 1, TC.r, 18.0, C.title.hero, { pos: '50% 40%' });
-	tiles.forEach((tl) => { if (tl.t > 0) cue(tl.t, 'tick', 0.22); });
+	tiles.forEach((tl, i) => {
+		if (i === 0 || tl.t >= 18) return;
+		// first four land one per beat, the rest cascade in threes on eighth notes
+		tl.t = i <= 4 ? b(32 + i) : b(36 + 0.5 * Math.ceil((i - 4) / 3));
+		if (i <= 4) cue(tl.t, 'tap', 0.5 + i * 0.1);
+	});
 
 	// title cell
 	const tcx = TC.c * W, tcy = TC.r * H;
@@ -513,9 +534,9 @@ const S4 = (() => {
 		const c = camAt(T, CAM), c0 = camAt(24.9, CAM);
 		return { x: L.endX + 40 + (c.x - c0.x), y: L.y, vis: true };
 	}
-	cue(18.2, 'zip', 1); cue(18.72, 'pop', 1.1); cue(19.38, 'whoosh', 1); cue(20.3, 'pop', 0.9);
-	cue(20.8, 'impact', 0.8); cue(21.12, 'swish', 0.7); cue(21.6, 'riser', 1); cue(22.55, 'whoosh', 1.1); cue(23.02, 'impact', 1);
-	cue(24.1, 'slide', 0.8); cue(24.9, 'whoosh', 1.2);
+	cue(18.75, 'whoosh', 0.45, 18.2); cue(18.75, 'blip', 3); cue(19.95, 'whoosh', 0.9, 19.38); cue(20.35, 'blip', 4);
+	cue(20.82, 'slam'); cue(21.3, 'whoosh', 0.3, 21.1); cue(23.05, 'whoosh', 1, 22.55); cue(23.05, 'hit');
+	cue(25.3, 'whoosh', 1.1, 24.9);
 
 	function update(T) {
 		const vis = T >= 14.55 && T < 25.32; show(root, vis); if (!vis) return null;
@@ -539,11 +560,11 @@ const S4 = (() => {
 			}
 		});
 		// title
-		const ta = 20.82;
+		const ta = 20.6; // letters finish landing on the beat (tau 20.82)
 		[pre, post].forEach((e, i) => {
-			const a = ta + i * 0.08;
-			e.style.opacity = tw(T, a, a + 0.16, 0, 1);
-			e.style.transform = `translateY(${tw(T, a, a + 0.3, 30, 0, E.outQ)}px) scale(${tw(T, a, a + 0.3, 1.25, 1, E.outQ)})`;
+			const a = ta + i * 0.05;
+			e.style.opacity = tw(T, a, a + 0.12, 0, 1);
+			e.style.transform = `translateY(${tw(T, a, a + 0.22, 30, 0, E.outQ)}px) scale(${tw(T, a, a + 0.22, 1.3, 1, E.outQ)})`;
 			e.style.filter = `blur(${tw(T, a, a + 0.2, 10, 0)}px)`;
 		});
 		kick.style.opacity = tw(T, 20.95, 21.15, 0, 1);
@@ -615,7 +636,7 @@ const S5 = (() => {
 	const chars = [...text].map((chh, i) => { const s = el('span', '', cap); s.textContent = chh; s.hl = i >= hs && i < he && hs >= 0; return s; });
 	const TY0 = 29.32, RATE = 15.5;
 	const charT = (i) => TY0 + i / RATE + (text[i - 1] === ' ' ? 0.03 : 0);
-	chars.forEach((_, i) => cue(charT(i), 'type', 0.5 + 0.5 * ((i * 7) % 5) / 5));
+	chars.forEach((_, i) => cue(charT(i), 'type', ((i * 7) % 5) / 5));
 	let capX = null;
 	const caretX = (T) => {
 		if (!capX) capX = chars.map((s) => s.offsetLeft + s.offsetWidth);
@@ -624,8 +645,8 @@ const S5 = (() => {
 	};
 	const glowT = 31.95;
 
-	cue(26.25, 'shimmer', 0.8); cue(27.15, 'whoosh', 0.8); cue(27.95, 'swoosh', 1); cue(28.85, 'whoosh', 1);
-	cue(glowT, 'ding', 1); cue(32.7, 'end', 1);
+	cue(26.3, 'shimmer'); cue(27.45, 'whoosh', 0.5, 26.95); cue(28.85, 'whoosh', 0.9, 27.95); cue(29.38, 'whoosh', 0.5, 29.0);
+	cue(glowT, 'shine'); cue(32.62, 'end'); cue(25.3, 'wind');
 
 	function update(T) {
 		const vis = T >= 25.18; show(root, vis); if (!vis) return null;
@@ -708,9 +729,10 @@ function blurBetween(a, b) {
 	}
 	return [0, 0];
 }
-function update(T) {
+function update(Tout) {
 	pending = [];
-	const prev = probeAt(T - 0.5 / FPS); // half-frame shutter
+	const T = Ttotau(Tout);
+	const prev = probeAt(Ttotau(Tout - 0.5 / FPS)); // half-frame shutter
 	const cur = probeAt(T);
 	const [bx, by] = blurBetween(prev, cur);
 	let lens = cur && cur.lens != null ? cur.lens : T < 7.0 ? K(T, [[1.98, 0], [2.62, 1, E.ioC], [4.75, 1], [5.4, 0.5], [6.55, 0.5], [7.0, 0.4]]) : 0;
@@ -720,10 +742,18 @@ function update(T) {
 	const bk = K(T, [[22.62, 0], [23.0, 1, E.ioQ], [27.2, 1], [27.55, 0, E.ioQ]]);
 	bars[0].style.transform = `translateY(${-132 * (1 - bk)}px)`;
 	bars[1].style.top = px(1080 - 132 * bk);
-	black.style.opacity = K(T, [[32.62, 0], [32.74, 1, E.lin]]);
+	black.style.opacity = tw(Tout, 68 * BEAT - 0.02, 68 * BEAT + 0.03, 0, 1, E.lin);
+	// beat pump: the whole frame kicks with the music from the drop on (harder on each bar's downbeat)
+	const n = Tout / BEAT, k = Math.floor(n + 1e-6), ph = (n - k) * BEAT;
+	let pump = 0;
+	if (k >= 32 && k < 68) pump = (k % 4 === 0 ? 0.02 : 0.009) * Math.exp(-ph / 0.11);
+	else if (k >= 2 && k < 32) pump = 0.0035 * Math.exp(-ph / 0.09);
+	pump += 0.055 * Math.exp(-Math.max(0, Tout - 32 * BEAT) / 0.16) * (Tout >= 32 * BEAT ? 1 : 0);
+	frame.style.transform = pump > 0.0004 ? `scale(${(1 + pump).toFixed(5)})` : 'none';
 }
 
-window.CUES = CUES.sort((a, b) => a.t - b.t);
+window.CUES = CUES.map((c) => ({ t: +tauToT(c.tau).toFixed(4), t0: c.t0tau == null ? null : +tauToT(c.t0tau).toFixed(4), k: c.k, v: c.v })).sort((a, b) => a.t - b.t);
+window.BEAT = BEAT;
 window.DURATION = DUR;
 window.FPS = FPS;
 window.renderFrame = async (T) => { update(T); await Promise.all(pending); };

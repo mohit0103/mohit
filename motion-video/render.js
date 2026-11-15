@@ -18,7 +18,7 @@ const CACHE = path.join(HERE, '.cache');
 	page.on('pageerror', (e) => console.error('page error:', e.message));
 	await page.goto('file://' + path.join(HERE, 'index.html') + '?render');
 	await page.evaluate(() => window.READY);
-	const info = await page.evaluate(() => ({ cues: window.CUES, dur: window.DURATION, fps: window.FPS }));
+	const info = await page.evaluate(() => ({ cues: window.CUES, dur: window.DURATION, fps: window.FPS, beat: window.BEAT }));
 	fs.writeFileSync(path.join(CACHE, 'cues.json'), JSON.stringify(info, null, 1));
 	const shot = () => page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1920, height: 1080 } });
 

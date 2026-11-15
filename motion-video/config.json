@@ -53,7 +53,9 @@
     "photos/IMG-20240130-WA0014.jpg"
   ],
 
-  "music": "InShot_20251126_203838257.mp3",
-  "musicStart": 0,
-  "musicVolume": 0.55
+  "_music_help": "musicStart is where the edit begins in the song (a kick right before the pre-chorus). beat.bpm drives the beat sync; the chorus drop lands on beat 32, when the grid appears.",
+  "music": "music/what-do-you-mean.mp3",
+  "musicStart": 46.018,
+  "musicVolume": 1.0,
+  "beat": { "bpm": 123.06 }
 }

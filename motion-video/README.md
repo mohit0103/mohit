@@ -24,10 +24,15 @@ caption, which photo goes where, and the music.
   `#seconds` to start part-way in, e.g. `"clips/beach.mp4#2.5"`. `prep.py` turns clips into frame sequences
   so they play in sync with the animation. Photos get a slow push and handheld drift so they feel like footage.
 - **Title word:** `title.word` + `title.pinLetter` (the index of the letter the pin replaces, normally an "o").
-- **Music:** `music` (path from repo root, or `""` for SFX only), `musicStart`, `musicVolume`.
+- **Music and beat sync:** `music` sets the song (a path from the repo root), and `musicStart` sets where the edit begins in it.
+  `beat.bpm` sets the tempo. The animation runs on its own clock, which is warped onto the beat grid (`ANCH` in
+  `motion.js`). That way every whip, hop, tile pop, title slam and cut lands on a beat, and the chorus drop
+  (beat 32) hits as the card snaps into the clip grid. From the drop on, the whole frame pumps on every kick, and
+  harder on each bar's downbeat. With a different song, set its BPM and a `musicStart` that sits 32 beats before its drop.
 
 ## Build
-Needs Python 3 with Pillow and NumPy, Node with Playwright (Chromium), and ffmpeg.
+Needs Python 3 with Pillow, NumPy and SciPy, Node with Playwright (Chromium), and ffmpeg.
+The song isn't committed. Put it at `music/what-do-you-mean.mp3` (repo root) or point `music` in the config at your own file.
 ```
 cd motion-video
 ./make.sh                      # -> output/memories.mp4
@@ -40,5 +45,5 @@ To scrub the animation live, run `python3 prep.py` and then open `index.html` in
 - `index.html`: scene markup and styles, plus the SVG filter for motion blur and lens distortion.
 - `motion.js`: the timeline. It holds every scene, camera, easing and cue, and each frame is a pure function of time.
 - `render.js`: captures frames with Playwright and pipes them to ffmpeg. It also exports the sound cues.
-- `audio.py`: synthesized SFX (whooshes, pops, typing, riser, impacts, a ding) mixed with the music bed.
+- `audio.py`: synthesized SFX, mixed with the trimmed song. These are whooshes that peak on each landing, UI taps, pitched blips, a riser into the drop, a sub drop, hits, typing and a chime. Each effect sets its own level from the music around it so it stays under the song, and all of them go through a shared reverb and a limiter.
 - `prep.py`: resizes photos, extracts clip frames, and writes `.cache/data.js`.

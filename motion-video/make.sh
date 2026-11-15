@@ -12,6 +12,6 @@ node render.js "$@"
 python3 audio.py
 
 ffmpeg -v error -y -i .cache/video.mp4 -i .cache/audio.wav \
-	-filter_complex "[1:a]loudnorm=I=-14:TP=-1.0:LRA=11[a]" -map 0:v -map "[a]" \
+	-map 0:v -map 1:a \
 	-c:v copy -c:a aac -b:a 256k -ar 48000 -shortest -movflags +faststart output/memories.mp4
 echo "done: $(pwd)/output/memories.mp4"
