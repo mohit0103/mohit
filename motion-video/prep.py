@@ -22,14 +22,12 @@ CLIP_SECONDS = 9
 
 
 def media_paths(cfg):
-	yield cfg["morph"]
-	yield cfg["card"]["clip"]
-	yield cfg["title"]["hero"]
-	yield cfg["pinClip"]
-	yield cfg["avatar"]["media"]
-	for p in cfg["places"]:
+	for p in cfg["polaroids"]:
 		yield p["media"]
-	yield from cfg["grid"]
+	yield cfg["herPin"]
+	yield cfg["avatar"]["media"]
+	yield cfg["post"]["image"]
+	yield from cfg["wall"]
 
 
 def prep_one(spec):

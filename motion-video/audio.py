@@ -121,8 +121,8 @@ def open_(c):
 
 
 def blip(c):
-	"""Soft rounded blip for the dot hops and pin landings; pitched up a step each time (E major pentatonic)."""
-	scale = [659.3, 740.0, 830.6, 987.8, 1108.7, 1318.5]
+	"""Soft rounded blip, pitched up a step each time."""
+	scale = [830.6, 932.3, 1046.5, 1244.5, 1396.9, 1661.2]  # A-flat major pentatonic (the song's key)
 	f = scale[int(c["v"]) % len(scale)]
 	t = tt(0.16)
 	fr = f * (1 + 0.35 * np.exp(-t * 90))
@@ -151,8 +151,8 @@ def morph(c):
 
 def save(c):
 	"""Two-note confirm for Save -> Saved."""
-	a = tone(1318.5, 0.25, 22)
-	b = tone(1975.5, 0.3, 18)
+	a = tone(1244.5, 0.25, 22)
+	b = tone(1661.2, 0.3, 18)
 	x = np.zeros(int(0.4 * SR))
 	x[: len(a)] += a
 	o = int(0.075 * SR)
@@ -249,9 +249,147 @@ def end(c):
 	return pan(norm(sub + norm(air, 1) * 0.3, 0.45), 0), 0, 0.6
 
 
+def flip(c):
+	"""A calendar page snapping over: paper flick with a soft body."""
+	t = tt(0.16)
+	x = sos(noise(len(t)), "band", [1400, 7500]) * np.exp(-t * 38) * np.minimum(1, t / 0.004)
+	x += sos(noise(len(t)), "band", [120, 600]) * np.exp(-t * 60) * 0.6
+	return pan(norm(x, 0.2 * c["v"]), 0.25), -0.01, 0.15
+
+
+def scratch(c, d, lo, hi, rate):
+	"""Pen / marker on paper: filtered noise with stroke-shaped bursts."""
+	t = tt(d)
+	strokes = np.clip(np.sin(2 * np.pi * rate * t + 2 * np.sin(2 * np.pi * rate * 0.37 * t)), 0, None) ** 0.6
+	x = sos(noise(len(t), False), "band", [lo, hi]) * (0.35 + 0.65 * strokes)
+	return x * np.sin(np.pi * np.clip(t / d, 0, 1)) ** 0.5
+
+
+def marker_draw(c):
+	x = scratch(c, 0.55, 1800, 5200, 4.5)
+	return pan(norm(x, 0.1), np.linspace(-0.3, 0.3, len(x))), 0, 0.12
+
+
+def pen(c):
+	x = scratch(c, 0.9, 2500, 8000, 7)
+	return pan(norm(x, 0.07 * c["v"] / 0.6), np.linspace(-0.4, 0.4, len(x))), 0, 0.12
+
+
+def land(c):
+	"""A photo dropping flat on a table."""
+	t = tt(0.3)
+	slap = sos(noise(len(t)), "low", 2600) * np.exp(-t * 55)
+	thump = np.sin(2 * np.pi * np.cumsum(140 * np.exp(-t * 20) + 60) / SR) * np.exp(-t * 22)
+	return pan(norm(slap * 0.7 + thump * 0.6, 0.26 * c["v"]), 0.1), 0, 0.18
+
+
+def stamp(c):
+	"""Rubber stamp: wooden knock + low thunk + a short squish."""
+	t = tt(0.45)
+	knock = sos(noise(len(t)), "band", [300, 1600]) * np.exp(-t * 45)
+	thunk = np.sin(2 * np.pi * np.cumsum(95 * np.exp(-t * 18) + 55) / SR) * np.exp(-t * 16)
+	squish = sos(noise(len(t)), "band", [2500, 7000]) * np.exp(-((t - 0.03) / 0.04) ** 2) * 0.3
+	return pan(norm(knock * 0.8 + thunk + squish, 0.36), 0), 0, 0.22
+
+
+def msg(c):
+	"""Message bubble pop."""
+	t = tt(0.18)
+	f = 620 + 520 * (1 - np.exp(-t * 40))
+	x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 22) * np.minimum(1, t / 0.003)
+	return pan(norm(x, 0.14 * c["v"]), -0.35), 0, 0.3
+
+
+def pin(c):
+	t = tt(0.14)
+	fr = 1046.5 * (1 + 0.4 * np.exp(-t * 80))
+	x = np.sin(2 * np.pi * np.cumsum(fr) / SR) * np.exp(-t * 28)
+	return pan(norm(x, 0.12), 0.3), 0, 0.3
+
+
+def sheet(c):
+	d = 0.3
+	t = tt(d)
+	x = sweep_bp(noise(len(t)), 600 + 3000 * t / d, q=1.2) * np.sin(np.pi * t / d)
+	return pan(norm(x, 0.09), 0.3), 0, 0.15
+
+
+def route(c):
+	"""The route drawing: a soft rising arpeggio in the song's key."""
+	out = np.zeros(int(1.9 * SR))
+	notes = [830.6, 1046.5, 1244.5, 1661.2, 2093.0]
+	for i, f in enumerate(notes):
+		x = tone(f, 0.7, 6) * 0.9 + tone(f * 2, 0.7, 9) * 0.2
+		o = int(i * 0.24 * SR)
+		out[o:o + len(x)] += x
+	return pan(norm(out, 0.1), 0.2), 0, 0.4
+
+
+def button(c):
+	"""Go button: tactile click, then a confirm chime."""
+	t = tt(0.06)
+	click = sos(noise(len(t), False), "band", [2000, 6000]) * np.exp(-t * 300) + tone(1800, 0.06, 120) * 0.5
+	ch1, ch2 = tone(1244.5, 0.4, 9), tone(1661.2, 0.6, 7)
+	out = np.zeros(int(0.8 * SR))
+	out[: len(click)] += click
+	o = int(0.05 * SR)
+	out[o:o + len(ch1)] += ch1 * 0.6
+	o = int(0.14 * SR)
+	out[o:o + len(ch2)] += ch2 * 0.6
+	return pan(norm(out, 0.17), 0.2), 0, 0.3
+
+
+def flick(c):
+	"""A tile flipping over."""
+	t = tt(0.14)
+	x = sweep_bp(noise(len(t)), 5000 * np.exp(-t * 12) + 800, q=1.0) * np.sin(np.pi * np.clip(t / 0.14, 0, 1))
+	return pan(norm(x, 0.08 * c["v"]), (int(c["t"] * 4) % 3 - 1) * 0.4), 0, 0.1
+
+
+def count(c):
+	"""Stopwatch running: a mechanical tick on every sixteenth note while the day counter climbs."""
+	d = c["t0"] - c["t"] if c.get("t0") and c["t0"] > c["t"] else 1.6
+	step = 0.4876 / 4
+	out = np.zeros(int((d + 0.1) * SR))
+	tick = tone(4200, 0.03, 260) + tone(2600, 0.03, 180) * 0.5
+	for i in range(int(d / step)):
+		o = int(i * step * SR)
+		out[o:o + len(tick)] += tick * (1 if i % 4 == 0 else 0.55)
+	return pan(norm(out, 0.07), 0.35), 0, 0.1
+
+
+def click(c):
+	t = tt(0.08)
+	x = tone(3200, 0.08, 120) + tone(5100, 0.08, 200) * 0.5 + sos(noise(len(t), False), "high", 4000) * np.exp(-t * 400) * 0.6
+	return pan(norm(x, 0.16), 0.3), 0, 0.2
+
+
+def swish(c):
+	n = int(0.3 * SR)
+	t = np.arange(n) / SR
+	x = sweep_bp(noise(n), 1500 + 6000 * (t / 0.3), q=1.4) * np.sin(np.pi * t / 0.3)
+	return pan(norm(x, 0.12 * c["v"]), np.linspace(-0.6, 0.6, n)), -0.1, 0.15
+
+
+def heart(c):
+	"""Double-tap heart: bubbly pop + sparkle."""
+	t = tt(0.2)
+	pop = np.sin(2 * np.pi * np.cumsum(300 + 900 * (1 - np.exp(-t * 30))) / SR) * np.exp(-t * 20) * np.minimum(1, t / 0.003)
+	out = np.zeros(int(1.3 * SR))
+	out[: len(pop)] += pop
+	for i, f in enumerate([2093.0, 2489.0, 2793.8, 3322.4]):
+		x = tone(f, 0.8, 7) * (0.35 - i * 0.05)
+		o = int((0.04 + i * 0.045) * SR)
+		out[o:o + len(x)] += x
+	return pan(norm(out, 0.22), 0), 0, 0.45
+
+
 SOUNDS = {"whoosh": whoosh, "open": open_, "blip": blip, "tap": tap, "morph": morph, "save": save, "marker": marker,
 	"riser": riser, "drop": drop, "slam": slam, "hit": hit, "shimmer": shimmer, "type": typekey, "shine": shine,
-	"wind": wind, "end": end}
+	"wind": wind, "end": end, "flip": flip, "pen": pen, "iris": whoosh, "land": land, "stamp": stamp, "msg": msg, "pin": pin,
+	"sheet": sheet, "route": route, "button": button, "tick": tap, "flick": flick, "count": count, "click": click,
+	"swish": swish, "key": typekey, "heart": heart}
+SOUNDS["marker"] = marker_draw
 
 
 # ---------------------------------------------------------------- mix
@@ -295,8 +433,10 @@ def load_music(path, start, dur):
 
 # how far each sound's peak sits relative to the music around it (dB). Keeps every effect tucked
 # under the song, whether it's the quiet pre-chorus or the full chorus.
-REL = {"whoosh": 2, "open": 0, "blip": -1, "tap": -5, "morph": 0, "save": -2, "marker": -5, "riser": 1, "drop": 4,
-	"slam": 2, "hit": 4, "shimmer": -3, "type": -11, "shine": 1, "wind": -7, "end": 0}
+REL = {"whoosh": 1, "iris": 3, "open": 0, "blip": -1, "tap": -6, "tick": -8, "morph": 0, "save": -2, "marker": -4, "riser": 1,
+	"drop": 4, "slam": 2, "hit": 4, "shimmer": -3, "type": -11, "key": -10, "shine": 1, "wind": -7, "end": 0, "flip": -1, "pen": -7,
+	"land": 0, "stamp": 3, "msg": -2, "pin": -4, "sheet": -6, "route": -4, "button": 0, "flick": -7, "count": -8, "click": -3,
+	"swish": -3, "heart": 1}
 FLOOR = -20  # reference level (dBFS rms) used when the music is silent
 
 
@@ -313,18 +453,18 @@ def main():
 
 	music = np.zeros((n, 2))
 	if cfg.get("music"):
-		end_t = 68 * beat  # hard cut on the downbeat with the picture
-		m = load_music(HERE.parent / cfg["music"], cfg.get("musicStart", 0), end_t + 0.05)[: n]
+		fade0, fade1 = 72 * beat, 75 * beat  # the chorus ends on beat 72; let the song breathe out under the end card
+		m = load_music(HERE.parent / cfg["music"], cfg.get("musicStart", 0), fade1 + 0.05)[: n]
 		e = np.ones(len(m))
 		fi = int(0.006 * SR)
 		e[:fi] = np.linspace(0, 1, fi)
-		cut = int(end_t * SR)
-		fo = int(0.03 * SR)
-		e[cut - fo:cut] *= np.linspace(1, 0, fo)
-		e[cut:] = 0
+		a0, a1 = int(fade0 * SR), min(len(e), int(fade1 * SR))
+		e[a0:a1] *= np.linspace(1, 0, a1 - a0) ** 2
+		e[a1:] = 0
+		cut = a0
 		m *= e[:, None]
 		# level the bed to the chorus loudness so the quiet pre-chorus stays quiet relative to the drop
-		ref = np.sqrt(np.mean(m[int(32 * beat * SR):cut] ** 2)) + 1e-9
+		ref = np.sqrt(np.mean(m[int(8 * beat * SR):cut] ** 2)) + 1e-9
 		m *= 0.22 / ref * cfg.get("musicVolume", 1.0)
 		music[: len(m)] = m
 

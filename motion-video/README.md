@@ -1,49 +1,52 @@
-# Memories motion video
+# "What do you mean?" — a motion piece for Lubhna
 
-A 33-second, 1920×1080, 30 fps motion-graphics piece in the style of an Apple-UI travel-vlog intro.
-Every frame is drawn by code: HTML/CSS scenes, driven frame by frame by a timeline, captured by headless
-Chromium and encoded with ffmpeg. The sound design is synthesized and locked to the same timeline.
+A 38-second, 1920×1080, 30 fps motion-graphics video cut to the chorus of *What Do You Mean?*. Every scene
+answers a lyric, and every cut, flip, stamp and tap lands on the beat. It's drawn entirely in code: HTML/CSS
+scenes are rendered frame by frame in headless Chromium, with synthesized sound design locked to the same
+timeline.
 
-## The sequence
-| Time | Shot |
-|---|---|
-| 0.0 – 2.6 | Crash zoom out of a gooey red date dot. The calendar header types in and the dot hops day to day, stretching as it moves, then whip-pans to the date with a lens bulge. |
-| 3.3 – 4.6 | The dot puffs up, the photo bleeds through a red tint, and it morphs into a 3D-tilted rounded photo card. |
-| 4.7 – 9.0 | A dark "Most visited places" panel slides in. The row highlight springs between places, a whip-pan reveals the place card, and the title, buttons and avatar build in ("Save" → "Saved"). |
-| 9.0 – 14.5 | Hero place card: the photo cuts to the clip, zoom pushes, a yellow marker swipes behind the title, then the card shrinks into a grid tile. |
-| 14.5 – 23.0 | A clip grid draws its lines in and tiles pop in. A blue map pin flies in with a smear, whip-pans to a dark cell and becomes the "o" in **SUNSET r●ck**. A lens push and a whip lead into letterbox. |
-| 23.0 – 27.5 | The pin slides through the word, then a whip into a speed tunnel with motion streaks. The pin fills with a photo. |
-| 27.5 – 29.3 | The stripe rolls and tilts into a 3D road, and the pin lies down as a puck. |
-| 29.0 – 32.7 | The road shrinks into a social post. The caption types out with the camera following, and the destination glows. |
+## The story, beat by beat (123 BPM; the drop is beat 8)
+| Beats | Lyric | Shot |
+|---|---|---|
+| 0–8 | *"What do you mean?"* | A desk flip-calendar flips a page on every beat (then on eighths, then on sixteenths) to **12 July 2024**. A red marker circles the date, a handwritten note says "the day it all started", and the camera punches in on the drop. |
+| 8–24 | *"nod your head **yes** / but you wanna say **no**"* | An iris opens on a sunlit table. Polaroids fall in with real shadows and gain handwritten captions (your lines from the birthday site). Rubber stamps hit **YES** and **NO** on the sung words. |
+| 24–40 | *"don't want me to **move** / but you tell me to **go**"* | An iPhone with Maps: she texts "don't move 😤" while your pin shakes its head, then "…okay, go 🙄". The route draws, the green **Go** button is pressed on "go", and the camera dives into 3D navigation that ends on her pin. |
+| 40–56 | *"Said you're **running out of time**"* | Her photo swells out of the pin into a wall of her photos (tiles pop in on eighth notes, then flip in a wave). A chrome stopwatch drops in and counts the **days of us** since 12.07.2024. |
+| 56–64 | *"Oh, what do you mean?"* | **MOST VISITED PLACE: y●u**, with the map pin as the "o". It slams on the downbeat and the pin pulses on every beat. |
+| 64–78 | *"**Better make up your mind** / What do you mean?"* | Zoom through the pin into a social post. The caption types word by word with the vocal ("Made up my mind. / It's always you ♡"), a double-tap heart lands on the final "mean?", she replies "always ♡", and it ends on a handwritten card. |
+
+"What do you mean?" recurs as a typographic motif (serif italic, word by word, with a bouncing "?"). It's the
+visual hook that ties the scenes together, just as the vocal hook ties the song together.
+
+**Craft details:** paper and grain textures, leaf-shadow light on the desk, layered contact shadows, metal and
+glass materials, a 3D phone with a titanium edge and moving glare, frosted-glass UI, a lens bulge on push-ins,
+directional motion blur, chromatic aberration and light leaks on transitions, a subtle frame pump on every beat,
+film grain, and a vignette.
 
 ## Make it yours
-Everything you'd change is in **`config.json`**: date, place names, card text, the big title word, post name and
-caption, which photo goes where, and the music.
-
-- **Use video clips instead of photos:** put a clip path (`.mp4`, `.mov`, `.webm`) in any media slot. Add
-  `#seconds` to start part-way in, e.g. `"clips/beach.mp4#2.5"`. `prep.py` turns clips into frame sequences
-  so they play in sync with the animation. Photos get a slow push and handheld drift so they feel like footage.
-- **Title word:** `title.word` + `title.pinLetter` (the index of the letter the pin replaces, normally an "o").
-- **Music and beat sync:** `music` sets the song (a path from the repo root), and `musicStart` sets where the edit begins in it.
-  `beat.bpm` sets the tempo. The animation runs on its own clock, which is warped onto the beat grid (`ANCH` in
-  `motion.js`). That way every whip, hop, tile pop, title slam and cut lands on a beat, and the chorus drop
-  (beat 32) hits as the card snaps into the clip grid. From the drop on, the whole frame pumps on every kick, and
-  harder on each bar's downbeat. With a different song, set its BPM and a `musicStart` that sits 32 beats before its drop.
+Edit **`config.json`**: names, the start date and "as of" date (these drive the calendar and the day counter),
+polaroids (photo + caption), the YES and NO stamp targets, the Maps text, the wall photos, the title word, the
+post lines and reply, the end card, and the music.
+- **Video clips:** any media slot can be a clip (`.mp4`, `.mov`, `.webm`); add `#seconds` to start part-way in.
+- **Lyric timings** (`L` in `motion.js`) were measured from the song with word-level transcription, then snapped
+  to the 16th-note grid. They belong to the section that starts at `musicStart` (11.888 s, two bars before the hook).
 
 ## Build
-Needs Python 3 with Pillow, NumPy and SciPy, Node with Playwright (Chromium), and ffmpeg.
-The song isn't committed. Put it at `music/what-do-you-mean.mp3` (repo root) or point `music` in the config at your own file.
+Needs Python 3 with Pillow, NumPy and SciPy, Node with Playwright (Chromium), and ffmpeg. The song isn't committed:
+put it at `music/what-do-you-mean.mp3` (repo root).
 ```
 cd motion-video
-./make.sh                      # -> output/memories.mp4
-node render.js --stills 3.6,21.3,28.5   # PNG stills in .cache/stills/ for quick checks
+./make.sh                                   # -> output/memories.mp4
+node render.js --stills 3.6,12.0,18.0       # PNG stills (in seconds) in .cache/stills/
 ```
-To scrub the animation live, run `python3 prep.py` and then open `index.html` in Chrome (started with
-`--allow-file-access-from-files`). It has a play button and a timeline slider.
+For a live scrubber, run `python3 prep.py`, then open `index.html` in Chrome (started with `--allow-file-access-from-files`).
 
 ## Files
-- `index.html`: scene markup and styles, plus the SVG filter for motion blur and lens distortion.
-- `motion.js`: the timeline. It holds every scene, camera, easing and cue, and each frame is a pure function of time.
-- `render.js`: captures frames with Playwright and pipes them to ffmpeg. It also exports the sound cues.
-- `audio.py`: synthesized SFX, mixed with the trimmed song. These are whooshes that peak on each landing, UI taps, pitched blips, a riser into the drop, a sub drop, hits, typing and a chime. Each effect sets its own level from the music around it so it stays under the song, and all of them go through a shared reverb and a limiter.
-- `prep.py`: resizes photos, extracts clip frames, and writes `.cache/data.js`.
+- `index.html`: the design system, plus the SVG filter for motion blur, lens distortion and chromatic aberration.
+- `motion.js`: the six scenes and the lyric motif, all timed in beats. Each frame is a pure function of time.
+- `audio.py`: SFX tied to on-screen actions: page flips, marker and pen on paper, polaroid slaps, rubber stamps,
+  message pops, a button click with a chime, stopwatch ticks, keyboard keys, and a heart pop. Pitched sounds are
+  tuned to the song's key (A♭). Each one is levelled against the music around it, then everything goes through a
+  shared reverb and a limiter.
+- `render.js`, `prep.py`, `make.sh`: the frame capture, media prep and the full build.
+- `fonts/`: Inter, Caveat and Instrument Serif (SIL Open Font License).

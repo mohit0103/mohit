@@ -38,7 +38,7 @@ const CACHE = path.join(HERE, '.cache');
 	const from = +opt('from', 0), to = +opt('to', info.dur);
 	const out = opt('out', path.join(CACHE, 'video.mp4'));
 	const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-c:v', 'png', '-framerate', String(fps), '-i', '-',
-		'-c:v', 'libx264', '-preset', 'slow', '-crf', '15', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+		'-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
 	const n0 = Math.round(from * fps), n1 = Math.round(to * fps);
 	const t0 = Date.now();
 	for (let n = n0; n < n1; n++) {
