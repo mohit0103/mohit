@@ -1,0 +1,59 @@
+{
+  "_help": "Edit text and media here. Media paths are relative to the repo root. Any slot can be a photo (.jpg/.png) or a video clip (.mp4/.mov/.webm). For a clip, add #<seconds> to start from that point, e.g. \"clips/beach.mp4#2.5\".",
+
+  "date": { "year": 2024, "month": 7, "day": 12, "label": "12 July, 2024", "weekday": "Friday" },
+
+  "panelTitle": "Most visited places",
+  "places": [
+    { "name": "Sunset Rock, View Point", "dist": "12.4 km", "media": "photos/IMG-20250306-WA0099.jpg" },
+    { "name": "The Old Tree",            "dist": "4.2 km",  "media": "photos/PXL_20240712_121207936.jpg" },
+    { "name": "Fairground Lane",         "dist": "8.1 km",  "media": "photos/IMG-20250305-WA0013.jpg" },
+    { "name": "Glass Atrium",            "dist": "6.7 km",  "media": "photos/IMG-20250104-WA0011.jpg" }
+  ],
+
+  "card": {
+    "title": "The Old Tree",
+    "subtitle": "Hilltop Park, City Outskirts",
+    "dist": "4.2 km",
+    "clip": "photos/IMG-20241030-WA0016.jpg"
+  },
+
+  "title": { "kicker": "SUNSET", "word": "rock", "pinLetter": 1, "hero": "photos/IMG-20250306-WA0099.jpg" },
+
+  "pinClip": "photos/IMG-20250305-WA0013.jpg",
+
+  "post": {
+    "name": "Mohit",
+    "ago": "2 Days ago",
+    "caption": "The Old Tree DONE! Otw to Sunset Rock",
+    "highlight": "Sunset Rock"
+  },
+
+  "morph": "photos/PXL_20240712_121307772.jpg",
+  "avatar": { "media": "photos/PXL_20240712_121307772.jpg", "x": 26, "y": 44, "zoom": 3.4 },
+
+  "grid": [
+    "photos/IMG-20250404-WA0002.jpg",
+    "photos/IMG-20240412-WA0009.jpg",
+    "photos/IMG-20241123-WA0047.jpg",
+    "photos/IMG-20250412-WA0006.jpg",
+    "photos/IMG-20240218-WA0001.jpg",
+    "photos/IMG-20250331-WA0006.jpg",
+    "photos/IMG-20251126-WA0000.jpg",
+    "photos/IMG-20250419-WA0026.jpg",
+    "photos/IMG-20240411-WA0014.jpg",
+    "photos/IMG-20250509-WA0035.jpg",
+    "photos/IMG-20241025-WA0005.jpg",
+    "photos/IMG-20250304-WA0021.jpg",
+    "photos/IMG-20250125-WA0101.jpg",
+    "photos/IMG-20240706-WA0004.jpg",
+    "photos/IMG-20250406-WA0006.jpg",
+    "photos/PXL_20240712_121207936.jpg",
+    "photos/IMG-20250521-WA0001.jpg",
+    "photos/IMG-20240130-WA0014.jpg"
+  ],
+
+  "music": "InShot_20251126_203838257.mp3",
+  "musicStart": 0,
+  "musicVolume": 0.55
+}

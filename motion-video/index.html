@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memories Motion</title>
+<style>
+@font-face { font-family: "Inter"; font-weight: 500; src: url("../fact-videos/fonts/Inter-Medium.ttf"); }
+@font-face { font-family: "Inter"; font-weight: 700; src: url("../fact-videos/fonts/Inter-Bold.ttf"); }
+@font-face { font-family: "Inter"; font-weight: 800; src: url("../fact-videos/fonts/Inter-ExtraBold.ttf"); }
+@font-face { font-family: "Anton"; src: url("../fact-videos/fonts/Anton-Regular.ttf"); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #000; overflow: hidden; }
+body { font-family: "Inter", sans-serif; font-weight: 500; -webkit-font-smoothing: antialiased; }
+body.dev { overflow: auto; }
+
+#viewport { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+/* the frame is 120px larger on every side so blur never pulls in empty edges */
+#frame { position: absolute; left: -120px; top: -120px; width: 2160px; height: 1320px; overflow: hidden; background: #f2f2f2; }
+.layer { position: absolute; inset: 0; overflow: hidden; }
+.world { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; }
+.abs { position: absolute; }
+img.media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 32%; }
+.mbox { position: absolute; overflow: hidden; }
+
+/* ---------- calendar ---------- */
+#cal { background: #f3f3f3; }
+#cal .head { position: absolute; font-size: 44px; color: #161616; white-space: nowrap; }
+#cal .head .wd { color: #9a9a9e; }
+#cal .wdl { position: absolute; width: 210px; text-align: center; font-size: 34px; color: #8e8e93; }
+#cal .num { position: absolute; width: 120px; height: 90px; margin: -45px 0 0 -60px; display: flex; align-items: center;
+	justify-content: center; font-size: 46px; color: #151515; }
+#cal .num .bg { position: absolute; width: 74px; height: 74px; border-radius: 14px; z-index: -1; }
+#cal .num.it { font-style: italic; transform: skewX(-9deg); }
+#cal .mark { position: absolute; width: 12px; height: 12px; border-radius: 50%; margin: -6px 0 0 -6px; }
+#cal .vline, #cal .hline { position: absolute; background: #dedede; }
+#blobsvg { position: absolute; left: 0; top: 0; overflow: visible; }
+#morph { position: absolute; overflow: hidden; background: #ff1616; }
+#morph .tint { position: absolute; inset: 0; background: #ff1616; }
+#morph .shine { position: absolute; inset: 0; border-radius: inherit;
+	background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.45), rgba(255,255,255,0) 46%),
+		radial-gradient(circle at 70% 82%, rgba(90,0,0,.45), rgba(90,0,0,0) 55%); }
+#morph .n { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 46px; }
+
+/* ---------- list panel + card ---------- */
+#panel { position: absolute; top: 0; height: 1320px; width: 900px; background: #1c1c1e; overflow: hidden; }
+#panel .ttl { position: absolute; left: 64px; font-size: 25px; color: #8d8d92; }
+#panel .row { position: absolute; left: 0; width: 900px; height: 170px; }
+#panel .row .th { position: absolute; left: 64px; top: 33px; width: 104px; height: 104px; border-radius: 20px; overflow: hidden; }
+#panel .row .nm { position: absolute; left: 200px; top: 50px; font-size: 33px; color: #f5f5f7; white-space: nowrap; }
+#panel .row .ds { position: absolute; left: 200px; top: 96px; font-size: 21px; color: #7c7c80; }
+#panel .row .sep { position: absolute; left: 200px; right: 70px; bottom: 0; height: 2px; background: #2f2f31; }
+#panel .hl { position: absolute; left: 34px; width: 820px; height: 150px; border-radius: 24px; background: #2e2e31; }
+
+#card { position: absolute; left: 0; top: 0; width: 880px; height: 730px; transform-origin: 0 0; }
+#card .img { position: absolute; left: 0; top: 0; width: 880px; height: 540px; border-radius: 28px; overflow: hidden;
+	box-shadow: 0 34px 70px rgba(0,0,0,.22), 0 6px 18px rgba(0,0,0,.14); background: #ccc; }
+#card .pill { position: absolute; right: 24px; top: 24px; height: 46px; padding: 0 20px 0 16px; border-radius: 23px;
+	background: rgba(18,18,20,.88); color: #fff; font-size: 21px; display: flex; align-items: center; gap: 10px; }
+#card .pill svg { width: 18px; height: 22px; }
+#card .det { position: absolute; left: 6px; right: 6px; top: 562px; }
+#card .tt { position: absolute; left: 0; top: 0; font-size: 48px; color: #121212; white-space: nowrap; }
+#card .tt .mk { position: absolute; left: -8px; right: -10px; top: 4px; bottom: -2px; background: #ffe37a; z-index: -1; transform-origin: 0 50%; }
+#card .tt span.w { display: inline-block; }
+#card .sub { position: absolute; left: 2px; top: 62px; font-size: 23px; color: #8a8a8f; white-space: nowrap; }
+#card .dst { position: absolute; right: 8px; top: 14px; font-size: 23px; color: #8a8a8f; }
+#card .btns { position: absolute; left: 0; top: 112px; display: flex; gap: 14px; align-items: center; }
+#card .btn { height: 58px; padding: 0 26px 0 22px; border-radius: 29px; background: #1c1c1e; color: #fff; font-size: 22px;
+	display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+#card .btn svg { width: 22px; height: 22px; }
+#card .pinic { width: 40px; height: 40px; margin-left: 4px; }
+#card .av { position: absolute; right: 6px; top: 110px; width: 68px; height: 68px; border-radius: 18px; background: #ffcc00;
+	overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,.15); }
+
+/* ---------- grid ---------- */
+#grid { background: #fbfbfb; }
+#grid .gl { position: absolute; background: #9c9c9c; }
+#grid .tile { position: absolute; overflow: hidden; background: #ddd; }
+.rec { position: absolute; right: 12px; top: 12px; height: 24px; padding: 0 10px 0 8px; border-radius: 6px; background: #0b0b0b;
+	color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.rec i { width: 9px; height: 9px; border-radius: 50%; background: #ff3b30; display: block; }
+.lights { position: absolute; left: 14px; bottom: 12px; display: flex; gap: 7px; }
+.lights i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+#titlecell { position: absolute; background: #1c1c1e; overflow: visible; }
+#tstripe { position: absolute; background: #4f9cf9; transform-origin: 0 50%; }
+#tkick { position: absolute; font-family: "Anton"; font-size: 30px; letter-spacing: 3px; color: #a7a7ab; transform: skewX(-12deg); white-space: nowrap; }
+.tword { position: absolute; font-weight: 800; font-size: 118px; color: #fff; white-space: nowrap; letter-spacing: -2px; line-height: 1; }
+
+.pin { position: absolute; width: 0; height: 0; }
+.pin .disc { position: absolute; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px rgba(0,40,120,.28); }
+.pin .core { position: absolute; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 40% 35%, #3b8bff, #0d63f2 70%); }
+.pin .core .ph { position: absolute; inset: 0; }
+.pin .core .tint { position: absolute; inset: 0; background: #1a6dff; }
+.pin svg.arrow { position: absolute; overflow: visible; }
+
+/* ---------- tunnel / road / post ---------- */
+#post { background: #1c1c1e; }
+#postimg { position: absolute; overflow: hidden; background: #fff; }
+#plane3d { position: absolute; left: 0; top: 0; width: 2160px; height: 1320px; perspective: 1500px; perspective-origin: 1080px 660px; transform-origin: 0 0; }
+#plane { position: absolute; left: 1080px; top: 660px; width: 0; height: 0; transform-style: preserve-3d; }
+#plane .ground { position: absolute; left: -6000px; top: -6000px; width: 12000px; height: 12000px; background: #fff; }
+#streaks { position: absolute; left: -3000px; top: -700px; overflow: visible; }
+#rstripe { position: absolute; left: -6000px; width: 12000px; background: #4f9cf9; }
+#pchrome { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#pchrome .av { position: absolute; width: 66px; height: 66px; border-radius: 50%; overflow: hidden; background: #ffcc00; }
+#pchrome .nm { position: absolute; font-size: 30px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 9px; }
+#pchrome .nm .fl { color: #3d8bff; font-weight: 500; }
+#pchrome .ago { position: absolute; font-size: 18px; color: #77777c; white-space: nowrap; }
+#pchrome .cap { position: absolute; font-size: 29px; color: #fff; white-space: pre; }
+#pchrome .cap span { opacity: 0; }
+#pchrome .cap span.on { opacity: 1; }
+
+#bars i { position: absolute; left: 0; width: 1920px; height: 132px; background: #000; display: block; }
+#black { position: absolute; inset: 0; background: #000; opacity: 0; }
+
+/* dev scrubber */
+#dev { display: none; }
+body.dev #dev { display: flex; gap: 12px; align-items: center; padding: 10px; color: #ddd; font: 14px monospace; background: #111; width: 1920px; }
+body.dev #dev input[type=range] { flex: 1; }
+</style>
+</head>
+<body>
+<div id="viewport">
+	<div id="frame">
+		<div id="cal" class="layer"><div class="world" id="calw"></div></div>
+		<div id="scene2" class="layer" style="pointer-events:none">
+			<div id="panel"></div>
+			<div id="card"></div>
+		</div>
+		<div id="grid" class="layer"><div class="world" id="gridw"></div></div>
+		<div id="post" class="layer">
+			<div class="world" id="postw">
+				<div id="pchrome"></div>
+				<div id="postimg">
+					<div id="plane3d"><div id="plane"></div></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="bars"><i id="barT"></i><i id="barB"></i></div>
+	<div id="black"></div>
+</div>
+<div id="dev"><button id="play">play</button><input id="scrub" type="range" min="0" max="33.5" step="0.0333" value="0"><span id="tlabel">0.00</span></div>
+
+<svg width="0" height="0" style="position:absolute">
+	<defs>
+		<filter id="fx" x="0" y="0" width="2160" height="1320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+			<feGaussianBlur id="fxblur" in="SourceGraphic" stdDeviation="0 0" edgeMode="duplicate" result="b"/>
+			<feImage id="fxmap" x="120" y="120" width="1920" height="1080" preserveAspectRatio="none" result="m"/>
+			<feDisplacementMap id="fxdisp" in="b" in2="m" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+		</filter>
+	</defs>
+</svg>
+
+<script src=".cache/data.js"></script>
+<script src="motion.js"></script>
+</body>
+</html>
