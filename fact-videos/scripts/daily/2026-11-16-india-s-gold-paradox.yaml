@@ -1,0 +1,129 @@
+channel: factloop
+kicker: NOV 2026 · GOLD FACTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: India buys more gold than anyone, but mines almost none!
+  highlight:
+  - more gold
+  - none
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian gold jewelry display market
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: GOLD PARADOX
+    font: display
+    size: 140
+    y: 800
+  - type: stamp
+    text: NONE
+    at: none
+    y: 1080
+    rotate: -8
+- say: We consume almost 800 tonnes annually, but mine only 2 tonnes!
+  highlight:
+  - 800 tonnes
+  - 2 tonnes
+  bg: paper
+  layers:
+  - type: photo
+    query: gold bars and raw gold ore mining
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: bars
+    items:
+    - label: CONSUME
+      value: 800
+    - label: MINE
+      value: 2
+    unit: T
+    y: 900
+- say: This huge gap drains billions in foreign currency, severely hurting our economy.
+  highlight:
+  - billions
+  - hurting
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian Rupee notes falling from sky
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: icon
+    name: currency-rupee
+    label: FOREX DRAIN
+    size: 300
+    y: 900
+- say: Imports recently hit ₹4.6 lakh crore, heavily stressing the Rupee.
+  highlight:
+  - ₹4.6 lakh crore
+  - stressing
+  bg: red
+  layers:
+  - type: photo
+    query: large cargo container ship India port
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: counter
+    value: 4.6
+    suffix: ' Lakh Crore'
+    label: Import Bill FY22
+    plain: false
+    y: 900
+  - type: stamp
+    text: STRESS
+    at: stressing
+    y: 1100
+    rotate: 8
+- say: The government wants your idle gold to be productive, not sitting in lockers.
+  highlight:
+  - idle gold
+  - productive
+  bg: paper
+  layers:
+  - type: photo
+    query: gold jewelry in bank vault locker
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: stamp
+    text: IDLE
+    at: idle gold
+    y: 900
+- say: Should India strongly limit gold imports to boost the economy? Yes or no?
+  highlight:
+  - limit gold imports
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+post_caption: India's love for gold is legendary, but its impact on our economy is a huge debate. Should we curb gold imports
+  to strengthen the Rupee? Tell us what you think! 👇
+hashtags:
+- '#IndiaGold'
+- '#GoldImports'
+- '#IndianEconomy'
+- '#FinanceFacts'
+- '#MakeInIndia'
+sources:
+- World Gold Council (Gold Demand Trends, Gold Reserves)
+- India Brand Equity Foundation (IBEF) (Trade data, FY22)
+- Reserve Bank of India (RBI) (Gold Monetization Scheme)
+- Ministry of Mines, Government of India (Gold production data)
+- The Economic Times (News articles on gold imports and policy)
+topic: India's Gold Paradox
