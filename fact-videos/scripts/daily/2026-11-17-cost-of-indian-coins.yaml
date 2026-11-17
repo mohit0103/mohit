@@ -1,0 +1,128 @@
+channel: factloop
+kicker: INDIA · CURRENCY FACTS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your ₹1 coin actually costs ₹1.11 to make.
+  highlight:
+  - ₹1.11
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian 1 rupee coin front
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: COSTS MORE
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - MORE
+  - type: stamp
+    text: ₹1.11
+    at: ₹1.11
+    y: 1080
+    rotate: -8
+- say: That means our government loses 11 paise on each ₹1 coin.
+  highlight:
+  - loses
+  - 11 paise
+  bg: paper
+  layers:
+  - type: photo
+    query: pile of Indian 1 rupee coins
+    frame: print
+    treatment: color
+  - type: icon
+    name: trending-down
+    label: Loss
+    size: 300
+    y: 900
+    at: loses
+- say: The ₹2 coin also costs ₹1.28. Only ₹5 and ₹10 coins are profitable.
+  highlight:
+  - ₹1.28
+  - profitable
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian 2, 5, 10 rupee coins
+    frame: strip
+    treatment: color
+  - type: bars
+    items:
+    - label: ₹1
+      value: 1.11
+    - label: ₹2
+      value: 1.28
+    - label: ₹5
+      value: 3.69
+    - label: ₹10
+      value: 5.54
+    unit: ₹
+    y: 900
+    at: profitable
+- say: Why mint them then? Coins last over 20 years; notes tear in months.
+  highlight:
+  - 20 years
+  - notes tear
+  bg: paper
+  layers:
+  - type: photo
+    query: worn Indian rupee notes
+    frame: print
+    treatment: bw
+  - type: icon
+    name: calendar
+    label: Lifespan
+    size: 300
+    y: 900
+    at: 20 years
+- say: And for small transactions or 'shagun', coins are truly essential in India.
+  highlight:
+  - shagun
+  - essential
+  bg: ink
+  layers:
+  - type: photo
+    query: Indian traditional shagun money
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: stamp
+    text: SHAGUN
+    at: shagun
+    y: 1080
+    rotate: 5
+- say: Should India stop minting ₹1 coins to save this money? Yes or no?
+  highlight: []
+  bg: red
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 800
+post_caption: 'Shocking, but true: your ₹1 coin costs more to make than its actual value! But wait, there are surprising reasons
+  behind it. Should India continue minting ₹1 coins? Yes or no, tell us your thoughts!'
+hashtags:
+- '#IndianCoins'
+- '#CurrencyFacts'
+- '#RBI'
+- '#Economy'
+- '#DidYouKnow'
+- '#India'
+sources:
+- In 2018, an RTI revealed that it costs ₹1.11 to mint a ₹1 coin in India, ₹1.28 for a ₹2 coin, ₹3.69 for a ₹5 coin, and ₹5.54
+  for a ₹10 coin.
+- Coins have a lifespan of over 20 years, significantly longer than currency notes which last about 9-10 months.
+- The continued minting of ₹1 coins helps facilitate small transactions and holds cultural significance, often given as 'shagun'.
+topic: Cost of Indian Coins
