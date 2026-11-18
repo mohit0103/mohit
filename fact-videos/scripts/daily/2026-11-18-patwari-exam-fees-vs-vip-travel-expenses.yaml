@@ -1,0 +1,99 @@
+channel: factloop
+kicker: HIMACHAL · PATWARI FEES
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: 'Your Patwari exam fees: did they fund VIP travel?'
+  highlight:
+  - VIP
+  - travel
+  bg: ink
+  layers:
+  - type: photo
+    query: Himachal Pradesh Vidhan Sabha building exterior
+    frame: full
+    treatment: dim
+    dim: 0.2
+  - type: stamp
+    text: VIP TRAVEL
+    at: VIP
+    y: 1080
+    rotate: -8
+- say: Himachal's Patwari exam collected a massive ₹15 crore in application fees.
+  highlight:
+  - ₹15 crore
+  - fees
+  bg: paper
+  layers:
+  - type: photo
+    query: crowd of students entering exam hall India
+    frame: print
+    treatment: color
+  - type: counter
+    value: 15
+    suffix: ' crore'
+    label: Exam Fees
+    y: 800
+- say: Meanwhile, VIPs in Himachal splurged ₹4.35 crore on official travel.
+  highlight:
+  - splurged
+  - ₹4.35 crore
+  bg: red
+  layers:
+  - type: photo
+    query: Indian government official car moving
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: counter
+    value: 4.35
+    suffix: ' crore'
+    label: VIP Travel
+    y: 800
+- say: Almost a third of your exam fees covered their yearly travel expenses.
+  highlight:
+  - third
+  - travel expenses
+  bg: ink
+  layers:
+  - type: photo
+    query: stack of Indian rupee notes
+    frame: strip
+    treatment: color
+  - type: bars
+    items:
+    - label: Exam Fees
+      value: 15
+    - label: VIP Travel
+      value: 4.35
+    unit: ' cr'
+    y: 800
+- say: Should public exam fees cover government official expenses? Yes or no?
+  highlight:
+  - public exam fees
+  - official expenses
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: 'Your exam fees: where do they really go? Himachal''s Patwari exam collected ₹15 crore, while VIP travel allowances
+  cost ₹4.35 crore. Should exam fees cover government expenses? Yes or No?'
+hashtags:
+- '#HimachalPradesh'
+- '#PatwariExam'
+- '#GovernmentExpenses'
+- '#IndianYouth'
+- '#FactVideo'
+- '#IndiaFacts'
+sources:
+- हिमाचल में माननीयों व अफसरों की वाहन सुविधा पर करोड़ों खर्च, पटवारी भर्ती आवेदन शुल्क से मिले 15 करोड़ रुपये
+- सीएम, मंत्रियों, माननीयों व अफसरों के वेतन-भत्तों आदि पर एक साल का खर्च 43.22 करोड़, 4.35 करोड़ टीए-डीए
+topic: Patwari Exam Fees vs. VIP Travel Expenses in Himachal Pradesh
