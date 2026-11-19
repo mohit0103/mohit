@@ -1,0 +1,127 @@
+channel: factloop
+kicker: SPACE · 2026
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  NASA: Nasa
+  Voyager: Voyager
+scenes:
+- say: This 49-year-old probe just reached ONE light-day from Earth!
+  highlight:
+  - 49-year-old
+  - ONE light-day
+  bg: ink
+  layers:
+  - type: photo
+    query: Voyager 1 spacecraft deep space full frame
+    frame: full
+    treatment: color
+  - type: headline
+    text: ONE LIGHT-DAY
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - LIGHT-DAY
+  - type: stamp
+    text: 49 YEARS
+    at: 49-year-old
+    y: 1080
+    rotate: -8
+- say: It’s NASA’s Voyager 1, our farthest human-made object.
+  highlight:
+  - Voyager 1
+  - farthest
+  bg: paper
+  layers:
+  - type: photo
+    query: Voyager 1 spacecraft artist impression deep space path
+    frame: print
+    treatment: color
+  - type: headline
+    text: VOYAGER 1
+    font: serif
+    size: 120
+    y: 800
+- say: Launched in 1977, it’s now almost 25 billion kilometres away!
+  highlight:
+  - '1977'
+  - 25 billion kilometres
+  bg: red
+  layers:
+  - type: photo
+    query: Voyager 1 launch 1977 historic photo
+    frame: print
+    treatment: bw
+  - type: counter
+    value: 25
+    suffix: ' Billion km'
+    label: Current Distance
+    y: 1100
+- say: Signals take 24 hours to reach us, even at light speed!
+  highlight:
+  - 24 hours
+  - light speed
+  bg: ink
+  layers:
+  - type: photo
+    query: Deep Space Network antenna large satellite dish Australia
+    frame: full
+    treatment: duotone
+  - type: headline
+    text: 24 HOURS
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - HOURS
+- say: It carries a 'Golden Record', a message for alien life.
+  highlight:
+  - Golden Record
+  - alien life
+  bg: paper
+  layers:
+  - type: photo
+    query: Voyager Golden Record close up surface
+    frame: strip
+    treatment: color
+  - type: icon
+    name: music
+    label: Sounds of Earth
+    size: 300
+    y: 1000
+- say: Should humanity keep sending messages into deep space? Yes or No?
+  highlight:
+  - sending messages
+  - deep space
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+post_caption: Voyager 1 has travelled an unimaginable distance! Does humanity have a responsibility to communicate with potential
+  alien life, or should we observe silently? Share your thoughts below!
+hashtags:
+- '#SpaceFacts'
+- '#Voyager1'
+- '#NASA'
+- '#DeepSpace'
+- '#Science'
+- '#GoldenRecord'
+- '#LightDay'
+- '#FactVideo'
+sources:
+- https://en.wikipedia.org/wiki/Voyager_1
+- https://science.nasa.gov/mission/voyager/voyager-1/
+- https://science.nasa.gov/solar-system/voyager-1-what-is-a-light-day/
+- https://edition.cnn.com/2026/11/18/world/voyager-1-one-light-day-away-from-earth-milestone-scn-trnd/index.html
+- https://www.thehindu.com/sci-tech/science/nasa-voyager-1-reaches-one-light-day-from-earth-on-november-18-what-does-it-mean/article67545934.ece
+- https://www.nasa.gov/press-release/nasa-s-voyager-1-achieves-historic-light-day-milestone
+- https://en.wikipedia.org/wiki/Voyager_Golden_Record
+- https://earthsky.org/space/voyager-1-one-light-day-from-earth/
+topic: NASA Voyager 1's incredible journey
