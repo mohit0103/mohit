@@ -1,0 +1,106 @@
+channel: factloop
+kicker: INDIA · FOOD LOSS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Sixty percent of India's onions simply vanish each year!
+  highlight:
+  - VANISH
+  bg: ink
+  layers:
+  - type: photo
+    query: pile of rotting onions India
+    frame: full
+    treatment: dim
+    dim: 0.2
+  - type: stamp
+    text: VANISH!
+    at: VANISH
+    y: 1080
+    rotate: -8
+- say: India is second-largest producer, yet 60% of our onions are wasted.
+  highlight: []
+  bg: paper
+  layers:
+  - type: photo
+    query: large onion harvest field India
+    frame: print
+    treatment: color
+  - type: counter
+    value: 60
+    suffix: '%'
+    label: WASTED
+    plain: false
+    y: 1000
+- say: This isn't just rotten food, it's an estimated ₹2,700 crore economic loss.
+  highlight:
+  - ₹2,700 CRORE
+  bg: red
+  layers:
+  - type: photo
+    query: rotten vegetables waste dump India
+    frame: full
+    treatment: dim
+    dim: 0.2
+  - type: counter
+    value: 2700
+    suffix: ' Cr'
+    label: LOSS ANNUALLY
+    plain: false
+    y: 1000
+- say: Poor storage and transport infrastructure are the real culprits.
+  highlight:
+  - INFRASTRUCTURE
+  bg: ink
+  layers:
+  - type: photo
+    query: inadequate onion storage rural India
+    frame: strip
+    treatment: bw
+  - type: icon
+    name: alert-triangle
+    label: INFRASTRUCTURE
+    size: 300
+    y: 1000
+- say: This waste drives price hikes, hurting farmers and your wallet.
+  highlight:
+  - PRICE HIKES
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian vegetable market price board
+    frame: print
+    treatment: color
+  - type: icon
+    name: trending-up
+    label: PRICE HIKES
+    size: 300
+    y: 1000
+- say: Should government prioritize better storage over export policies?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+post_caption: India's onion crisis goes beyond just prices! The staggering amount of wasted onions costs the nation thousands
+  of crores. Should better infrastructure be the top priority to fix this? Yes or no, share your thoughts below! 👇
+hashtags:
+- '#OnionCrisis'
+- '#FoodWaste'
+- '#IndiaFacts'
+- '#Economy'
+- '#Agriculture'
+- '#HiddenCost'
+sources:
+- The impact of India's onion policy on local growers and communities
+- BAIF | Assessment of post-harvest losses of onion | WRI India | 2026 - YouTube
+- New Study Pegs Post-Harvest Losses for Onions at Rs 2,711 cr | WRI India
+topic: Onion Waste in India
