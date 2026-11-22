@@ -1,0 +1,125 @@
+channel: factloop
+kicker: WORLD COURT · INTERNATIONAL LAW
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  The Hague: The Hayg
+scenes:
+- say: The world's highest court? Its rulings are routinely ignored.
+  highlight:
+  - ignored
+  bg: ink
+  layers:
+  - type: photo
+    query: International Court of Justice building Peace Palace exterior
+    frame: full
+    treatment: color
+  - type: headline
+    text: WORLD COURT
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - COURT
+  - type: stamp
+    text: IGNORED
+    at: ignored
+    y: 1080
+    rotate: -8
+- say: Based in The Hague, it settles legal disputes between countries.
+  highlight:
+  - disputes
+  bg: paper
+  layers:
+  - type: photo
+    query: map of Netherlands with pin on The Hague
+    frame: strip
+    treatment: color
+  - type: kicker
+    text: THE HAGUE · NETHERLANDS
+    y: 560
+- say: Its judgments are binding, yet the court has no police or army.
+  highlight: []
+  bg: red
+  layers:
+  - type: photo
+    query: empty international courtroom gavel
+    frame: full
+    treatment: duotone
+  - type: stamp
+    text: NO ARMY
+    at: army
+    y: 1080
+    rotate: 5
+- say: Enforcement needs the UN Security Council, where big powers have veto.
+  highlight:
+  - veto
+  bg: ink
+  layers:
+  - type: photo
+    query: UN Security Council meeting chamber
+    frame: full
+    treatment: color
+  - type: chips
+    items:
+    - USA
+    - CHINA
+    - RUSSIA
+    y: 1080
+- say: For 70 years, the Council has *never* enforced an ICJ judgment.
+  highlight: []
+  bg: paper
+  layers:
+  - type: photo
+    query: old United Nations Charter document
+    frame: print
+    treatment: bw
+  - type: counter
+    value: 70
+    suffix: ' years'
+    label: no enforcement
+    plain: true
+    y: 1080
+- say: Should the International Court of Justice be given real power to enforce its rulings?
+  highlight:
+  - real power
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 800
+post_caption: The world's highest court has a surprising limitation! Should its rulings carry more weight? Yes or no, tell
+  us in the comments! 👇
+hashtags:
+- '#facts'
+- '#worldcourt'
+- '#internationaljustice'
+- '#UN'
+- '#TheHague'
+- '#law'
+- '#didyouknow'
+sources:
+- 'International Court of Justice: World''s Highest Court | Academy 4SC Learning Hub'
+- International Court of Justice - Wikipedia
+- International Court of Justice (ICJ) | Definition, Cases, Purpose, & Facts | Britannica
+- Recourse to the Security Council under Article 94 (2) of the United Nations Charter - Oxford Public International Law
+- The Security Council and the International Court of Justice (Chapter 8)
+- The Role of the International Court of Justice in the Enforcement of Its Judicial Decisions
+- Problems of Enforcement of Decisions of the International Court of Justice and the Law of the United Nations
+- Has any country ever refused to accept a ruling from The Hague's International Court of Justice (ICJ)? - Quora
+- How do International Court of Justice Judgments get Enforced? - Transnational Matters
+- A Primer on the Relationship between the Security Council and the International Court of Justice - Harvard Law School
+- The World Court's Enforcement Dilemma — And How to Solve It | Georgetown Law Journal
+- What are some historical examples of politically significant rulings made by the International Court of Justice that were
+  ignored by certain countries? - Quora
+- 'International Court of Justice ruling against Israel: "Has been ignored" - FUF.se'
+- Six Countries That Aren't Part of the International Criminal Court - Nomad Capitalist
+- International Court of Justice offers hope of rules-based order - CIVICUS LENS
+topic: International Court of Justice
