@@ -1,0 +1,105 @@
+channel: factloop
+kicker: SPACE · EXPLORATION COST
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  SpaceX: Space-Ex
+  ISS: I.S.S.
+scenes:
+- say: Sending 1kg to space costs ₹16 lakh. Seriously!
+  highlight:
+  - ₹16 lakh
+  bg: ink
+  layers:
+  - type: photo
+    query: SpaceX Dragon capsule in orbit
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: ₹16 LAKH
+    at: ₹16 lakh
+    y: 1080
+    rotate: -8
+- say: 'Meet SpaceX Dragon: It takes cargo to the ISS, and it''s reused.'
+  highlight:
+  - reused
+  bg: paper
+  layers:
+  - type: photo
+    query: SpaceX Dragon capsule docking International Space Station
+    frame: print
+    treatment: color
+    dim: 0.15
+  - type: icon
+    name: check
+    label: REUSABLE
+    size: 300
+    y: 1100
+    at: reused
+- say: Yet, each mission – even with a reusable Dragon – still costs over ₹1200 crore!
+  highlight:
+  - ₹1200 crore
+  bg: red
+  layers:
+  - type: photo
+    query: SpaceX Falcon 9 rocket launching Dragon capsule
+    frame: full
+    treatment: bw
+    dim: 0.25
+  - type: counter
+    value: 1200
+    suffix: ' CR'
+    label: MISSION COST
+    y: 900
+- say: It's not just the rocket. The Dragon capsule itself, packed with tech, is the biggest expense.
+  highlight:
+  - biggest expense
+  bg: ink
+  layers:
+  - type: photo
+    query: SpaceX Dragon internal view cargo
+    frame: strip
+    treatment: color
+    dim: 0.15
+  - type: icon
+    name: currency-rupee
+    label: BIGGEST EXPENSE
+    size: 300
+    y: 600
+    at: biggest expense
+- say: Is spending so much on space worth it, or better used here on Earth?
+  highlight:
+  - worth it
+  - Earth
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: WORTH IT
+    right:
+      icon: x
+      label: ON EARTH
+      accent: true
+    y: 900
+post_caption: Even with reusable rockets, space missions are incredibly expensive! ₹16 lakh just for 1 kg? Is this cost justified
+  for scientific advancement, or are there better ways to use these funds here on Earth? Tell us what you think! 👇
+hashtags:
+- '#SpaceX'
+- '#DragonCapsule'
+- '#SpaceExploration'
+- '#CostOfSpace'
+- '#FactVideo'
+- '#IndiaFacts'
+- '#ISRO'
+- '#ScienceFacts'
+sources:
+- 'SpaceNexus: How Much Does an ISS Resupply Mission Cost? (Dragon, Cygnus, HTV-X)'
+- 'Quora: How much does it cost to ship to the International Space Station?'
+- 'NASA Technical Reports Server (NTRS): The Recent Large Reduction in Space Launch Cost'
+- 'Space Exploration Stack Exchange: Price per kg of cargo delivery to ISS'
+- 'Reddit: [Request] How much did it cost to ship this costume to the ISS?'
+- 'Newsweek: SpaceX Sets New Record for Reusable Space Travel'
+topic: SpaceX Dragon Mission Costs
