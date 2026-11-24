@@ -1,0 +1,161 @@
+channel: factloop
+kicker: INDIA · T20 CRICKET
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Priyansh Arya: Pree-yansh Ar-yah
+  T20: T-twenty
+  Chris Gayle: Kris Gail
+  Wajid Khan: Wah-jid Khaan
+scenes:
+- say: This Indian just matched Chris Gayle's unbelievable T20 record!
+  highlight:
+  - matched
+  - Chris Gayle
+  bg: ink
+  layers:
+  - type: photo
+    query: Chris Gayle batting action power shot
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: GAYLE'S RECORD
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - RECORD
+  - type: stamp
+    text: MATCHED!
+    at: matched
+    y: 1080
+    rotate: -8
+- say: 'Meet Priyansh Arya: He scored 181 runs off just 68 balls, a new Indian T20 high!'
+  highlight:
+  - Priyansh Arya
+  - 181 runs
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket player batting India T20 match
+    frame: print
+    treatment: color
+  - type: kicker
+    text: PRIYANSH ARYA · 2024
+    y: 560
+  - type: counter
+    value: 181
+    suffix: ' RUNS'
+    label: FROM 68 BALLS
+    y: 900
+- say: 'But here''s the shock: 19 of those were sixes – the most ever by an Indian!'
+  highlight:
+  - '19'
+  - sixes
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket ball hitting boundary six
+    frame: strip
+    treatment: color
+  - type: headline
+    text: 19 SIXES!
+    font: display
+    size: 140
+    y: 800
+    accent:
+    - SIXES
+  - type: icon
+    name: flag
+    label: INDIAN RECORD
+    size: 250
+    y: 1100
+- say: And that incredible 19-six feat? It equals a global T20 record!
+  highlight:
+  - 19-six feat
+  - equals
+  bg: red
+  layers:
+  - type: photo
+    query: cricket stumps explosion effect
+    frame: full
+    treatment: duotone
+    dim: 0.2
+  - type: stamp
+    text: GLOBAL!
+    at: global
+    y: 800
+    rotate: 5
+  - type: headline
+    text: RECORD TIED
+    font: display
+    size: 120
+    y: 1100
+- say: He now joins legends Chris Gayle and Wajid Khan in the exclusive 19-six club.
+  highlight:
+  - Chris Gayle
+  - Wajid Khan
+  bg: paper
+  layers:
+  - type: photo
+    query: historic cricket trophy display
+    frame: strip
+    treatment: color
+  - type: chips
+    items:
+    - CHRIS GAYLE
+    - WAJID KHAN
+    y: 850
+  - type: icon
+    name: trophy
+    label: JOINING LEGENDS
+    size: 200
+    y: 550
+- say: Does such explosive batting improve the game, or does it make it too predictable?
+  highlight:
+  - improve
+  - predictable
+  bg: ink
+  layers:
+  - type: headline
+    text: GOOD OR BAD?
+    font: display
+    size: 100
+    y: 600
+  - type: split
+    left:
+      icon: trending-up
+      label: GOOD
+    right:
+      icon: trending-down
+      label: BAD
+      accent: true
+    y: 900
+post_caption: An Indian cricketer just rewrote the record books with an unbelievable T20 innings! 🤯 What do you think, should
+  cricket rules be adjusted for these boundary-heavy matches? Vote below!
+hashtags:
+- '#Cricket'
+- '#IndianCricket'
+- '#T20'
+- '#WorldRecord'
+- '#PriyanshArya'
+- '#SportsFacts'
+- '#ViralFacts'
+- '#India'
+sources:
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEgskINdeWp-VFyKsuRVi-60ytPaO1Y-cSMtte6g8oWQYBqtYuYSb7URbjuX7vcCFI96yo4nEzD7Xv-Uq8CqVkXXZlJsr3q4pzHcA4qBhZuCv4DosZSDnESw7OmGQhq_jFIeFxNxmVc8Vo4UiFfYdv6Dvw26_I6VGdMT4Qr2OVqpEvE6zRxc9hc0Fr1T_uFY9cb_vnfeigFSbsReI7M6qqkP_qqA8aE_U8pgCefbnZNQnLW_1bRQQ
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE3iGQ04v7v1jnh6EHFgSNMKc-MQmk08wieQC835RmHE37VlUDDO2WGoeFU_0RrkJyDIHp8tZo9kDoJuE99k5SKw3tMsnZHZ0Z4ZZMucQ7E1c2PI7da6VBLZXV2-IK7Wcbvfj5fwNBEKugFswsSN0JFWVW-9qO1PBfYSvQx1L2Yj9I
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFx0tzvovTekAzO4UwM99Vnrny9WNPCjQ4oEGhgFJJEt9-adjtQ_txexTvImgh2nCn6dJefU88-ueDp4R_j9rzLA0yE3-vDbBN6B64UcGGJAQZMZYGITKAJ49CLO3QZD3Bj1xtdMGyZfFd2XjD5Ul8vVZ5kwbf2tpOqYeZlzWkdb8A4cB7RhANLK0lc_GnHr17nNVfMfdPCKTSaUMhv-yJpw0HbeSdYM5WLecAwVyRd4wA1Bv-BAnM8u-lv4F0e6NmmwY_kpA6dPinGBuJYk65q7J-NSpiZRpzL6nxLo0EO_nP2wr5hwTZhNlJQRuB8
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHXjPlCV_CjBomIjHNn541mhupghIE-acQsDnos1bEH-YkBS6Jx-Yev82oVBgvnhsBn4d8nF_0y0FS1a9etnPheNIaZE2q57EBrdS5nvbVM0GRZrrXQzVoYV8wwXLPb_s7hbZ6LMsZkMyGGc5L_G6fEEdnc5rFkK1kvCrb1A9Q7R-p1-KECbtrBifgAvtfYoUN2n1Ev_nzRuBqpW8FEdLrpkQ7LZs_nR2oTh8YKbFxPQad__p42EeXi94hu4I6FhZjqo2U-qBdyr9ruPkS7YaRzR7lvezlTptU
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGu7OxPY8_bOIBaOL97PJwXjPeZkvrQHd1KgVJMlUGasHUfBRgVbYAlD0UqgOupCNbyAda4_Ai41tuwDFEEPH-ly1em91NPslD7RSuRn2HHUjDcR2UmCiLC018jwtfeBC-q-Dgp5NOl6BCFOdqnUgi9FiAMWiQvcGDiTm5kk8dYrL2fFGLzJuotzSpnoxylbxlbe59PK2VZvew_HElegR6Cnu8CqzyPxDW3u6vU_4WAx3ypN90coNO52nY1CqNU-3xn8jU
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFKEQKI-DilTdZSUlg8a5I-rJc3ZtIhLqr0IuVg8w0CkoxOig845kNMqmyjOZ-2y_8DWYRPvoi5GI2nyoKuaD6-4usSHiEvrRuhRVuZm4hD-UtMgNi_NdBMCqLiUERtHXeYynsQVwIcdoE_W1WfTqykaxvWvivOXWUtowFclKfCL7dyT0Bz7Ml7Asn1CwgYQa7Y2nP9NdQKpv6Yt86I1f8FrcNH15q2ATahu6fqMo4Y-Q
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEMvdsVhIl2mGdXmhVQbdEAxuxQeATLOP_CKb7BTomSca0nDj7NqyQp9IVxYinl-fW-H5TG4Y03ScpkLGeB5qP8F_gvuykG52xqUArolbwgAYGChVpq3vJZo3-fBElHUcYnFHL15_ENjXVi5WIkmNL79XMgdYaPbk9KOV5mOwTZJnBY0zMNekV2Jy8JNH_Zxg
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF4cTw_-rDCzdbMfom0ojJfcrULEnIHMkh-6ffLUr8sW2MBEaXCpnZY3uJGPHzpDmVnChEFe9psuUaHCSIkBop3BZGh_0IUb7XS-qQlzMD6qaxxy4XvDahBnW-yKKXPd85Kz57VX_mitnEszqQ08rlskIAQTK6Tzud2OcUjtevZalG0XDSBalGuGj6omjNhgmnicMcpNs-jfL5-3PNruICPVzKbPp1Rc4hL04BI8_CPCWP4tJtWLbiGlD59PusDafijks2Fhmt9rnGRKqAc6NJzTmC23uePToTSaCvAlQ
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHD9oEYPPcQru5bRT2k68aA0Lee5Vx-vC76WRflYNQzY4qpM-IuPl2Ae41BPa_-0kcJyeqb7c-BKScQGDr4i-o2Cl3-kSoI-T74d7Cn48E44bMy3RyoUFMmLhf-43KHxPFvK0iRLixRaAwgtUsfmagkf1PNrrNNQWMnu6LAGs4Pek8Upl2vydI29QCqKLNyPrX5i7TE2oiNXNen4q5SeyIL5jEHQLVTDD_7efhrDmmweB_DeKDuvvDKx6zJa8cjmr0ljETho6sGiyBCOVkFKqrNb3E0N4E1MXWB6F2uRNgq63Qs5TMOSc5wKTCZ8SOMuHNRU7VkaRFtH2tGIbNvsnrXLsYocBthy_oVlbgojWjZcLjIIU9qJoVezr8oWggpdR97WHel1KEbg4n
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGtqslQCoU_mQOyTDcjG7f08P9n9WBTRzP2hnxjdoeL2Yxjo3sk5ccKTUGpLGwyMPYWz6elZu_AkVoSCg74Pvc2XTap-tq_NbXaQhkGA4eJZYF-jlk7w7xGL4sR0tS0HsWwbnAIq_iq_Wq62s1OewmW3kxBeedmDm0Y_yhr-itecJC0rPCYJWIr7vdH3YgAsZO5aQDdmGS5szIxFUC6ZHZbpIgPRJQ0k_zAsau8bdbBMFtUMOxhmIAzN4ahLuB1z8Y1wkxTUzLsPVM1W_NwY_k
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEshfX8PmLu1HbzxCofAzoERB2h5MQkaeDcf4lW22fS4VDFCeiEhsjvnCBS3oxFqK2h4oJuil-RED4C12COvg2D9gUsH6DPHATQSPwb2xanhWpzBCMSHfqc5Y4_Na9CfabsCRmvHsSwwxyt5yLX6tZsj0tTIxBVZesAja3s0GHXjpnY1SyrNab1u40RWjgQH3I6vQhazsqtJUN8
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGzeg-64hLyGoKoio3Dwq-nfD2AN_xSPIKf7WQYjZk-nScMxoqGWE_DzUxtty4T4D_c9nELeG4ilSzZi6sSJKASXqPUg62Yci1zGGfy12zenDRwihqUUh9OYsw32aJDrStdJhmyZq9ZeNIZYXXwl3tCyc743OY_voiT6w
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFx7zvjigecZi8qPfk75QaWRJNI66TnrYE_niOzuGA0q1EjWBo7J3QgGyP-Y-Cv3b8alDhFyhUmf4KzoZP35IqKkX_L0f4MzBaCIYACSYTLSKvuk0OETQxHiQtBDVlZbu9t3MpPbrOU4orrTJNIkFIHsLCAIaTGy-2VogmuJNXWPVrDMGgFPRPdCT4_CdmN5zQIeG4A9t37nJa1djY-PgnZ
+topic: Cricket Record Breaker
