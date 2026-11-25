@@ -1,0 +1,116 @@
+channel: factloop
+kicker: INDIA · SKIN CARE WARNING
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Your favourite 'fairness' cream hides a deadly poison.
+  highlight:
+  - deadly poison
+  bg: ink
+  layers:
+  - type: photo
+    query: generic fairness cream packaging
+    frame: full
+    treatment: color
+  - type: stamp
+    text: DEADLY
+    at: deadly
+    y: 1080
+    rotate: -8
+- say: These creams promise quick glow. But mercury is added for fast, cheap skin lightening.
+  highlight:
+  - mercury
+  bg: paper
+  layers:
+  - type: photo
+    query: woman applying face cream close up
+    frame: full
+    treatment: duotone
+  - type: icon
+    name: droplet
+    label: MERCURY
+    size: 300
+    y: 800
+    at: mercury
+- say: It poisons your body! A Kerala teen got kidney damage. Levels were 12,000 times limit.
+  highlight:
+  - kidney damage
+  - 12,000 times
+  bg: red
+  layers:
+  - type: photo
+    query: human kidney medical illustration
+    frame: full
+    treatment: color
+  - type: counter
+    value: 12500
+    suffix: x
+    label: times limit
+    y: 1000
+    plain: false
+- say: Indian law bans mercury over one ppm. Yet 7 of 8 creams had thousands of ppm.
+  highlight:
+  - bans mercury
+  - thousands
+  bg: ink
+  layers:
+  - type: photo
+    query: online shopping packaging parcel box India
+    frame: full
+    treatment: bw
+  - type: chips
+    items:
+    - BANNED
+    - SOLD ONLINE
+    y: 900
+    cross: false
+- say: Should online sellers be responsible for these banned, toxic creams? Yes or no?
+  highlight:
+  - responsible
+  - banned, toxic creams
+  bg: paper
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: Think your 'fairness' cream is safe? The truth about what's inside might shock you. Should online platforms
+  be accountable for selling banned products? Tell us Yes or No in the comments! 👇
+hashtags:
+- '#FairnessCream'
+- '#SkinCare'
+- '#ToxicIngredients'
+- '#MercuryPoisoning'
+- '#HealthAlert'
+- '#IndianFacts'
+- '#ReelsIndia'
+- '#Debate'
+sources:
+- FDA Warns Consumers of Skin Products Containing Mercury and/or Hydroquinone
+- 'Beauty Justice: Health Risks of Toxic Skin Lighteners'
+- Skin-lightening cream investigated in India after teen develops kidney disease
+- How just one ingredient can make 'fairness' creams dangerous for health | Explained News
+- 'Kerala Face Cream Issue: Understanding the Dangers of Mercury in Skin-Lightening Products - skinaffairs.in'
+- Mercury Poisoning from Skin Lightening Products - Minnesota Department of Health
+- Mercury-Laden Skin Creams on Online Platforms Raise Alarm Over Enforcement of Cosmetic Regulation in India - Drug Today
+- 'Hazardous Products: Mercury in Soaps and Creams - NYC.gov'
+- Mercury in Skin Lightening Creams - Teledyne Labs
+- Medical Experts Warn Of Rising Mercury Poisoning Risk Amid Surge In Online Sale Of Skin Lightening Products | Outlook India
+- 'Banned and Restricted Cosmetic Ingredients in India: 2026 Compliance - CliniExperts'
+- Banned Ingredients in Indian Cosmetics | PDF - Scribd
+- Influencers pushed mercury-laced cream; a 17-year-old Keralam girl paid with her kidneys
+- 'India Cosmetic Compliance 2026: Banned & Restricted Ingredients You Must Avoid'
+- 'Why fairness cream left Kerala teenager battling kidney disease: Doctors explain | Health and Wellness News - The Indian
+  Express'
+- Why is mercury hiding in fairness cream? What happens when you put this toxic metal on your skin? - Mathrubhumi English
+- Mercury-added skin-lightening creams campaign
+- Mercury in Skin-Care Products in India and Consumer Exposure Risks - ResearchGate
+- 'India skin whitening: ''Fairness mania'' is fuelling a dangerous drug dependence - CNN'
+- Toxic content of certain commercially available fairness creams in Indian market
+topic: Toxic Chemicals in Skin Whitening Creams
