@@ -1,0 +1,136 @@
+channel: factloop
+kicker: CRICKET · NOVEMBER 2026
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Vaibhav Sooryavanshi: Vay-bhav Soor-ya-van-shee
+scenes:
+- say: This 15-year-old scored a double century. In just 52 balls.
+  highlight:
+  - 15-year-old
+  - 52 balls
+  bg: ink
+  layers:
+  - type: photo
+    query: young Indian cricketer playing shot
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: 15-YEAR-OLD
+    font: display
+    size: 140
+    y: 650
+  - type: stamp
+    text: 52 BALLS!
+    at: 52 balls
+    y: 1100
+    rotate: 5
+- say: Vaibhav Sooryavanshi of India A set this record, playing UAE in Doha.
+  highlight:
+  - Vaibhav Sooryavanshi
+  - India A
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket stadium crowd daytime
+    frame: print
+    treatment: color
+  - type: kicker
+    text: Asia Cup · 2026
+    y: 560
+  - type: lower_third
+    name: Vaibhav Sooryavanshi
+    role: India A Player
+    y: 1200
+- say: 'He shattered the previous record: 103 balls for a List A double hundred.'
+  highlight:
+  - shattered
+  - 103 balls
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket scorecard graphic
+    frame: strip
+    treatment: bw
+  - type: counter
+    value: 103
+    suffix: ' balls'
+    label: Previous Record
+    y: 800
+    plain: false
+- say: He also hit 28 sixes, and the fastest List A century in 28 balls.
+  highlight:
+  - 28 sixes
+  - 28 balls
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket bat ball six
+    frame: print
+    treatment: color
+  - type: chips
+    items:
+    - 28 SIXES
+    - FASTEST 100
+    - 28 BALLS
+    y: 800
+- say: 'But this explosive performance raised questions: can he really be 15?'
+  highlight:
+  - questions
+  - '15'
+  bg: red
+  layers:
+  - type: photo
+    query: cricket umpire questioning
+    frame: full
+    treatment: dim
+    dim: 0.2
+  - type: icon
+    name: alert-triangle
+    label: Age Debate
+    size: 300
+    y: 800
+- say: Should cricket enforce stricter age verification tests for young players? Yes or no?
+  highlight:
+  - stricter age verification
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+    y: 900
+post_caption: Vaibhav Sooryavanshi's record-shattering innings has everyone talking! 🔥 Was his age a factor, or pure talent?
+  Should cricket introduce stricter age verification? Let us know your thoughts!
+hashtags:
+- '#cricketfacts'
+- '#VaibhavSooryavanshi'
+- '#CricketRecords'
+- '#RisingStarsAsiaCup'
+- '#IndianCricket'
+- '#CricketDebate'
+- '#SportsFacts'
+sources:
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE68QPJPeGhrludUaB1HFeP-K8GN-WYaZW20OMWKUFgbzkNtaFmRdLp52LlcOdagazYkC-FQqjvW0Kfs1cRRFIwTJ4kJ3p_dPubKtZk1gkO7k4_RXXj9e_eLEgvKAZ8ZiGYnfb0OmJh1Sdrrxltn0jfkHJK1h4mODbzSkp1B6E7Jivv0Vwe5X0JB5Rc1omNThWk87w7RuYkdsHZImp2L1lnm2931UZCVJMu
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG_xvi8l9mIkNQF_vq-WvHMkz3fMX6MSFdJyXjp4jO_55XvdaPimwnoS1mfJmsqY0WyDPW499a9aZ7fL5nH_BOkhFn92tJz8sgImH30GDD5Jozr5fTM-2SmKEC0e6UePtzhOAjZeCyYTJR1uxppw8dtAO83jkJaUo_arVyt0lW8dsn7SOlTT5utw5kzz83Vowh00FNJn_4A6n0eqmvMUXk=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyKU9RDyAx6jaVlR_m6lmLWSQ4P7fAn8Nbm3hwIG5QPvZyn1osSvX4cTAFJ_fPB8EhEy6Ftd4VR4VkT1B-3sJFxxkDmsNX-DHT9nQRSWQfHxY5MX2dQe6X_FjlJXGfC878igwA7tdtVHlLUGB_02IflCR7Xo-RRI_a5nkFg2MEBmc3pgbfnleE-u2tBTXAEBUOU359W8Ul_30t5uNP2p6_yyCRX8-nA6tk9WOAO6fo3NzCFSUtljXPocQYXox0IveYu6sm
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGiZaZs7OcvdyYZY5Vxh98x-xzMQRRuZF2ePqmXXGJ_tEM_FnlnRy_42TUSUoEvTIIWuXl4kUdkh0I6lmgXt8Svh1Kou2oLM2KOVzU9Q-vVP4YlAUab_BqLME4kaSNTs_6GCB_-cRbGOUmERznM6JeqOu4k4fhitjddqnht-3ciIMwTtddOmZBB3tElauTsmg==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEC5m0icBIq-4fywnKkbEdOpLtgDk_XDD5gjkxaNRuGswHEp9_8npnsWtHDXz3JdP0HvJpWLCclKrjrRbkBO__K5hFbOBOFb0z9ssLDJxQ7lA60ct5v9IE22IJPkrJh0RlafX5GVkaqLLSukVl2GImGJsO3k0yDG-pR5a3H6kCnBRLRfZ9QFSxnhuyA5LXvjq42b1ddK-RhcfS0-Ql3GBr-uXjems6fLCuJtTqYOeOZpk6PLkPJyycrlUhxsv5Hk7tfeQTR4EBwC6Mojcj01qto4W22s76YeW6MZ4xuGu8WKUS3uQ==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQExXx10Qlm7GZrqIcAM6_QMz9nn4MISw1P_VgZt7BpbXWfudSbKTml5-WQlMO5mH9ikAhpvnztQuGwQKQ0JLpaYQpV-hHsekyMugOrW60oyZpXTFzCbyg4MTjMFYwRqcmmUMTD4hc5xhLgTPYt3FRaj8oD4T3iHVofSwvn1UkHp6AqrJEuMj-erXECQQ2WAKGKs3sAiVkQxslo8Cd-abXGxzyrsOvllnL49cRB7XuZ8J8cQej-EsrCmig==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG2pb7h2GdBGHdpNoy_cLmQnPIBeD54Dm5evrBTrvsGAp4GRkNEY3nuxn2f02SUM-RcnkGaMvyqrFzqvOEvD6ZR7DL0p2QsnOkZc9aXDvlz_C9YtpmX2YwIj67ptPZI5lCZ2Al6hb98scpxNfAf3murp24sHf4-Rvn833ETv6XBiw7oZb-wPlwcTXT0pPOU
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcv36414kECCK-tdMPVD0c1J8m4tnnWhs8r2J0Hh2Z77hFkfCsemibOGQWhSDb_0QITCtcPhThvPKR_JR5iZ4Iqu8GWguVmeiYX9Cl2OAxTvo12zGqC6gHd99bW_bX02kDwoAWtowkmKr63uTfH2e4SpSE_BW6lNvjkI_DqrvyWr-AfNnYH8KC62MHoRPYFuvzZc1wWizbP0K8qBx0CTy59Q8w8Yp4F_eVymYFnsHwMb6O1MFYC8OZME
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEgiuzpUPEl_gvNvTaGeViRcH8bjXnIVdvSC95Tho3g92oKZWcoX8l8Ku7DNWikuqTYrRtZoMKgFrjKCXBiGPUxndL3VnyTp2nPuCnDpw4eLQb9hW2VaD9MdI_QYtp8PDNX0MNjqadEs_rexkG0SBy7leqazxA-Ca-yX5IO2L7SJv_d7ZzJgvFPaSE67vDRMMa_qA4tNdzzk8_767wFef37HGoW5A==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFnOCYzeKdH1wKdHHjeSeD0WXOXcnbT6qAe0EmyshVlHYDsCsHx4BB_oJRKjBRKeV7P7SKqVcNKMKT8u5il4VXtMtEgBVFZNITGogP2wzDJdFF6m9auJg-U_Q9yFux_PLTNMhyErnCJHDt-JTdNl6Z8Q2tBGShsBL57YIuq1Y7axX2OFlxBJ9jOxITmHN8VOGwKaMOKBSYc9RxJm7MueIg==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFWo9_GaLVcB8x8pVGKig85qqTw_Wot2PuygHDG_7wcV4fKF_hMMfLCT1yxpiSGl7VFyQaVTdc09cpT6oO_Ii8TU_6NoNqkTR0gxq85diQRqxD40FCmnFrlSDxalBPisK4hmnHHFUFQrELnZHIrUeWosRwJbpR9yWunQC3PqXR2M8pAHly5KVxcIB7C-MZUW-itHCayeLqmhtpFpeL1lbHB-cn_lGecLPLX6gMkG7ducykW2toBdsslJM8rR1Sr7q5vR37735r0P-mQYfZU
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHJpx7CmOmJCiyMge3EjW2T06TwZenxT4ZLFGwzjrpYuXVg1ZODrMacyUeoeQJxhiH7U57lnvi11EXtRJHhyGtAUxnfOqVVrgRaotGWyaVMzQArjZUHlHxrstZNQs4N4RKvt9-dh2tZxKAe5fh-YZLv2uSobD-1Y7Kb-MghXOQnK1EBIZTdhygD2NB9MYmra3j2sdQ=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFmgpJ2wGj3zjP510pPkGLGubSRieS8mlNugFpLPXB2kllqNTvHfyAtE1dMMR3tzt87GHlmJqHaTCdlajcvY8sQ1V1SdaE3CHeNU-qFExeb8BDvKVCCQd_PgEiGdExPqx_9lMhgg3BZiLZavchwViMmV-sFnC6RXGsTvnh4PEEbHE2jqQf3r7biXjDVpFL76QbUSAzzaWKP1M1y8b89Lw==
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE0c47v8cQPWgpcRlbXJOfC9uuSAO7tf9Uf-GOEmbMlxDpJMEA9nj4ceVeV1YpGLw8sfv9T61TQR006ooHN3zLqWH5MeY0SjVCETTnBAfNSdbX19p1wK4pAiORIMfgysZT7sWjhheKvC_CW3yJMM3GDkm0H3bfm-6c321iL1YhgeXYfMJao5-DUw6u9__wgphX-1wFxLWFkMh_YavH9FRrRMdgypPGSxXjTTsrJfK2-bg5avCyPuz1ZXqMiX8y4zeHKb_mhYnAaXDbYPLFJD-Q=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGuT1126q2VXQNDI_RqVLpQRdapKSQnfrlvoI6tcKsiVRljVz9xQTh4sp9IXg7UUJB1VMfNWWU98hA6ouH-pm2uG1Sj0uNz9NCs80lTlByop8fVWmtYGICWe7g7-4Jssipn3GC_dXg6VW_5qnQ=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHtkfsqAylaplBtCmUovF7RCFJKL_2BAoDEYMlSvd9XHVoaImAR78JHyg2FYmheE1b29r40-3nE3MMSuxeVA7nFY29sTpFMWzaIp01ww4mjgCcZh_EZKMoG1gzS-5n_o4EVwlG-a0HNhdf107aH0BXgQ50VWzjpyPpEg6faIswwxEDuutfYCFvy9xY2OIHv21LVqFo2dsOgZX6JoxY_o7Chq5b-ya1J3Cp-aeU=
+- https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEddEbEZG9VjshPF_DRhR__t5wCXa2XWSCwuDzV0-3cc-_A5ZIqIYYmpiphgaedIgRPtXJzRYE8VHM0NtZSlL8k_Y6dAlR54Tdp6aNZN2C1vbfbx6L2v13sHBeuDSJKLHNM67Xp4L6NzCSICPWvWesWkZFygqjMwHQNFG0sFPLmqjsX4E6W8hNaXyS_C0YijePc6hA358PDlw6DDUnlZ5-VNYwmNIOc8XgSgi5om1Ng-SjI95wpm5R5MmC_C_rJ5g
+topic: Vaibhav Sooryavanshi's Record-Breaking Double Century and Age Controversy
