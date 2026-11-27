@@ -1,0 +1,145 @@
+channel: factloop
+kicker: CRICKET · UNIQUE RECORDS
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce:
+  Unadkat: Oo-nad-cut
+  Saurashtra: Saw-rash-tra
+  Syed Mushtaq Ali Trophy: Sai-ed Moo-sh-tak Ah-lee Tro-fee
+scenes:
+- say: This bowler holds a world record, batting at number 11!
+  highlight:
+  - bowler
+  - world record
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket batsman number 11 T20
+    frame: full
+    treatment: color
+    dim: 0.15
+  - type: headline
+    text: RECORD BATTING
+    font: display
+    size: 140
+    y: 600
+    accent:
+    - RECORD
+  - type: stamp
+    text: NO. 11
+    at: number 11
+    y: 1080
+    rotate: -8
+- say: That's Indian pacer Jaydev Unadkat. His career is full of twists.
+  highlight:
+  - Jaydev Unadkat
+  - twists
+  bg: paper
+  layers:
+  - type: photo
+    query: Jaydev Unadkat bowling action
+    frame: print
+    treatment: color
+    y: 900
+  - type: icon
+    name: bolt
+    label: FAST BOWLER
+    size: 200
+    y: 580
+- say: For Saurashtra, he smashed 40 runs off just 26 balls in the Syed Mushtaq Ali Trophy.
+  highlight:
+  - 40 runs
+  - 26 balls
+  bg: ink
+  layers:
+  - type: photo
+    query: cricket stadium lights night India
+    frame: full
+    treatment: duotone
+    dim: 0.25
+  - type: counter
+    value: 40
+    suffix: ' RUNS'
+    label: No. 11 Scored
+    y: 900
+- say: He became the highest No. 11 batter in men's T20 history, adding a 62-run partnership!
+  highlight:
+  - highest No. 11
+  - 62-run partnership
+  bg: paper
+  layers:
+  - type: photo
+    query: cricket batsmen celebrating partnership
+    frame: strip
+    treatment: color
+    y: 700
+  - type: stamp
+    text: WORLD RECORD
+    at: history
+    y: 1100
+    rotate: 5
+- say: 'The twist? Unadkat also holds India''s record for longest Test match gap: 12 years!'
+  highlight:
+  - longest Test match gap
+  - 12 years
+  bg: red
+  layers:
+  - type: photo
+    query: old cricket scorebook pages
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: ghost
+    text: 12 YEARS
+    y: 1000
+  - type: stamp
+    text: 118 TESTS
+    at: gap
+    y: 600
+    rotate: -10
+- say: Should players with unique careers, like Unadkat's, be celebrated more? Yes or No?
+  highlight:
+  - celebrated more
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 900
+  - type: icon
+    name: bulb
+    label: YOUR TAKE
+    size: 180
+    y: 550
+post_caption: Jaydev Unadkat's journey is truly one-of-a-kind! From a historic T20 batting record at No. 11 to a 12-year Test
+  comeback. Should such unique careers be celebrated more? Let us know your thoughts below! 👇
+hashtags:
+- '#JaydevUnadkat'
+- '#CricketRecords'
+- '#T20Cricket'
+- '#IndianCricket'
+- '#SportsFacts'
+- '#ViralCricket'
+- '#Unadkat'
+- '#SportsIndia'
+- '#FactVideo'
+sources:
+- https://timesofindia.indiatimes.com/sports/cricket/news/jaydev-unadkat-scripts-history-with-stunning-no-11-knock-smashes-t20-world-record-in-smat/articleshow/115668972.cms
+- https://www.thestatesman.com/sports/cricket/who-is-jaydev-unadkat-saurashtra-pacer-scripts-t20-world-record-with-historic-no-11-knock-1503302302.html
+- https://www.yardbarker.com/cricket/articles/jaydev_unadkat_sets_a_new_batting_world_record_in_t20_cricket/s1_17201_44342898
+- https://economictimes.indiatimes.com/news/sports/jaydev-unadkat-scores-40-off-26-balls-after-coming-in-at-no-11-with-saurashtra-at-92/9-breaks-danny-briggs-six-year-old-t20-record-his-team-still-crashes-out-of-smat/articleshow/115669145.cms
+- https://www.crex.live/news/articles/jaydev-unadkat-scripts-unique-t20-batting-record-shares-historic-partnership-with-chetan-sakariya/41643
+- https://www.icc-cricket.com/player/26040/jaydev-unadkat/player-profile
+- https://www.icc-cricket.com/news/2972418
+- https://www.icc-cricket.com/news/3028213
+- https://zeenews.india.com/hindi/sports/cricket/jaydev-unadkat-unique-world-record-saurashtra-vs-tamil-nadu-smats-syed-mushtaq-ali-trophy-2026-t20-cricket-indore-holkar-stadium-danny-briggs-longest-gap-between-test-appearances/2012470
+- https://www.business-standard.com/cricket/jaydev-unadkat-creates-uncanny-record-on-return-to-test-cricket-after-12-years-122122200388_1.html
+- https://www.hindustantimes.com/cricket/jaydev-unadkat-creates-bizarre-india-record-with-incredible-comeback-to-test-xi-after-12-years-surpasses-dinesh-karthik-101671701353112.html
+- https://www.sportsrush.com/most-tests-missed-between-appearances-highest-time-duration-between-two-test-matches-for-one-player-jaydev-unadkat-test-comeback-record/
+topic: Jaydev Unadkat's Unique Cricket Records
