@@ -1,0 +1,129 @@
+channel: factloop
+kicker: METALS · INDIA
+theme: ink
+voice: en-US-AndrewMultilingualNeural
+rate: +10%
+pronounce: {}
+scenes:
+- say: Almost 60% of global silver demand isn't for jewellery.
+  highlight:
+  - 60%
+  - jewellery
+  bg: ink
+  layers:
+  - type: photo
+    query: traditional Indian silver bangles and necklaces
+    frame: full
+    treatment: color
+    dim: 0.2
+  - type: headline
+    text: NOT JEWELLERY
+    font: display
+    size: 140
+    y: 800
+    marker: jewellery
+  - type: stamp
+    text: 60%
+    at: 60%
+    y: 1080
+    rotate: -8
+- say: Most Indians still buy silver for ornaments or traditional investments.
+  highlight:
+  - ornaments
+  - investments
+  bg: paper
+  layers:
+  - type: photo
+    query: Indian silver puja coins and bangles
+    frame: print
+    treatment: color
+  - type: chips
+    items:
+    - ORNAMENTS
+    - INVESTMENTS
+    y: 1080
+    at: ornaments
+- say: 'But the twist: almost 60% powers modern tech and industry.'
+  highlight:
+  - 60%
+  - tech
+  bg: red
+  layers:
+  - type: photo
+    query: close up circuit board lines with microchips
+    frame: full
+    treatment: duotone
+    dim: 0.15
+  - type: counter
+    value: 60
+    suffix: '%'
+    label: TECH DEMAND
+    y: 1000
+    plain: false
+    at: 60%
+- say: Smartphones, solar panels, and electric cars need vital silver.
+  highlight:
+  - Smartphones
+  - solar panels
+  bg: ink
+  layers:
+  - type: photo
+    query: solar farm with a smartphone and electric car charger
+    frame: full
+    treatment: color
+    dim: 0.25
+  - type: chips
+    items:
+    - SMARTPHONE
+    - SOLAR
+    - EVs
+    y: 1080
+    at: Smartphones
+- say: This massive industrial demand is skyrocketing, globally.
+  highlight:
+  - industrial demand
+  - skyrocketing
+  bg: paper
+  layers:
+  - type: photo
+    query: futuristic high tech factory production line
+    frame: full
+    treatment: bw
+    dim: 0.2
+  - type: icon
+    name: trending-up
+    label: DEMAND SOARS
+    size: 300
+    y: 900
+    at: skyrocketing
+- say: Should India boost silver recycling from old electronics? Yes or no?
+  highlight: []
+  bg: ink
+  layers:
+  - type: split
+    left:
+      icon: check
+      label: 'YES'
+    right:
+      icon: x
+      label: 'NO'
+      accent: true
+    y: 800
+post_caption: 'Silver is more than just a beautiful ornament! Did you know its hidden demand is in your tech? Share your thoughts:
+  Should India invest more in ''urban mining'' for silver? 👇'
+hashtags:
+- '#SilverFacts'
+- '#IndianCulture'
+- '#TechDemand'
+- '#UrbanMining'
+- '#RecyclingIndia'
+- '#PreciousMetals'
+- '#DidYouKnow'
+- '#FactVideo'
+sources:
+- Industrial applications consumed 59% of total global silver demand in 2024, shifting from roughly half a decade ago.
+- About 55%-60% of global silver demand comes from industrial applications.
+- Silver is essential for electronics, solar panels, and electric vehicles due to its conductivity.
+- A typical smartphone contains around 200-300mg of silver.
+- E-waste recycling, often called 'urban mining,' is a growing sector in India for recovering precious metals like silver.
+topic: Silver's Hidden Value
